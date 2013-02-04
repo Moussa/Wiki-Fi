@@ -1,0 +1,31 @@
+#rapper { 
+    width: 1920px;
+    margin: 0 auto;
+}
+#chart_div    {
+    width: 65%;
+    height: 800px;
+    float: left;
+}
+
+#piechart_div  {
+    width: 35%;
+    height: 500px;
+    float: right;
+}
+#columnchart_div {
+   width: 50%;
+   height: 500px;
+   float: right;
+}
+#bubblechart_div {
+   width: 100%;
+   height: 1000px;
+   float: right;
+}
+
+#daycolumnchart_div {
+   width: 50%;
+   height: 500px;
+   float: right;
+}
