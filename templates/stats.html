@@ -39,10 +39,10 @@
                 display_annotations = typeof display_annotations !== 'undefined' ? display_annotations : false;
                 var data = new google.visualization.DataTable();
                 data.addColumn('date', 'Date');
-                data.addColumn('number', '{{username}}');
+                data.addColumn('number', 'Edits');
                 data.addColumn('number', 'Total edits');
-                data.addColumn('string', 'title');
-                data.addColumn('string', 'description');
+                data.addColumn('string', 'Title');
+                data.addColumn('string', 'Description');
                 data.addRows([{{charts_data['edits_timeline_string']|safe}}]);
                 chart = new google.visualization.AnnotatedTimeLine(document.getElementById('chart_div'));
                 chart.draw(data, {
