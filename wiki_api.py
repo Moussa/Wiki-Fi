@@ -24,7 +24,7 @@ class API:
 
 		return list(set([user['name'] for user in res['query']['allusers']]))
 
-	def get_user_edits(self, user, start):
+	def get_user_edits(self, user, start=None):
 		params = {'action': 'query',
 				  'list': 'usercontribs',
 				  'ucuser': user,
@@ -47,9 +47,12 @@ class API:
 				db['users'].insert({'username': user}, safe=True)
 	
 	def update_user_edits(self, db, user):
-		last_edit_date = (db['edits'].find({'user_id': user['_id']}, sort=[('date', pymongo.DESCENDING )]).limit(1))[0]['timestamp']
-		edits = self.get_user_edits(user['username'], last_edit_date)
-		edits = edits[:-1] # remove last duplicate edit
+		if db['edits'].find({'user_id': user['_id']}).count() == 0:
+			edits = self.get_user_edits(user['username'])
+		else:
+			last_edit_date = (db['edits'].find({'user_id': user['_id']}, sort=[('date', pymongo.DESCENDING )]).limit(1))[0]['timestamp']
+			edits = self.get_user_edits(user['username'], last_edit_date)
+			edits = edits[:-1] # remove last duplicate edit
 
 		for edit in edits:
 			res = self.dateRE.search(edit['timestamp'])

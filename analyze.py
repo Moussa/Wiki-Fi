@@ -9,6 +9,9 @@ def daterange(start_date, end_date):
 		yield start_date + datetime.timedelta(days=n)
 
 def get_date_range(db, user):
+	if db['edits'].find({'user_id': user['_id']}).count() == 0:
+		return datetime.datetime(2010, 6, 4), datetime.datetime.now()
+
 	user_start = (db['edits'].find({'user_id': user['_id']}, sort=[('date', pymongo.ASCENDING)]).limit(1))[0]['date']
 	user_end = (db['edits'].find({'user_id': user['_id']}, sort=[('date', pymongo.DESCENDING )]).limit(1))[0]['date']
 
