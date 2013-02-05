@@ -2,6 +2,7 @@ import json
 import pymongo
 from flask import Flask, url_for, render_template, request
 import analyze
+import wiki_api
 from config import config
 
 app = Flask(__name__)
@@ -10,6 +11,8 @@ connection = pymongo.Connection('localhost', 27017)
 
 db = connection[config['db_name']]
 userscollection = db['users']
+
+api = wiki_api.API(config['api_url'], config['username'], config['password'])
 
 @app.route('/')
 def homepage():
@@ -25,6 +28,9 @@ def anaylze_edits():
 	user = userscollection.find_one({'username': username})
 	if user is None:
 		return 'Username ' + username + ' not found'
+
+	# update user edits from wiki
+	api.update_user_edits(db, user)
 
 	charts_data = analyze.analyze_user(db, user)
 	return render_template('stats.html', username=username, charts_data=charts_data)

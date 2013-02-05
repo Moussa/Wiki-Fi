@@ -66,7 +66,7 @@ def analyze_user(db, user, user2=None):
 	hour_dict = dict((a, {'count': 0, 'string': '{0}:00'.format("%02d" % (a,))}) for a in range(0, 24))
 	edits_dict = dict((a, {'day': {'string': DAY_MAPPING[a], 'count': 0}, 'hours': copy.deepcopy(hour_dict)}) for a in range(0, 7))
 
-	for single_date in daterange(start_date, end_date):
+	for single_date in daterange(start_date, end_date + datetime.timedelta(days=1)):
 		date_index_string = '{0}-{1}-{2}'.format(single_date.year, single_date.month, single_date.day)
 		edits = list(edits_collection.find({'date_string': date_index_string, 'user_id': user['_id']}))
 
