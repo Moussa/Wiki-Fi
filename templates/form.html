@@ -2,20 +2,33 @@
 <html>
 
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.2.2/bootstrap.min.js"></script>
+
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='bootstrap-responsive.min.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
 
 <script type="text/javascript">
 $(document).ready(function() {
-	$('#submit').click(function () {
+	$('.btn').click(function () {
 		var username = $('input[name=username]').val();
 		var data = 'username=' + username;
 	    $.ajax({
-	        url: '/is_user',
+	        url: '/is_valid_user',
 	        type: 'POST',
 	        dataType: 'json',
 	        data: data,
 	        success: function(data) {
-	        	if (data['user_exists']){
+	        	if (data){
+	        		$('.btn').removeClass('btn-primary btn-warning').addClass('btn-success').html('Loading stats');
+	        		$('#loader').css('visibility','visible');
 	        		window.location = "/stats?username=" + username;
+	        	}
+	        	else {
+	        		$('.btn').removeClass('btn-primary').addClass('btn-warning').html('Invalid username');
+	        		setTimeout(function() {
+	        			$('.btn').removeClass('btn-warning').addClass('btn-primary').html('Submit');
+	        		}, 2000);
 	        	}
 	                 },
 	        fail: function(data) {
@@ -28,10 +41,17 @@ $(document).ready(function() {
 </script>
 
     <body>
-        <form name="input" id="username">
-            Username: <input type="text" name="username"><br/>
-            <input type="submit" id="submit">
-        </form>
+
+        <div class="username-form">
+		    <form class="form-search">
+		        <div class="input-append">
+		        	<img id="loader" src="{{ url_for('static', filename='loader.gif') }}">
+		            <input type="text" name="username" id="username" class="input-large" placeholder="Username">
+		            <button type="submit" class="btn btn-large btn-primary">Submit</button>
+		        </div>
+		    </form>
+	    </div>
+
     </body>
 
 </html>

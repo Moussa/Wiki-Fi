@@ -14,11 +14,11 @@ userscollection = db['users']
 
 api = wiki_api.API(config['api_url'], config['username'], config['password'])
 
-@app.route('/is_user', methods=['POST'])
-def is_user():
+@app.route('/is_valid_user', methods=['POST'])
+def is_valid_user():
 	username = request.form['username']
 	user = userscollection.find_one({'username': username})
-	data = {'user_exists': user is not None}
+	data = user is not None
 	resp = Response(json.dumps(data), status=200, mimetype='application/json')
 
 	return resp
