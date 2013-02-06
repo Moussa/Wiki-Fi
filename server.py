@@ -33,6 +33,7 @@ def anaylze_edits():
 		homepage()
 
 	username = request.args['username']
+	user = userscollection.find_one({'username': username})
 
 	# update user edits from wiki
 	api.update_user_edits(db, user)
