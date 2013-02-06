@@ -1,6 +1,6 @@
 import json
 import pymongo
-from flask import Flask, url_for, render_template, request
+from flask import Flask, url_for, render_template, request, Response
 import analyze
 import wiki_api
 from config import config
@@ -14,6 +14,15 @@ userscollection = db['users']
 
 api = wiki_api.API(config['api_url'], config['username'], config['password'])
 
+@app.route('/is_user', methods=['POST'])
+def is_user():
+	username = request.form['username']
+	user = userscollection.find_one({'username': username})
+	data = {'user_exists': user is not None}
+	resp = Response(json.dumps(data), status=200, mimetype='application/json')
+
+	return resp
+
 @app.route('/')
 def homepage():
 	return render_template('form.html')
@@ -24,10 +33,6 @@ def anaylze_edits():
 		homepage()
 
 	username = request.args['username']
-
-	user = userscollection.find_one({'username': username})
-	if user is None:
-		return 'Username ' + username + ' not found'
 
 	# update user edits from wiki
 	api.update_user_edits(db, user)

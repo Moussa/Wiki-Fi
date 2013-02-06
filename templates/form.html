@@ -1,9 +1,37 @@
 <!DOCTYPE html>
 <html>
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function() {
+	$('#submit').click(function () {
+		var username = $('input[name=username]').val();
+		var data = 'username=' + username;
+	    $.ajax({
+	        url: '/is_user',
+	        type: 'POST',
+	        dataType: 'json',
+	        data: data,
+	        success: function(data) {
+	        	if (data['user_exists']){
+	        		window.location = "/stats?username=" + username;
+	        	}
+	                 },
+	        fail: function(data) {
+	        	console.log('fail');
+	                 }
+	    });
+	    return false;
+	});
+});
+</script>
+
     <body>
-        <form name="input" action="/stats" method="get">
-            Username: <input type="text" name="username">
-            <br/><input type="submit" value="Submit">
+        <form name="input" id="username">
+            Username: <input type="text" name="username"><br/>
+            <input type="submit" id="submit">
         </form>
     </body>
+
 </html>
