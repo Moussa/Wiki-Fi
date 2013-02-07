@@ -50,3 +50,13 @@
 #username {
     height: 34px;
 }
+
+div.btn-group[data-toggle=buttons-radio] input[type=radio] {
+  display:    block;
+  position:   absolute;
+  top:        0;
+  left:       0;
+  width:      100%;
+  height:     100%;
+  opacity:    0;
+}
