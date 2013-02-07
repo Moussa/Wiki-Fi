@@ -9,23 +9,18 @@ app = Flask(__name__)
 
 connection = pymongo.Connection('localhost', 27017)
 
-tfwikidb = connection[config['tfwiki']['db_name']]
-portalwikidb = connection[config['portalwiki']['db_name']]
-dota2wikidb = connection[config['dota2wiki']['db_name']]
-
-wiki_mapping = {'tf': tfwikidb, 'portal': portalwikidb, 'dota2': dota2wikidb}
-
-tfwikiapi = wiki_api.API(config['tfwiki']['api_url'], config['tfwiki']['username'], config['tfwiki']['password'])
-portalwikiapi = wiki_api.API(config['portalwiki']['api_url'], config['portalwiki']['username'], config['portalwiki']['password'])
-dota2wikiapi = wiki_api.API(config['dota2wiki']['api_url'], config['dota2wiki']['username'], config['dota2wiki']['password'])
-
-api_mapping = {'tf': tfwikiapi, 'portal': portalwikiapi, 'dota2': dota2wikiapi}
+wiki_dict = {}
+for wiki in config:
+	db = connection[config[wiki]['db_name']]
+	api = wiki_api.API(config[wiki]['api_url'], config[wiki]['username'], config[wiki]['password'])
+	print('Successfully loaded ' + wiki)
+	wiki_dict[wiki] = {'db': db, 'api': api}
 
 @app.route('/is_valid_user', methods=['POST'])
 def is_valid_user():
 	username = request.form['username']
 	wiki = request.form['wiki']
-	user = wiki_mapping[wiki]['users'].find_one({'username': username})
+	user = wiki_dict[wiki]['db']['users'].find_one({'username': username})
 	data = user is not None
 	resp = Response(json.dumps(data), status=200, mimetype='application/json')
 
@@ -42,12 +37,12 @@ def anaylze_edits():
 
 	username = request.args['username']
 	wiki = request.args['wiki']
-	user = wiki_mapping[wiki]['users'].find_one({'username': username})
+	user = wiki_dict[wiki]['db']['users'].find_one({'username': username})
 
 	# update user edits from wiki
-	api_mapping[wiki].update_user_edits(wiki_mapping[wiki], user)
+	wiki_dict[wiki]['api'].update_user_edits(wiki_dict[wiki]['db'], user)
 
-	charts_data = analyze.analyze_user(wiki_mapping[wiki], user)
+	charts_data = analyze.analyze_user(wiki_dict[wiki]['db'], user)
 	return render_template('stats.html', username=username, charts_data=charts_data)
 
 # @app.route('/all', methods=['GET'])
