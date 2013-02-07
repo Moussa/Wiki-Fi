@@ -4,6 +4,24 @@ from config import config
 
 DAY_MAPPING = {0: 'Monday', 1: 'Tuesday', 2: 'Wednesday', 3: 'Thursday', 4: 'Friday', 5: 'Saturday', 6: 'Sunday'}
 
+namespaces = {0: 'Main',
+					1: 'Talk',
+					2: 'User',
+					3: 'User talk',
+					4: 'Wiki',
+					5: 'Wiki talk',
+					6: 'File',
+					7: 'File talk',
+					8: 'MediaWiki',
+					9: 'MediaWiki talk',
+					10: 'Template',
+					11: 'Template talk',
+					12: 'Help',
+					13: 'Help talk',
+					14: 'Category',
+					15: 'Category talk'
+					}
+
 def daterange(start_date, end_date):
 	for n in range(int((end_date - start_date).days) + 1):
 		yield start_date + datetime.timedelta(days=n)
@@ -47,10 +65,12 @@ def process_hour_day_bubble_chart(edits_dict):
 
 def process_namespace_pie_chart(edits_collection, user):
 	namespace_piechart_output = []
-	for namespace in config['namespaces']:
+	# for namespace in config['namespaces']:
+	for namespace in namespaces:
 		count = edits_collection.find({'ns': namespace, 'user_id': user['_id']}).count()
 		if count > 0:
-			namespace_piechart_output.append('[\'{0}\', {1}]'.format(config['namespaces'][namespace], count))
+			# namespace_piechart_output.append('[\'{0}\', {1}]'.format(config['namespaces'][namespace], count))
+			namespace_piechart_output.append('[\'{0}\', {1}]'.format(namespaces[namespace], count))
 	namespace_piechart_output = ',\n'.join(namespace_piechart_output)
 
 	return namespace_piechart_output

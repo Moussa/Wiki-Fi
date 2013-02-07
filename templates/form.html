@@ -13,7 +13,8 @@ $(document).ready(function() {
 
 	$('button[type=submit]').click(function () {
 		var username = $('input[name=username]').val();
-		var data = 'username=' + username;
+		var wiki = $(".btn-group input[name=is_private]:checked").val();
+		var data = {username: username, wiki: wiki};
 	    $.ajax({
 	        url: '/is_valid_user',
 	        type: 'POST',
@@ -24,7 +25,6 @@ $(document).ready(function() {
 	        		$('button[type=submit]').removeClass('btn-primary btn-danger').addClass('btn-success').html('Loading stats...');
 	        		$('#loader').css('visibility','visible');
 
-	        		var wiki = $(".btn-group input[name=is_private]:checked").val();
 	        		window.location = "/stats?username=" + username + "&wiki=" + wiki;
 	        	}
 	        	else {
