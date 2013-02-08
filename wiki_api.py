@@ -54,6 +54,22 @@ class API:
 
 		return res['query']['usercontribs']
 
+	def get_recent_changes(self, start=None):
+		params = {'action': 'query',
+				  'list': 'recentchanges',
+				  'rcprop': 'user|comment|timestamp|title|ids',
+				  'rctype': 'edit|new',
+				  'rclimit': '5000'
+				  }
+
+		if start:
+			params['rcend'] = start
+
+		req = wikitools.api.APIRequest(self.wiki, params)
+		res = req.query(querycontinue=True)
+
+		return res['query']['recentchanges']
+
 	def update_users(self, db):
 		users = self.get_users()
 		for user in users:
