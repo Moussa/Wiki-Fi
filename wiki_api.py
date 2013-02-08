@@ -59,6 +59,7 @@ class API:
 				  'list': 'recentchanges',
 				  'rcprop': 'user|comment|timestamp|title|ids',
 				  'rctype': 'edit|new',
+				  'rcdir': 'newer',
 				  'rclimit': '5000'
 				  }
 

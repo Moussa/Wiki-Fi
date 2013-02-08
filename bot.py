@@ -1,4 +1,3 @@
-import json
 import pymongo
 import wiki_api
 from config import config
