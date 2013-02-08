@@ -43,7 +43,7 @@ def anaylze_edits():
 	wiki_dict[wiki]['api'].update_user_edits(wiki_dict[wiki]['db'], user)
 
 	charts_data = analyze.analyze_user(wiki_dict[wiki]['db'], user)
-	return render_template('stats.html', username=username, charts_data=charts_data)
+	return render_template('stats.html', username=username, wiki=wiki, charts_data=charts_data)
 
 # @app.route('/all', methods=['GET'])
 # def analyze_all_edits():

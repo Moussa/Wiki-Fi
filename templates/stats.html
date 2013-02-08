@@ -24,6 +24,9 @@
 
               var username = '{{ username }}';
               var wikis = ['tf', 'portal', 'dota2'];
+
+              $('li#{{ wiki }}').addClass('active');
+
               $.each(wikis, function(index, wiki) {
                 var data = {username: username, wiki: wiki};
                 $.ajax({
@@ -33,7 +36,12 @@
                     data: data,
                     success: function(data) {
                       if (data){
-                        $('a#' + wiki).attr("href", "/stats?username=" + username + "&wiki=" + wiki);
+                        if ('{{ wiki }}' == wiki) {
+                          $('a#' + wiki).attr("href", "#");
+                        }
+                        else {
+                          $('a#' + wiki).attr("href", "/stats?username=" + username + "&wiki=" + wiki);
+                        }
                       }
                       else {
                         $('li#' + wiki).addClass('disabled');
@@ -185,7 +193,7 @@
               <a class="brand" href="#">Wiki user stats</a>
               <div class="nav-collapse collapse">
                 <ul class="nav">
-                  <li id="tf" class="active"><a id="tf">Official TF Wiki</a></li>
+                  <li id="tf"><a id="tf">Official TF Wiki</a></li>
                   <li id="portal"><a id="portal">Portal Wiki</a></li>
                   <li id="dota2"><a id="dota2">Dota2 Wiki</a></li>
                 </ul>
