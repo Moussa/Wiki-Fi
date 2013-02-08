@@ -12,6 +12,44 @@
 
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
         <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+
+
+        <script type="text/javascript">
+          $(document).ready(function() {
+
+              var username = {{ username }};
+              var wikis = ['tf', 'portal', 'dota2'];
+              $.each(wikis, function(index, wiki) {
+                alert(index + ': ' + wiki);
+                var data = {username: username, wiki: wiki};
+                $.ajax({
+                    url: '/is_valid_user',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: data,
+                    success: function(data) {
+                      if (data){
+                        $('button[type=submit]').removeClass('btn-primary btn-danger').addClass('btn-success').html('Loading stats...');
+                        $('#loader').css('visibility','visible');
+
+                        window.location = "/stats?username=" + username + "&wiki=" + wiki;
+                      }
+                      else {
+                        $('button[type=submit]').removeClass('btn-primary').addClass('btn-danger').html('Invalid username');
+                        setTimeout(function() {
+                          $('button[type=submit]').removeClass('btn-danger').addClass('btn-primary').html('Submit');
+                        }, 2000);
+                      }
+                             },
+                    fail: function(data) {
+                      console.log('fail');
+                             }
+                });
+            });
+          });
+        </script>
+
+
         <script type="text/javascript">
             function toggleAnnotations() {
                 var checkbox = document.getElementById('togglebox');
@@ -138,6 +176,26 @@
 
 
     <body>
+        <div class="navbar navbar-inverse navbar-fixed-top">
+          <div class="navbar-inner">
+            <div class="container">
+              <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+              <a class="brand" href="#">Wiki user stats</a>
+              <div class="nav-collapse collapse">
+                <ul class="nav">
+                  <li id="tf" class="active"><a id="tf" href="#">Official TF Wiki</a></li>
+                  <li id="portal"><a id="portal" href="#">Portal Wiki</a></li>
+                  <li id="dota2"><a id="dota2" href="#">Dota2 Wiki</a></li>
+                </ul>
+              </div><!--/.nav-collapse -->
+            </div>
+          </div>
+        </div>
+
         <div class="wrapper">
             <form>
                 <label><input type="checkbox" onclick="javascript:toggleAnnotations()" id="togglebox">Display patches</label>
