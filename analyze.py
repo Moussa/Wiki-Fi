@@ -3,24 +3,23 @@ import pymongo
 from config import config
 
 DAY_MAPPING = {0: 'Monday', 1: 'Tuesday', 2: 'Wednesday', 3: 'Thursday', 4: 'Friday', 5: 'Saturday', 6: 'Sunday'}
-
-namespaces = {0: 'Main',
-			  1: 'Talk',
-			  2: 'User',
-			  3: 'User talk',
-			  4: '{wiki_name} Wiki',
-			  5: '{wiki_name} Wiki talk',
-			  6: 'File',
-			  7: 'File talk',
-			  8: 'MediaWiki',
-			  9: 'MediaWiki talk',
-			  10: 'Template',
-			  11: 'Template talk',
-			  12: 'Help',
-			  13: 'Help talk',
-			  14: 'Category',
-			  15: 'Category talk'
-			  }
+NAMESPACE_MAPPING = {0: 'Main',
+					 1: 'Talk',
+					 2: 'User',
+					 3: 'User talk',
+					 4: '{wiki_name} Wiki',
+					 5: '{wiki_name} Wiki talk',
+					 6: 'File',
+					 7: 'File talk',
+					 8: 'MediaWiki',
+					 9: 'MediaWiki talk',
+					 10: 'Template',
+					 11: 'Template talk',
+					 12: 'Help',
+					 13: 'Help talk',
+					 14: 'Category',
+					 15: 'Category talk'
+					 }
 
 def daterange(start_date, end_date):
 	for n in range(int((end_date - start_date).days) + 1):
@@ -68,14 +67,13 @@ def process_namespace_pie_chart(wiki, edits_collection, user):
 	for namespace in namespaces:
 		count = edits_collection.find({'user_id': user['_id'], 'ns': namespace}).count()
 		if count > 0:
-			namespace_piechart_output.append('[\'{0}\', {1}]'.format(namespaces[namespace].format(wiki_name=config[wiki]['wiki_name']), count))
+			namespace_piechart_output.append('[\'{0}\', {1}]'.format(NAMESPACE_MAPPING[namespace].format(wiki_name=config[wiki]['wiki_name']), count))
 	namespace_piechart_output = ',\n'.join(namespace_piechart_output)
 
 	return namespace_piechart_output
 
 def analyze_user(wiki, db, user, user2=None):
 	edits_collection = db['edits']
-	patches_collection = db['patches']
 
 	start_date, end_date = get_date_range(db, user)
 
@@ -113,29 +111,14 @@ def analyze_user(wiki, db, user, user2=None):
 			edits_dict[edit_day]['hours'][edit_hour]['count'] += 1
 			edits_dict[edit_day]['day']['count'] += 1
 
-		patch = patches_collection.find_one({'date_string': date_index_string})
-
-		if patch:
-			entry = """[new Date({year}, {month}, {day}), {edits1}, {total_edits}, \'{title}\', \'{link}\']"""
-		else:
-			entry = """[new Date({year}, {month}, {day}), {edits1}, {total_edits}, undefined, undefined]"""
+		entry = """[new Date({year}, {month}, {day}), {edits}, {total_edits}, undefined, undefined]"""
 		
-		if patch:
-			editentry = entry.format(year=single_date.year,
-									 month=single_date.month-1,
-									 day=single_date.day,
-									 edits1=day_edit_count,
-									 total_edits=total_edit_count,
-									 title=patch['patch_name'],
-									 link='http://wiki.tf/' + patch['d'].strftime('%d %B, %Y Patch').replace(' ', '_')
-									 )
-		else:
-			editentry = entry.format(year=single_date.year,
-									 month=single_date.month-1,
-									 day=single_date.day,
-									 edits1=day_edit_count,
-									 total_edits=total_edit_count
-									 )
+		editentry = entry.format(year=single_date.year,
+								 month=single_date.month-1,
+								 day=single_date.day,
+								 edits=day_edit_count,
+								 total_edits=total_edit_count
+								 )
 
 		edits_timeline.append(editentry)
 

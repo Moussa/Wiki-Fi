@@ -1,220 +1,209 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta name="generator" content="www.w3.org">
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="chrome=1">
-        <title>
-            User edits
-        </title>
+<html lang="en">
+  <head>
 
-        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <title>User edits</title>
+    
+    <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.2.2/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.2.2/css/bootstrap-responsive.min.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
 
-        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
-        <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.2.2/bootstrap.min.js"></script>
+  </head>
 
-        <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.2.2/css/bootstrap.min.css">
-        <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.2.2/css/bootstrap-responsive.min.css">
-        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
-        <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+  <body>
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+    <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.2.2/bootstrap.min.js"></script>
 
 
-        <script type="text/javascript">
-          $(document).ready(function() {
+    <script type="text/javascript">
+      $(document).ready(function() {
 
-              var username = '{{ username }}';
-              var wikis = ['tf', 'portal', 'dota2'];
+        var username = '{{ username }}';
+        var wikis = ['tf', 'portal', 'dota2'];
 
-              $('li#{{ wiki }}').addClass('active');
+        $('li#{{ wiki }}').addClass('active');
 
-              $.each(wikis, function(index, wiki) {
-                var data = {username: username, wiki: wiki};
-                $.ajax({
-                    url: '/is_valid_user',
-                    type: 'POST',
-                    dataType: 'json',
-                    data: data,
-                    success: function(data) {
-                      if (data){
-                        if ('{{ wiki }}' == wiki) {
-                          $('a#' + wiki).attr("href", "#");
-                        }
-                        else {
-                          $('a#' + wiki).attr("href", "/stats?username=" + username + "&wiki=" + wiki);
-                        }
-                      }
-                      else {
-                        $('li#' + wiki).addClass('disabled');
-                      }
-                             },
-                    fail: function(data) {
-                      console.log('fail');
-                             }
-                });
-            });
-          });
-        </script>
-
-
-        <script type="text/javascript">
-            function toggleAnnotations() {
-                var checkbox = document.getElementById('togglebox');
-                if(checkbox.checked) {
-                    drawChart(true);
-                } else {
-                    drawChart(false);
+        $.each(wikis, function(index, wiki) {
+          var data = {username: username, wiki: wiki};
+          
+          $.ajax({
+            url: '/is_valid_user',
+            type: 'POST',
+            dataType: 'json',
+            data: data,
+            success: function(data) {
+              if (data) {
+                if ('{{ wiki }}' == wiki) {
+                  $('a#' + wiki).attr("href", "#");
                 }
+                else {
+                  $('a#' + wiki).attr("href", "/stats?username=" + username + "&wiki=" + wiki);
+                }
+              }
+              else {
+                $('li#' + wiki).addClass('disabled');
+              }
+            },
+            fail: function(data) {
+              console.log('fail');
             }
-           function toggleTotalEdits() {
-               var checkbox = document.getElementById('togglebox2');
-               if(checkbox.checked) {
-                    chart.showDataColumns(1);
-                 } else {
-                    chart.hideDataColumns(1);
-                 }
-            }
-        </script>
+          });
+        });
+      });
+    </script>
 
-        <script type="text/javascript">
-            var chart;
-            google.load('visualization', '1', {'packages':['annotatedtimeline']});
-            google.setOnLoadCallback(drawChart, true);
-            function drawChart(display_annotations) {
-                display_annotations = typeof display_annotations !== 'undefined' ? display_annotations : false;
-                var data = new google.visualization.DataTable();
-                data.addColumn('date', 'Date');
-                data.addColumn('number', 'Edits');
-                data.addColumn('number', 'Total edits');
-                data.addColumn('string', 'Title');
-                data.addColumn('string', 'Description');
-                data.addRows([{{charts_data['edits_timeline_string']|safe}}]);
-                chart = new google.visualization.AnnotatedTimeLine(document.getElementById('chart_div'));
-                chart.draw(data, {
-                    displayAnnotations: display_annotations,
-                    dateFormat: 'MMMM dd, yyyy'
-                });
-		 chart.hideDataColumns(1);
-            }
-        </script>
+    <script type="text/javascript">
+      function toggleTotalEdits() {
+        var checkbox = document.getElementById('total-edit-toggle');
+        if (checkbox.checked) {
+          edit_timeline_chart.showDataColumns(1);
+        }
+        else {
+          edit_timeline_chart.hideDataColumns(1);
+        }
+      }
+    </script>
 
-        <script type="text/javascript">
-          google.load("visualization", "1", {packages:["corechart"]});
-          google.setOnLoadCallback(drawPieChart);
-          function drawPieChart() {
-            var data = google.visualization.arrayToDataTable([
-              ['Namespace', 'Edits'],
-              {{charts_data['namespace_piechart_string']|safe}}
-            ]);
+    <script type="text/javascript">
+      google.load('visualization', '1', {'packages':['annotatedtimeline']});
+      var edit_timeline_chart;
+      google.setOnLoadCallback(drawChart);
+      function drawChart() {
+        var data = new google.visualization.DataTable();
+        data.addColumn('date', 'Date');
+        data.addColumn('number', 'Edits');
+        data.addColumn('number', 'Total edits');
+        data.addColumn('string', 'Title');
+        data.addColumn('string', 'Description');
+        data.addRows([ {{ charts_data['edits_timeline_string']|safe }} ]);
+        edit_timeline_chart = new google.visualization.AnnotatedTimeLine(document.getElementById('chart_div'));
+        edit_timeline_chart.draw(data, {
+          displayAnnotations: false,
+          dateFormat: 'MMMM dd, yyyy'
+        });
+        edit_timeline_chart.hideDataColumns(1);
+      }
+    </script>
 
-            var chart2 = new google.visualization.PieChart(document.getElementById('piechart_div'));
-            chart2.draw(data, {
-                title: 'Edits by namespace'
-            });
-          }
-        </script>
+    <script type="text/javascript">
+      google.load("visualization", "1", {packages:["corechart"]});
+      google.setOnLoadCallback(drawPieChart);
+      function drawPieChart() {
+        var data = google.visualization.arrayToDataTable([
+          ['Namespace', 'Edits'],
+          {{ charts_data['namespace_piechart_string']|safe }}
+        ]);
 
-        <script type="text/javascript">
+        var namespace_pie_chart = new google.visualization.PieChart(document.getElementById('piechart_div'));
+        namespace_pie_chart.draw(data, {
+          title: 'Edits by namespace'
+        });
+      }
+    </script>
+
+    <script type="text/javascript">
       google.load("visualization", "1", {packages:["corechart"]});
       google.setOnLoadCallback(drawBubbleChart);
       function drawBubbleChart() {
         var data = google.visualization.arrayToDataTable([
           ['ID', 'Hour', 'Day', '', 'Edits'],
-          {{charts_data['hour_day_bubble_chart_string']|safe}}
+          {{ charts_data['hour_day_bubble_chart_string']|safe }}
         ]);
 
-        var options = {
+        var edits_bubble_chart = new google.visualization.BubbleChart(document.getElementById('bubblechart_div'));
+        edits_bubble_chart.draw(data, {
           title: 'Edit days and times',
           hAxis: {title: 'Hour', viewWindowMode: 'explicit', viewWindow: {min: -1, max: 24}, baseline: -2},
           vAxis: {title: 'Day', direction: -1, textPosition: 'none'},
           bubble: {textStyle: {color: 'none'}},
           sizeAxis: {minSize: 0},
           legend: {position: 'none'}
-        };
-
-        var chart = new google.visualization.BubbleChart(document.getElementById('bubblechart_div'));
-        chart.draw(data, options);
+        });
       }
     </script>
 
-	<script type="text/javascript">
-	  google.load("visualization", "1", {packages:["corechart"]});
+  	<script type="text/javascript">
+  	  google.load("visualization", "1", {packages:["corechart"]});
       google.setOnLoadCallback(drawHourColumnChart);
       function drawHourColumnChart() {
         var data = google.visualization.arrayToDataTable([
           ['Hour', 'Edits'],
-	  {{charts_data['hour_column_chart_string']|safe}}
-	   ]);
-        var options = {
+          {{ charts_data['hour_column_chart_string']|safe }}
+	      ]);
+
+        var edit_hour_column_chart = new google.visualization.ColumnChart(document.getElementById('columnchart_div'));
+        edit_hour_column_chart.draw(data, {
           title: 'Edit times',
           hAxis: {title: 'Time'},
           vAxis: {title: 'Edits', minValue: 0},
           legend: {position: 'none'},
           colors: ['#66CC00']
-        };
-
-        var chart3 = new google.visualization.ColumnChart(document.getElementById('columnchart_div'));
-        chart3.draw(data, options);
+        });
       }
     </script>
 
     <script type="text/javascript">
-    google.load("visualization", "1", {packages:["corechart"]});
+      google.load("visualization", "1", {packages:["corechart"]});
       google.setOnLoadCallback(drawDayColumnChart);
       function drawDayColumnChart() {
         var data = google.visualization.arrayToDataTable([
           ['Day', 'Edits'],
-    {{charts_data['day_column_chart_string']|safe}}
-     ]);
-        var options = {
+          {{ charts_data['day_column_chart_string']|safe }}
+        ]);
+
+        var edit_day_column_chart = new google.visualization.ColumnChart(document.getElementById('daycolumnchart_div'));
+        edit_day_column_chart.draw(data, {
           title: 'Edit days',
           hAxis: {title: 'Day'},
           vAxis: {title: 'Edits', minValue: 0},
           legend: {position: 'none'},
           colors: ['#66CC00']
-        };
-
-        var chart4 = new google.visualization.ColumnChart(document.getElementById('daycolumnchart_div'));
-        chart4.draw(data, options);
+        });
       }
     </script>
 
-    </head>
-
-
-    <body>
-        <div class="navbar navbar-inverse navbar-fixed-top">
-          <div class="navbar-inner">
-            <div class="container">
-              <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-              </button>
-              <a class="brand" href="#">Wiki user stats</a>
-              <div class="nav-collapse collapse">
-                <ul class="nav">
-                  <li id="tf"><a id="tf">Official TF Wiki</a></li>
-                  <li id="portal"><a id="portal">Portal Wiki</a></li>
-                  <li id="dota2"><a id="dota2">Dota2 Wiki</a></li>
-                </ul>
-              </div><!--/.nav-collapse -->
-            </div>
-          </div>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="brand" href="/">Wiki user stats</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav">
+              <li id="tf"><a id="tf">Official TF Wiki</a></li>
+              <li id="portal"><a id="portal">Portal Wiki</a></li>
+              <li id="dota2"><a id="dota2">Dota2 Wiki</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
         </div>
+      </div>
+    </div>
 
-        <div class="wrapper">
-            <form>
-                <label><input type="checkbox" onclick="javascript:toggleAnnotations()" id="togglebox">Display patches</label>
-                <label><input type="checkbox" onclick="javascript:toggleTotalEdits()" id="togglebox2">Display cumulative edits</label>
-            </form>
-                      <div id="chart_div"></div>
-                      <div id="piechart_div"></div>
-			<div id="columnchart_div"></div>
-      <br/><div id="bubblechart_div"></div>
-      <br/><div id="daycolumnchart_div"></div>
-		      
-			Most number of edits in a single day: {{charts_data['largest_day_edit_count']}}
-			<br/>Longest edit streak: {{charts_data['longest_edit_days_streak']}} days
-			<br/>Unique pages edited: {{charts_data['distinct_pages_count']}}</div>
-    </body>
+  <div class="wrapper">
+    <form>
+      <label><input type="checkbox" onclick="javascript:toggleTotalEdits()" id="total-edit-toggle">Display cumulative edits</label>
+    </form>
+
+    <div id="chart_div"></div>
+
+    <div id="piechart_div"></div>
+
+  	<div id="columnchart_div"></div>
+
+    <br/><div id="bubblechart_div"></div>
+
+    <br/><div id="daycolumnchart_div"></div>
+
+  	Most number of edits in a single day: {{charts_data['largest_day_edit_count']}}
+  	<br/>Longest edit streak: {{charts_data['longest_edit_days_streak']}} days
+  	<br/>Unique pages edited: {{charts_data['distinct_pages_count']}}
+
+  </div>
+
+  </body>
 </html>
