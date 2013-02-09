@@ -1,24 +1,16 @@
 config = {
-	'api_url': r'http://wiki.tf2.com/w/api.php',
-	'username': '',
-	'password': '',
-	'db_name': 'tfwikidata',
-	'wiki': 'tfwiki',
-	'namespaces': {0: 'Main',
-				1: 'Talk',
-				2: 'User',
-				3: 'User talk',
-				4: 'Team Fortress Wiki',
-				5: 'Team Fortress Wiki talk',
-				6: 'File',
-				7: 'File talk',
-				8: 'MediaWiki',
-				9: 'MediaWiki talk',
-				10: 'Template',
-				11: 'Template talk',
-				12: 'Help',
-				13: 'Help talk',
-				14: 'Category',
-				15: 'Category talk'
-				}
+	'tf': {
+		'api_url': r'http://wiki.tf2.com/w/api.php',
+		'username': '',
+		'password': '',
+		'db_name': 'tfwiki-data',
+		'wiki_name' : 'Team Fortress'
+		},
+	'portal': {
+		'api_url': r'http://theportalwiki.com/w/api.php',
+		'username': '',
+		'password': '',
+		'db_name': 'portalwiki-data',
+		'wiki_name' : 'Portal'
+		}
 }
