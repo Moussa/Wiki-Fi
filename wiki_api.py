@@ -57,48 +57,16 @@ class API:
 	def get_recent_changes(self, start=None):
 		params = {'action': 'query',
 				  'list': 'recentchanges',
-				  'rcprop': 'user|comment|timestamp|title|ids',
+				  'rcprop': 'user|timestamp|title|ids',
 				  'rctype': 'edit|new',
 				  'rcdir': 'newer',
 				  'rclimit': '5000'
 				  }
 
 		if start:
-			params['rcend'] = start
+			params['rcstart'] = start
 
 		req = wikitools.api.APIRequest(self.wiki, params)
 		res = req.query(querycontinue=True)
 
 		return res['query']['recentchanges']
-
-	def update_users(self, db):
-		users = self.get_users()
-		for user in users:
-			username = user['name']
-			tfwiki_registration = user['registration']
-			d, date_index_string = self.get_date_from_string(tfwiki_registration)
-			if db['users'].find_one({'username': username}) is None:
-				db['users'].insert({'username': username, 'registration': d}, safe=True)
-			elif 'registration' not in db['users'].find_one({'username': username}):
-				db['users'].update({'username': username}, {'registration': d})
-
-	def update_user_edits(self, db, user):
-		if db['edits'].find({'user_id': user['_id']}).count() == 0:
-			edits = self.get_user_edits(user['username'])
-		else:
-			last_edit_date = (db['edits'].find({'user_id': user['_id']}, sort=[('date', pymongo.DESCENDING )]).limit(1))[0]['timestamp']
-			edits = self.get_user_edits(user['username'], last_edit_date)
-			edits = edits[:-1]  # remove last duplicate edit
-
-		for edit in edits:
-			d, date_index_string = self.get_date_from_string(edit['timestamp'])
-			output = {'user_id': user['_id'],
-					  'ns': edit['ns'],
-					  'revid': edit['revid'],
-					  'date': d,
-					  'title': edit['title'],
-					  'date_string': date_index_string,
-					  'timestamp': edit['timestamp'],
-					  'comment': edit['comment']
-					  }
-			db['edits'].insert(output, safe=True)

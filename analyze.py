@@ -5,22 +5,22 @@ from config import config
 DAY_MAPPING = {0: 'Monday', 1: 'Tuesday', 2: 'Wednesday', 3: 'Thursday', 4: 'Friday', 5: 'Saturday', 6: 'Sunday'}
 
 namespaces = {0: 'Main',
-					1: 'Talk',
-					2: 'User',
-					3: 'User talk',
-					4: 'Wiki',
-					5: 'Wiki talk',
-					6: 'File',
-					7: 'File talk',
-					8: 'MediaWiki',
-					9: 'MediaWiki talk',
-					10: 'Template',
-					11: 'Template talk',
-					12: 'Help',
-					13: 'Help talk',
-					14: 'Category',
-					15: 'Category talk'
-					}
+			  1: 'Talk',
+			  2: 'User',
+			  3: 'User talk',
+			  4: '{wiki_name} Wiki',
+			  5: '{wiki_name} Wiki talk',
+			  6: 'File',
+			  7: 'File talk',
+			  8: 'MediaWiki',
+			  9: 'MediaWiki talk',
+			  10: 'Template',
+			  11: 'Template talk',
+			  12: 'Help',
+			  13: 'Help talk',
+			  14: 'Category',
+			  15: 'Category talk'
+			  }
 
 def daterange(start_date, end_date):
 	for n in range(int((end_date - start_date).days) + 1):
@@ -63,19 +63,17 @@ def process_hour_day_bubble_chart(edits_dict):
 
 	return day_hour_output
 
-def process_namespace_pie_chart(edits_collection, user):
+def process_namespace_pie_chart(wiki, edits_collection, user):
 	namespace_piechart_output = []
-	# for namespace in config['namespaces']:
 	for namespace in namespaces:
-		count = edits_collection.find({'ns': namespace, 'user_id': user['_id']}).count()
+		count = edits_collection.find({'user_id': user['_id'], 'ns': namespace}).count()
 		if count > 0:
-			# namespace_piechart_output.append('[\'{0}\', {1}]'.format(config['namespaces'][namespace], count))
-			namespace_piechart_output.append('[\'{0}\', {1}]'.format(namespaces[namespace], count))
+			namespace_piechart_output.append('[\'{0}\', {1}]'.format(namespaces[namespace].format(wiki_name=config[wiki]['wiki_name']), count))
 	namespace_piechart_output = ',\n'.join(namespace_piechart_output)
 
 	return namespace_piechart_output
 
-def analyze_user(db, user, user2=None):
+def analyze_user(wiki, db, user, user2=None):
 	edits_collection = db['edits']
 	patches_collection = db['patches']
 
@@ -91,7 +89,7 @@ def analyze_user(db, user, user2=None):
 
 	for single_date in daterange(start_date, end_date + datetime.timedelta(days=1)):
 		date_index_string = '{0}-{1}-{2}'.format(single_date.year, single_date.month, single_date.day)
-		edits = list(edits_collection.find({'date_string': date_index_string, 'user_id': user['_id']}))
+		edits = list(edits_collection.find({'user_id': user['_id'], 'date_string': date_index_string}))
 
 		day_edit_count = len(edits)
 		total_edit_count += day_edit_count
@@ -153,7 +151,7 @@ def analyze_user(db, user, user2=None):
 	day_column_chart_string = process_day_column_chart(edits_dict)
 
 	# Generate data table string for namespace pie chart
-	namespace_piechart_string = process_namespace_pie_chart(edits_collection, user)
+	namespace_piechart_string = process_namespace_pie_chart(wiki, edits_collection, user)
 
 	# Generate data table string for edits timeline chart
 	edits_timeline_string = ',\n'.join(sorted(edits_timeline))

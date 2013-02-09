@@ -1,15 +1,16 @@
+# -*- coding: utf-8 -*-
+import datetime, sys
 import pymongo
 import wiki_api
 from config import config
 
 connection = pymongo.Connection('localhost', 27017)
 
-wiki_dict = {}
-for wiki in config:
+def load(wiki):
 	db = connection[config[wiki]['db_name']]
 	api = wiki_api.API(config[wiki]['api_url'], config[wiki]['username'], config[wiki]['password'])
 	print('Successfully loaded ' + wiki)
-	wiki_dict[wiki] = {'db': db, 'api': api}
+	return db, api
 
 def get_user_id(db, username):
 	user = db['users'].find_one({'username': username})
@@ -25,29 +26,69 @@ def get_last_edit_datetime(db):
 		return None
 	return (db['edits'].find({}, sort=[('date', pymongo.DESCENDING )]).limit(1))[0]['timestamp']
 
-def insert_recent_edits():
-	for wiki in wiki_dict:
-		db = wiki_dict[wiki]['db']
-		api = wiki_dict[wiki]['api']
+def seed(wiki):
+	db, api = load(wiki)
 
-		last_edit = get_last_edit_datetime(db)
-		recent_edits = api.get_recent_changes(last_edit)
-		recent_edits = recent_edits[:-1]  # remove last duplicate edit
+	users = api.get_users(edited_only=True)
 
-		for edit in recent_edits:
-			user_id = get_user_id(db, edit['user'])
+	for user in users:
+		username = user['name']
+		tfwiki_registration = user['registration']
+		d, date_index_string = api.get_date_from_string(tfwiki_registration)
+		if db['users'].find_one({'username': username}) is None:
+			db['users'].insert({'username': username, 'registration': d}, safe=True)
+		elif 'registration' not in db['users'].find_one({'username': username}):
+			db['users'].update({'username': username}, {'registration': d})
+
+	# define cutoff date so that edits made during seeding are not missed
+	cutoff_date = datetime.datetime.now()
+	print('cutoff date for edits is: ' + str(cutoff_date))
+
+	for user in db['users'].find():
+		print('Inserting edits for ' + user['username'].encode('utf-8'))
+		edits = api.get_user_edits(user['username'])
+		for edit in edits:
 			d, date_index_string = api.get_date_from_string(edit['timestamp'])
-			output = {'user_id': user_id,
-					  'ns': edit['ns'],
-					  'revid': edit['revid'],
-					  'date': d,
-					  'title': edit['title'],
-					  'date_string': date_index_string,
-					  'timestamp': edit['timestamp'],
-					  'comment': edit['comment']
-					  }
-			db['edits'].insert(output, safe=True)
+			if d < cutoff_date:
+				output = {'user_id': user['_id'],
+						  'ns': edit['ns'],
+						  'revid': edit['revid'],
+						  'date': d,
+						  'title': edit['title'],
+						  'date_string': date_index_string,
+						  'timestamp': edit['timestamp']
+						  }
+				db['edits'].insert(output, safe=True)
+
+def update(wiki):
+	db, api = load(wiki)
+
+	last_edit = get_last_edit_datetime(db)
+	recent_edits = api.get_recent_changes(last_edit)
+
+	check_dupe = True
+	for edit in recent_edits:
+		if check_dupe:  # don't insert already existing edits on start date
+			if edit['timestamp'] == last_edit:
+				if db['edits'].find_one({'revid': edit['revid']}):
+					continue
+			else:
+				check_dupe = False  # no more duplicate edits
+		user_id = get_user_id(db, edit['user'])
+		d, date_index_string = api.get_date_from_string(edit['timestamp'])
+		output = {'user_id': user_id,
+				  'ns': edit['ns'],
+				  'revid': edit['revid'],
+				  'date': d,
+				  'title': edit['title'],
+				  'date_string': date_index_string,
+				  'timestamp': edit['timestamp']
+				  }
+		db['edits'].insert(output, safe=True)
 
 
 if __name__ == '__main__':
-	insert_recent_edits()
+	if sys.argv[1] == 'seed':
+		seed(sys.argv[2])
+	elif sys.argv[1] == 'update':
+		update(sys.argv[2])
