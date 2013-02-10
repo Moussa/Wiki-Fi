@@ -1,33 +1,34 @@
-#rapper { 
-    width: 1920px;
-    margin: 0 auto;
-}
-#chart_div    {
-    width: 65%;
-    height: 800px;
-    float: left;
+body {
+  padding-top: 90px
 }
 
-#piechart_div  {
-    width: 35%;
-    height: 500px;
-    float: right;
-}
-#columnchart_div {
-   width: 50%;
-   height: 500px;
-   float: right;
-}
-#bubblechart_div {
-   width: 100%;
-   height: 1000px;
-   float: right;
+#number-stats {
+  height: 300px;
+  text-align: right;
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 100%;
 }
 
-#daycolumnchart_div {
-   width: 50%;
-   height: 500px;
-   float: right;
+tr.number-stats-tablerow > td {
+  padding-bottom: 50px;
+}
+
+#total-edit-form {
+  width:50%;
+  margin: 0px auto;
+}
+
+#chart_div {
+  height: 500px;
+}
+
+#columnchart_div, #daycolumnchart_div {
+  height: 400px;
+}
+
+#piechart_div, #bubblechart_div {
+  height: 500px;
 }
 
 .username-form {
@@ -59,4 +60,14 @@ div.btn-group[data-toggle=buttons-radio] input[type=radio] {
   width:      100%;
   height:     100%;
   opacity:    0;
+}
+
+#number-stats-row {
+  padding-bottom: 50px;
+}
+
+#value {
+  font-size: 80px;
+  text-align: left;
+  font-weight: bold;
 }
