@@ -64,7 +64,7 @@ def process_hour_day_bubble_chart(edits_dict):
 
 def process_namespace_pie_chart(wiki, edits_collection, user):
 	namespace_piechart_output = []
-	for namespace in namespaces:
+	for namespace in NAMESPACE_MAPPING:
 		count = edits_collection.find({'user_id': user['_id'], 'ns': namespace}).count()
 		if count > 0:
 			namespace_piechart_output.append('[\'{0}\', {1}]'.format(NAMESPACE_MAPPING[namespace].format(wiki_name=config[wiki]['wiki_name']), count))
@@ -139,7 +139,8 @@ def analyze_user(wiki, db, user, user2=None):
 	# Generate data table string for edits timeline chart
 	edits_timeline_string = ',\n'.join(sorted(edits_timeline))
 
-	charts_data = {'distinct_pages_count': distinct_pages_count,
+	charts_data = {'total_edit_count': total_edit_count,
+				   'distinct_pages_count': distinct_pages_count,
 				   'longest_edit_days_streak': longest_edit_days_streak,
 				   'largest_day_edit_count': largest_day_edit_count,
 				   'edits_timeline_string': edits_timeline_string,
