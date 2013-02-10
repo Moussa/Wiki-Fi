@@ -1,16 +1,26 @@
 config = {
-	'tf': {
-		'api_url': r'http://wiki.tf2.com/w/api.php',
-		'username': '',
-		'password': '',
-		'db_name': 'tfwiki-data',
-		'wiki_name' : 'Team Fortress'
-		},
-	'portal': {
-		'api_url': r'http://theportalwiki.com/w/api.php',
-		'username': '',
-		'password': '',
-		'db_name': 'portalwiki-data',
-		'wiki_name' : 'Portal'
+	'db': {
+		'host': 'localhost',
+		'port': 27017
+	},
+	'memcached': {
+		'host': '127.0.0.1',
+		'port': 11211
+	},
+	'wikis': {
+		'tf': {
+			'api_url': r'http://wiki.tf2.com/w/api.php',
+			'username': '',
+			'password': '',
+			'db_name': 'tfwiki-data',
+			'wiki_name' : 'Team Fortress'
+			},
+		'portal': {
+			'api_url': r'http://theportalwiki.com/w/api.php',
+			'username': '',
+			'password': '',
+			'db_name': 'portalwiki-data',
+			'wiki_name' : 'Portal'
+			}
 		}
 }

@@ -7,13 +7,13 @@ from config import config
 from werkzeug.contrib.cache import MemcachedCache
 
 app = Flask(__name__)
-cache = MemcachedCache(['127.0.0.1:11211'])
-connection = pymongo.Connection('localhost', 27017)
+cache = MemcachedCache(['{0}:{1}'.format(config['memcached']['host'], config['memcached']['port'])])
+connection = pymongo.Connection(config['db']['host'], config['db']['port'])
 
 wiki_dict = {}
-for wiki in config:
-	db = connection[config[wiki]['db_name']]
-	api = wiki_api.API(config[wiki]['api_url'], config[wiki]['username'], config[wiki]['password'])
+for wiki in config['wikis']:
+	db = connection[config['wikis'][wiki]['db_name']]
+	api = wiki_api.API(config['wikis'][wiki]['api_url'], config['wikis'][wiki]['username'], config['wikis'][wiki]['password'])
 	print('Successfully loaded ' + wiki)
 	wiki_dict[wiki] = {'db': db, 'api': api}
 

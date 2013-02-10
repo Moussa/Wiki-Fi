@@ -5,12 +5,12 @@ import wiki_api
 from config import config
 from werkzeug.contrib.cache import MemcachedCache
 
-cache = MemcachedCache(['127.0.0.1:11211'])
-connection = pymongo.Connection('localhost', 27017)
+cache = MemcachedCache(['{0}:{1}'.format(config['memcached']['host'], config['memcached']['port'])])
+connection = pymongo.Connection(config['db']['host'], config['db']['port'])
 
 def load(wiki):
-	db = connection[config[wiki]['db_name']]
-	api = wiki_api.API(config[wiki]['api_url'], config[wiki]['username'], config[wiki]['password'])
+	db = connection[config['wikis'][wiki]['db_name']]
+	api = wiki_api.API(config['wikis'][wiki]['api_url'], config['wikis'][wiki]['username'], config['wikis'][wiki]['password'])
 	print('Successfully loaded ' + wiki)
 	return db, api
 

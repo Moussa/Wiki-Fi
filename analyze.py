@@ -67,7 +67,7 @@ def process_namespace_pie_chart(wiki, edits_collection, user):
 	for namespace in NAMESPACE_MAPPING:
 		count = edits_collection.find({'user_id': user['_id'], 'ns': namespace}).count()
 		if count > 0:
-			namespace_piechart_output.append('[\'{0}\', {1}]'.format(NAMESPACE_MAPPING[namespace].format(wiki_name=config[wiki]['wiki_name']), count))
+			namespace_piechart_output.append('[\'{0}\', {1}]'.format(NAMESPACE_MAPPING[namespace].format(wiki_name=config['wikis'][wiki]['wiki_name']), count))
 	namespace_piechart_output = ',\n'.join(namespace_piechart_output)
 
 	return namespace_piechart_output
