@@ -4,9 +4,10 @@ from flask import Flask, url_for, render_template, request, Response
 import analyze
 import wiki_api
 from config import config
+from werkzeug.contrib.cache import MemcachedCache
 
 app = Flask(__name__)
-
+cache = MemcachedCache(['127.0.0.1:11211'])
 connection = pymongo.Connection('localhost', 27017)
 
 wiki_dict = {}
@@ -15,6 +16,14 @@ for wiki in config:
 	api = wiki_api.API(config[wiki]['api_url'], config[wiki]['username'], config[wiki]['password'])
 	print('Successfully loaded ' + wiki)
 	wiki_dict[wiki] = {'db': db, 'api': api}
+
+
+def get_chart_data(wiki, db, user):
+	charts_data = cache.get('wiki-data_{0}_{1}'.format(user['username'], wiki))
+	if charts_data is None:
+		charts_data = analyze.analyze_user(wiki, db, user)
+		cache.set('wiki-data_{0}_{1}'.format(user['username'], wiki), charts_data, timeout=0)
+	return charts_data
 
 @app.route('/is_valid_user', methods=['POST'])
 def is_valid_user():
@@ -39,7 +48,8 @@ def anaylze_edits():
 	wiki = request.args['wiki']
 	user = wiki_dict[wiki]['db']['users'].find_one({'username': username})
 
-	charts_data = analyze.analyze_user(wiki, wiki_dict[wiki]['db'], user)
+	charts_data = get_chart_data(wiki, wiki_dict[wiki]['db'], user)
+
 	return render_template('stats.html', username=username, wiki=wiki, charts_data=charts_data)
 
 # @app.route('/all', methods=['GET'])

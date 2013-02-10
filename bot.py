@@ -3,7 +3,9 @@ import datetime, sys
 import pymongo
 import wiki_api
 from config import config
+from werkzeug.contrib.cache import MemcachedCache
 
+cache = MemcachedCache(['127.0.0.1:11211'])
 connection = pymongo.Connection('localhost', 27017)
 
 def load(wiki):
@@ -85,6 +87,8 @@ def update(wiki):
 				  'timestamp': edit['timestamp']
 				  }
 		db['edits'].insert(output, safe=True)
+		# Delete cache key to load fresh data on next retrieval
+		cache.delete('wiki-data_{0}_{1}'.format(edit['user'], wiki))
 
 
 if __name__ == '__main__':
