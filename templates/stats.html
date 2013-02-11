@@ -20,6 +20,19 @@
     <script type="text/javascript">
       $(document).ready(function() {
 
+        $.ajax({
+          url: '/get_last_updated',
+          type: 'POST',
+          dataType: 'json',
+          data: {wiki: '{{ wiki }}'},
+          success: function(data) {
+            $('#last-updated').html('Last updated: ' + data);
+                   },
+          fail: function(data) {
+            console.log('fail');
+                   }
+        });
+
         var username = '{{ username }}';
         var wikis = ['tf', 'portal', 'dota2'];
 
@@ -166,19 +179,20 @@
 
     <div class="navbar navbar-inverse navbar-fixed-top">
       <div class="navbar-inner">
-        <div class="container">
+        <div class="container-fluid">
           <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="brand" href="/">Wiki user stats</a>
+          <a class="brand pull-left" href="/">Wiki user stats</a>
           <div class="nav-collapse collapse">
-            <ul class="nav">
+            <ul class="nav pull-left">
               <li id="tf"><a id="tf">Official TF Wiki</a></li>
               <li id="portal"><a id="portal">Portal Wiki</a></li>
               <li id="dota2"><a id="dota2">Dota2 Wiki</a></li>
             </ul>
+            <p class="navbar-text pull-right" id="last-updated"></p>
           </div><!--/.nav-collapse -->
         </div>
       </div>

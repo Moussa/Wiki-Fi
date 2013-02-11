@@ -27,7 +27,7 @@ def get_user_id(db, username):
 def get_last_edit_datetime(db):
 	if db['edits'].find().count() == 0:
 		return None
-	return (db['edits'].find({}, sort=[('date', pymongo.DESCENDING )]).limit(1))[0]['timestamp']
+	return (db['edits'].find({}, sort=[('date', pymongo.DESCENDING)]).limit(1))[0]['timestamp']
 
 def seed(wiki):
 	db, api = load(wiki)
@@ -68,6 +68,7 @@ def update(wiki):
 
 	last_edit = get_last_edit_datetime(db)
 	recent_edits = api.get_recent_changes(last_edit)
+	datenow = datetime.datetime.now()
 
 	check_dupe = True
 	for edit in recent_edits:
@@ -88,8 +89,10 @@ def update(wiki):
 				  'timestamp': edit['timestamp']
 				  }
 		db['edits'].insert(output, safe=True)
-		# Delete cache key to load fresh data on next retrieval
+		# delete cache key to load fresh data on next retrieval
 		cache.delete('wiki-data_{0}_{1}'.format(edit['user'], wiki))
+	# update last_updated time
+	db['metadata'].update({'key': 'last_updated'}, {'$set': {'last_updated': datenow}}, upsert=True, safe=True)
 
 
 if __name__ == '__main__':
