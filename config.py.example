@@ -13,14 +13,16 @@ config = {
 			'username': '',
 			'password': '',
 			'db_name': 'tfwiki-data',
-			'wiki_name' : 'Team Fortress'
+			'wiki_name' : 'Team Fortress',
+			'wiki_link': 'http://wiki.tf2.com'
 			},
 		'portal': {
 			'api_url': r'http://theportalwiki.com/w/api.php',
 			'username': '',
 			'password': '',
 			'db_name': 'portalwiki-data',
-			'wiki_name' : 'Portal'
+			'wiki_name' : 'Portal',
+			'wiki_link': 'http://theportalwiki.com'
 			}
 		}
 }

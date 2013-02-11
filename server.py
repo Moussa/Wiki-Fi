@@ -72,10 +72,11 @@ def anaylze_edits():
 	username = request.args['username']
 	wiki = request.args['wiki']
 	user = wiki_dict[wiki]['db']['users'].find_one({'username': username})
+	wiki_link = config['wikis'][wiki]['wiki_link']
 
 	charts_data = get_chart_data(wiki, wiki_dict[wiki]['db'], user)
 
-	return render_template('stats.html', username=username, wiki=wiki, charts_data=charts_data)
+	return render_template('stats.html', username=username, wiki=wiki, wiki_link=wiki_link, charts_data=charts_data)
 
 # @app.route('/all', methods=['GET'])
 # def analyze_all_edits():
