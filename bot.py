@@ -18,6 +18,7 @@ def get_user_id(db, username):
 	user = db['users'].find_one({'username': username})
 	if user is None:
 		user_id = db['users'].insert({'username': username})
+		cache.delete('wiki-data_allusers')
 	else:
 		user_id = user['_id']
 

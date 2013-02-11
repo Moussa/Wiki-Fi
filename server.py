@@ -35,6 +35,19 @@ def is_valid_user():
 
 	return resp
 
+@app.route('/get_all_users', methods=['GET'])
+def get_all_users():
+	users = cache.get('wiki-data_allusers')
+	if users is None:
+		users = []
+		for wiki in config['wikis']:
+			users += [user['username'] for user in list(wiki_dict[wiki]['db']['users'].find())]
+		users = list(set(users))
+		cache.set('wiki-data_allusers', users, timeout=0)
+	resp = Response(json.dumps(users), status=200, mimetype='application/json')
+
+	return resp
+
 @app.route('/')
 def homepage():
 	return render_template('form.html')

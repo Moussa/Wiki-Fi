@@ -10,6 +10,16 @@
 
 <script type="text/javascript">
 $(document).ready(function() {
+	$.ajax({
+        url: '/get_all_users',
+        type: 'GET',
+        success: function(data) {
+        	$('input[name=username]').typeahead({source: data}).focus();
+                 },
+        fail: function(data) {
+        	console.log('fail');
+                 }
+	    });
 
 	$('button[type=submit]').click(function () {
 		var username = $('input[name=username]').val();
@@ -62,7 +72,7 @@ $(document).ready(function() {
 
 		        <div class="input-append">
 		        	<img id="loader" src="{{ url_for('static', filename='loader.gif') }}">
-		            <input type="text" name="username" id="username" class="input-large" placeholder="Username">
+		            <input type="text" name="username" id="username" class="input-large" placeholder="Username" autocomplete="off">
 		            <button type="submit" class="btn btn-large btn-primary">Submit</button>
 		        </div>
 		    </form>
