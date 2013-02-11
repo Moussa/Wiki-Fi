@@ -19,10 +19,10 @@ for wiki in config['wikis']:
 
 
 def get_chart_data(wiki, db, user):
-	charts_data = cache.get('wiki-data_{0}_{1}'.format(user['username'], wiki))
+	charts_data = cache.get('wiki-data_{0}_{1}'.format(user['username'].replace(' ', '_'), wiki))
 	if charts_data is None:
 		charts_data = analyze.analyze_user(wiki, db, user)
-		cache.set('wiki-data_{0}_{1}'.format(user['username'], wiki), charts_data, timeout=0)
+		cache.set('wiki-data_{0}_{1}'.format(user['username'].replace(' ', '_'), wiki), charts_data, timeout=0)
 	return charts_data
 
 @app.route('/is_valid_user', methods=['POST'])
