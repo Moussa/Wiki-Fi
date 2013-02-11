@@ -55,7 +55,7 @@ def get_last_updated():
 	if last_updated is None:
 		last_updated = (wiki_dict[wiki]['db']['metadata'].find_one({'key': 'last_updated'}))['last_updated']
 		cache.set('wiki-metadata_last_updated_' + wiki, last_updated, timeout=0)
-	last_updated = last_updated.strftime("%H:%M, %d %B %Y")
+	last_updated = last_updated.strftime("%H:%M, %d %B %Y (UTC)")
 	resp = Response(json.dumps(last_updated), status=200, mimetype='application/json')
 
 	return resp
