@@ -10,46 +10,34 @@
 
 <script type="text/javascript">
 $(document).ready(function() {
+  var usernames = [];
   $.ajax({
     url: '/get_all_users',
     type: 'GET',
     success: function(data) {
-      $('#username').typeahead({source: data});
+      usernames = data;
+      $('#username').typeahead({source: usernames}).focus();
       },
     fail: function(data) {
       console.log('fail');
       }
     });
 
-  	$('#username').focus();
-
   $('button[type=submit]').click(function () {
     var username = $('#username').val();
     var wiki = $('.btn-group button.active').val();
-    var data = {username: username, wiki: wiki};
-    $.ajax({
-      url: '/is_valid_user',
-      type: 'POST',
-      dataType: 'json',
-      data: data,
-      success: function(data) {
-        if (data){
-          $('button[type=submit]').removeClass('btn-primary btn-danger').addClass('btn-success').html('Loading stats...');
-          $('#loader').css('visibility','visible');
+    if ($.inArray(username, usernames) > -1) {
+      $('button[type=submit]').removeClass('btn-primary btn-danger').addClass('btn-success').html('Loading stats...');
+      $('#loader').css('visibility','visible');
 
-          window.location = "/stats?username=" + username + "&wiki=" + wiki;
-        }
-        else {
-          $('button[type=submit]').removeClass('btn-primary').addClass('btn-danger').html('Invalid username');
-          setTimeout(function() {
-            $('button[type=submit]').removeClass('btn-danger').addClass('btn-primary').html('Get Stats');
-          }, 2000);
-        }
-      },
-      fail: function(data) {
-        console.log('fail');
+      window.location = "/stats?username=" + username + "&wiki=" + wiki;
       }
-    });
+    else {
+      $('button[type=submit]').removeClass('btn-primary').addClass('btn-danger').html('Invalid username');
+      setTimeout(function() {
+        $('button[type=submit]').removeClass('btn-danger').addClass('btn-primary').html('Get Stats');
+        }, 2000);
+      }
     return false;
   });
 });

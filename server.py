@@ -26,16 +26,6 @@ def get_chart_data(wiki, db, user):
 		cache.set('wiki-data_{0}_{1}'.format(user['username'].replace(' ', '_'), wiki), charts_data, timeout=0)
 	return charts_data
 
-@app.route('/is_valid_user', methods=['POST'])
-def is_valid_user():
-	username = request.form['username']
-	wiki = request.form['wiki']
-	user = wiki_dict[wiki]['db']['users'].find_one({'username': username})
-	data = user is not None
-	resp = Response(json.dumps(data), status=200, mimetype='application/json')
-
-	return resp
-
 @app.route('/get_all_users', methods=['GET'])
 def get_all_users():
 	users = cache.get('wiki-data_allusers')
