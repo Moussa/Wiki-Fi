@@ -25,10 +25,10 @@ class API:
 
 	def get_users(self, edited_only=False):
 		params = {'action': 'query',
-				  'list': 'allusers',
-				  'aulimit': '5000',
-				  'auprop': 'registration'
-				  }
+                  'list': 'allusers',
+                  'aulimit': '5000',
+                  'auprop': 'registration'
+                  }
 
 		if edited_only:
 			params['auwitheditsonly'] = ''
@@ -40,10 +40,10 @@ class API:
 
 	def get_user_edits(self, user, start=None):
 		params = {'action': 'query',
-				  'list': 'usercontribs',
-				  'ucuser': user,
-				  'uclimit': '5000'
-				  }
+                  'list': 'usercontribs',
+                  'ucuser': user,
+                  'uclimit': '5000'
+                  }
 
 		if start:
 			params['ucend'] = start
@@ -56,12 +56,12 @@ class API:
 
 	def get_recent_changes(self, start=None):
 		params = {'action': 'query',
-				  'list': 'recentchanges',
-				  'rcprop': 'user|timestamp|title|ids',
-				  'rctype': 'edit|new',
-				  'rcdir': 'newer',
-				  'rclimit': '5000'
-				  }
+                  'list': 'recentchanges',
+                  'rcprop': 'user|timestamp|title|ids',
+                  'rctype': 'edit|new',
+                  'rcdir': 'newer',
+                  'rclimit': '5000'
+                  }
 
 		if start:
 			params['rcstart'] = start

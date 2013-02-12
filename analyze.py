@@ -1,25 +1,26 @@
+# -*- coding: utf-8 -*-
 import json, datetime, copy
 import pymongo
 from config import config
 
 DAY_MAPPING = {0: 'Monday', 1: 'Tuesday', 2: 'Wednesday', 3: 'Thursday', 4: 'Friday', 5: 'Saturday', 6: 'Sunday'}
 NAMESPACE_MAPPING = {0: 'Main',
-					 1: 'Talk',
-					 2: 'User',
-					 3: 'User talk',
-					 4: '{wiki_name} Wiki',
-					 5: '{wiki_name} Wiki talk',
-					 6: 'File',
-					 7: 'File talk',
-					 8: 'MediaWiki',
-					 9: 'MediaWiki talk',
-					 10: 'Template',
-					 11: 'Template talk',
-					 12: 'Help',
-					 13: 'Help talk',
-					 14: 'Category',
-					 15: 'Category talk'
-					 }
+                     1: 'Talk',
+                     2: 'User',
+                     3: 'User talk',
+                     4: '{wiki_name} Wiki',
+                     5: '{wiki_name} Wiki talk',
+                     6: 'File',
+                     7: 'File talk',
+                     8: 'MediaWiki',
+                     9: 'MediaWiki talk',
+                    10: 'Template',
+                    11: 'Template talk',
+                    12: 'Help',
+                    13: 'Help talk',
+                    14: 'Category',
+                    15: 'Category talk'
+                     }
 
 def daterange(start_date, end_date):
 	for n in range(int((end_date - start_date).days) + 1):
@@ -72,7 +73,7 @@ def process_namespace_pie_chart(wiki, edits_collection, user):
 
 	return namespace_piechart_output
 
-def analyze_user(wiki, db, user, user2=None):
+def analyze_user(wiki, db, user):
 	edits_collection = db['edits']
 
 	start_date, end_date = get_date_range(db, user)
@@ -85,7 +86,7 @@ def analyze_user(wiki, db, user, user2=None):
 	hour_dict = dict((a, {'count': 0, 'string': '{0}:00'.format("%02d" % (a,))}) for a in range(0, 24))
 	edits_dict = dict((a, {'day': {'string': DAY_MAPPING[a], 'count': 0}, 'hours': copy.deepcopy(hour_dict)}) for a in range(0, 7))
 
-	for single_date in daterange(start_date, end_date + datetime.timedelta(days=1)):
+	for single_date in daterange(start_date, end_date):
 		date_index_string = '{0}-{1}-{2}'.format(single_date.year, single_date.month, single_date.day)
 		edits = list(edits_collection.find({'user_id': user['_id'], 'date_string': date_index_string}))
 
@@ -114,11 +115,11 @@ def analyze_user(wiki, db, user, user2=None):
 		entry = """[new Date({year}, {month}, {day}), {edits}, {total_edits}, undefined, undefined]"""
 		
 		editentry = entry.format(year=single_date.year,
-								 month=single_date.month-1,
-								 day=single_date.day,
-								 edits=day_edit_count,
-								 total_edits=total_edit_count
-								 )
+                                 month=single_date.month-1,
+                                 day=single_date.day,
+                                 edits=day_edit_count,
+                                 total_edits=total_edit_count
+                                 )
 
 		edits_timeline.append(editentry)
 
@@ -140,48 +141,15 @@ def analyze_user(wiki, db, user, user2=None):
 	edits_timeline_string = ',\n'.join(sorted(edits_timeline))
 
 	charts_data = {'total_edit_count': total_edit_count,
-				   'distinct_pages_count': distinct_pages_count,
-				   'longest_edit_days_streak': longest_edit_days_streak,
-				   'largest_day_edit_count': largest_day_edit_count,
-				   'edits_timeline_string': edits_timeline_string,
-				   'namespace_piechart_string': namespace_piechart_string,
-				   'hour_column_chart_string': hour_column_chart_string,
-				   'hour_day_bubble_chart_string': hour_day_bubble_chart_string,
-				   'day_column_chart_string': day_column_chart_string
-				   }
+                   'distinct_pages_count': distinct_pages_count,
+                   'longest_edit_days_streak': longest_edit_days_streak,
+                   'current_edit_days_streak': current_edit_days_streak,
+                   'largest_day_edit_count': largest_day_edit_count,
+                   'edits_timeline_string': edits_timeline_string,
+                   'namespace_piechart_string': namespace_piechart_string,
+                   'hour_column_chart_string': hour_column_chart_string,
+                   'hour_day_bubble_chart_string': hour_day_bubble_chart_string,
+                   'day_column_chart_string': day_column_chart_string
+                   }
 
 	return charts_data
-
-# def analyze_all(db):
-# 	edits_collection = db['edits']
-# 	entry = '''[new Date({year}, {month}, {day}), {edits1}, {total_edits}, undefined, undefined]'''
-
-# 	start_date = datetime.datetime(2010, 6, 4)
-# 	end_date = datetime.datetime.today()
-
-# 	data_list = []
-# 	total_edit_count = 0
-# 	for single_date in daterange(start_date, end_date):
-# 		date_index_string = '%s-%s-%s' % (single_date.year, single_date.month, single_date.day)
-# 		edit_count = edits_collection.find({'date_string': date_index_string}).count()
-		
-# 		total_edit_count += edit_count
-# 		editentry = entry.format(year=single_date.year,
-# 												month=single_date.month-1,
-# 												day=single_date.day,
-# 												edits1=edit_count,
-# 												total_edits=total_edit_count
-# 												)
-
-# 		data_list.append(editentry)
-
-# 	data_list = ',\n'.join(sorted(data_list))
-
-# 	piechart_output = ['[\'Namespace\', \'Edits\']']
-# 	for namespace in NAMESPACE_MAP:
-# 		count = edits_collection.find({'ns': namespace}).count()
-# 		if count > 0:
-# 			piechart_output.append('[\'%s\',  %s]' % (NAMESPACE_MAP[namespace], count))
-# 	piechart_output = ',\n'.join(piechart_output)
-
-# 	return data_list, piechart_output

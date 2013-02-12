@@ -54,13 +54,13 @@ def seed(wiki):
 			d, date_index_string = api.get_date_from_string(edit['timestamp'])
 			if d < cutoff_date:
 				output = {'user_id': user['_id'],
-						  'ns': edit['ns'],
-						  'revid': edit['revid'],
-						  'date': d,
-						  'title': edit['title'],
-						  'date_string': date_index_string,
-						  'timestamp': edit['timestamp']
-						  }
+                          'ns': edit['ns'],
+                          'revid': edit['revid'],
+                          'date': d,
+                          'title': edit['title'],
+                          'date_string': date_index_string,
+                          'timestamp': edit['timestamp']
+                          }
 				db['edits'].insert(output, safe=True)
 
 def update(wiki):
@@ -81,13 +81,13 @@ def update(wiki):
 		user_id = get_user_id(db, edit['user'])
 		d, date_index_string = api.get_date_from_string(edit['timestamp'])
 		output = {'user_id': user_id,
-				  'ns': edit['ns'],
-				  'revid': edit['revid'],
-				  'date': d,
-				  'title': edit['title'],
-				  'date_string': date_index_string,
-				  'timestamp': edit['timestamp']
-				  }
+                  'ns': edit['ns'],
+                  'revid': edit['revid'],
+                  'date': d,
+                  'title': edit['title'],
+                  'date_string': date_index_string,
+                  'timestamp': edit['timestamp']
+                  }
 		db['edits'].insert(output, safe=True)
 		# delete cache key to load fresh data on next retrieval
 		cache.delete('wiki-data_{0}_{1}'.format(edit['user'], wiki))
