@@ -33,10 +33,10 @@
                    }
         });
 
-        var username = '{{ username }}';
+        var username = "{{ username }}";
         var wikis = ['tf', 'portal', 'dota2'];
 
-        $('li#{{ wiki }}').addClass('active');
+        $("li#{{ wiki }}").addClass('active');
 
         $.each(wikis, function(index, wiki) {
           var data = {username: username, wiki: wiki};
@@ -48,7 +48,7 @@
             data: data,
             success: function(data) {
               if (data) {
-                if ('{{ wiki }}' == wiki) {
+                if ("{{ wiki }}" == wiki) {
                   $('a#' + wiki).attr("href", "#");
                 }
                 else {
