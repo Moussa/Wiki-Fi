@@ -70,14 +70,10 @@ def update(wiki):
 	recent_edits = api.get_recent_changes(last_edit)
 	datenow = datetime.datetime.now()
 
-	check_dupe = True
 	for edit in recent_edits:
-		if check_dupe:  # don't insert already existing edits on start date
-			if edit['timestamp'] == last_edit:
-				if db['edits'].find_one({'revid': edit['revid']}):
-					continue
-			else:
-				check_dupe = False  # no more duplicate edits
+		# check if edit has already been inserted into db
+		if db['edits'].find_one({'revid': edit['revid']}):
+			continue
 		user_id = get_user_id(db, edit['user'])
 		d, date_index_string = api.get_date_from_string(edit['timestamp'])
 		output = {'user_id': user_id,
