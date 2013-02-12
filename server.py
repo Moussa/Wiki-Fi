@@ -72,6 +72,8 @@ def anaylze_edits():
 	username = request.args['username']
 	wiki = request.args['wiki']
 	user = wiki_dict[wiki]['db']['users'].find_one({'username': username})
+	if user is None:
+		homepage()  # need a better way to handle dis
 	wiki_link = config['wikis'][wiki]['wiki_link']
 
 	charts_data = get_chart_data(wiki, wiki_dict[wiki]['db'], user)

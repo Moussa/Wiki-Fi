@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.0/bootstrap.min.js"></script>
@@ -10,74 +10,89 @@
 
 <script type="text/javascript">
 $(document).ready(function() {
-	$.ajax({
-        url: '/get_all_users',
-        type: 'GET',
-        success: function(data) {
-        	$('input[name=username]').typeahead({source: data}).focus();
-                 },
-        fail: function(data) {
-        	console.log('fail');
-                 }
-	    });
+  $.ajax({
+    url: '/get_all_users',
+    type: 'GET',
+    success: function(data) {
+      $('#username').typeahead({source: data});
+      },
+    fail: function(data) {
+      console.log('fail');
+      }
+    });
 
-	$('button[type=submit]').click(function () {
-		var username = $('input[name=username]').val();
-		var wiki = $(".btn-group input[name=is_private]:checked").val();
-		var data = {username: username, wiki: wiki};
-	    $.ajax({
-	        url: '/is_valid_user',
-	        type: 'POST',
-	        dataType: 'json',
-	        data: data,
-	        success: function(data) {
-	        	if (data){
-	        		$('button[type=submit]').removeClass('btn-primary btn-danger').addClass('btn-success').html('Loading stats...');
-	        		$('#loader').css('visibility','visible');
+  	$('#username').focus();
 
-	        		window.location = "/stats?username=" + username + "&wiki=" + wiki;
-	        	}
-	        	else {
-	        		$('button[type=submit]').removeClass('btn-primary').addClass('btn-danger').html('Invalid username');
-	        		setTimeout(function() {
-	        			$('button[type=submit]').removeClass('btn-danger').addClass('btn-primary').html('Submit');
-	        		}, 2000);
-	        	}
-	                 },
-	        fail: function(data) {
-	        	console.log('fail');
-	                 }
-	    });
-	    return false;
-	});
+  $('button[type=submit]').click(function () {
+    var username = $('#username').val();
+    var wiki = $('.btn-group button.active').val();
+    var data = {username: username, wiki: wiki};
+    $.ajax({
+      url: '/is_valid_user',
+      type: 'POST',
+      dataType: 'json',
+      data: data,
+      success: function(data) {
+        if (data){
+          $('button[type=submit]').removeClass('btn-primary btn-danger').addClass('btn-success').html('Loading stats...');
+          $('#loader').css('visibility','visible');
+
+          window.location = "/stats?username=" + username + "&wiki=" + wiki;
+        }
+        else {
+          $('button[type=submit]').removeClass('btn-primary').addClass('btn-danger').html('Invalid username');
+          setTimeout(function() {
+            $('button[type=submit]').removeClass('btn-danger').addClass('btn-primary').html('Get Stats');
+          }, 2000);
+        }
+      },
+      fail: function(data) {
+        console.log('fail');
+      }
+    });
+    return false;
+  });
 });
 </script>
 
-    <body>
+  <body>
+  	<div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="brand pull-left" href="#">Wiki user stats</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav pull-right">
+              <li><a href="#">About</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
 
-        <div class="username-form">
-		    <form class="form-search">
+    <div class="title">
+      <h1>Wiki User Stats</h1>
+      <p class="lead">Pick a wiki and enter your username to view edit statistics and graphs</p>
+    </div>
 
-		    	<div class="btn-group" data-toggle="buttons-radio" >
-				  <button type="button" class="btn" data-toggle="button">Portal Wiki
-				    <input type="radio" name="is_private" value="portal" />
-				  </button>
-				  <button type="button" class="btn active" data-toggle="button">Official TF Wiki
-				    <input type="radio" name="is_private" value="tf" checked="checked" />
-				  </button>
-				  <button type="button" class="btn" data-toggle="button">Dota2 Wiki
-				    <input type="radio" name="is_private" value="dota2" />
-				  </button>
-				</div>
+    <div class="btn-group-wrapper">
+      <div class="btn-group" data-toggle="buttons-radio">
+        <button type="button" class="btn btn-large" value="portal">Portal Wiki</button>
+        <button type="button" class="btn btn-large active" value="tf">Official TF Wiki</button>
+        <button type="button" class="btn btn-large" value="dota2">Dota2 Wiki</button>
+      </div>
+    </div>
 
-		        <div class="input-append">
-		        	<img id="loader" src="{{ url_for('static', filename='loader.gif') }}">
-		            <input type="text" name="username" id="username" class="input-large" placeholder="Username" autocomplete="off">
-		            <button type="submit" class="btn btn-large btn-primary">Submit</button>
-		        </div>
-		    </form>
-	    </div>
-
-    </body>
+    <div class="form-group-wrapper">
+	  <form class="form-search">
+		<input type="text" class="input-large" id="username" placeholder="Username" autocomplete="off">
+		<button type="submit" class="btn btn-large btn-primary">Get Stats</button>
+      </form>
+  	</div>
+  </body>
 
 </html>

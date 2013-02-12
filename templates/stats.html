@@ -189,14 +189,27 @@
           <div class="nav-collapse collapse">
             <ul class="nav pull-left">
               <li class="divider-vertical"></li>
-              <li class="pull-left"><a href="{{ wiki_link }}/wiki/User:{{ username }}" target="_blank">{{ username }}</a></li>
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">{{ username }} <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  <li><a data-target="#" href="{{ wiki_link }}/wiki/User:{{ username }}" target="_blank">User page</a></li>
+                  <li><a data-target="#" href="{{ wiki_link }}/wiki/User_talk:{{ username }}" target="_blank">User talk page</a></li>
+                  <li><a data-target="#" href="{{ wiki_link }}/wiki/Special:Contributions/{{ username }}" target="_blank">User contributions</a></li>
+                </ul>
+              </li>
               <li class="divider-vertical"></li>
               <li id="tf"><a id="tf">Official TF Wiki</a></li>
               <li id="portal"><a id="portal">Portal Wiki</a></li>
               <li id="dota2"><a id="dota2">Dota2 Wiki</a></li>
             </ul>
-            <p class="navbar-text pull-right" id="last-updated"></p>
-          </div><!--/.nav-collapse -->
+
+            <ul class="nav pull-right">
+              <li class="divider-vertical"></li>
+              <li><a href="#">About</a></li>
+              <li class="divider-vertical"></li>
+              <p class="navbar-text pull-right" id="last-updated"></p>
+            </ul>
+          </div>
         </div>
       </div>
     </div>
@@ -264,7 +277,7 @@
   <div class="container-fluid">
     <div class="row-fluid">
       <div class="span4"><h2>Edits by namespace</h2></div>
-      <div class="span8"><h2>Bubble map of edit days/hours</h2></div>
+      <div class="span8"><h2>Map of edit days/hours</h2></div>
     </div>
   </div>
   <div class="container-fluid">

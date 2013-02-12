@@ -1,5 +1,29 @@
 body {
-  padding-top: 90px
+  padding-top: 90px;
+}
+
+.title {
+  margin: 50px 0;
+  text-align: center;
+}
+
+.title h1 {
+  font-size: 100px;
+  line-height: 1;
+}
+
+.title .lead {
+  font-size: 24px;
+  line-height: 1.25;
+}
+
+.btn-group-wrapper {
+  text-align: center;
+  padding-bottom: 60px;
+}
+
+.form-group-wrapper {
+  text-align: center;
 }
 
 #number-stats {
@@ -8,10 +32,6 @@ body {
   font-size: 30px;
   font-weight: 600;
   line-height: normal;
-}
-
-tr.number-stats-tablerow > td {
-  padding-bottom: 50px;
 }
 
 #total-edit-form {
@@ -29,19 +49,6 @@ tr.number-stats-tablerow > td {
 
 #piechart_div, #bubblechart_div {
   height: 500px;
-}
-
-.username-form {
-    width: 100px;
-    height: 100px;
-
-    position: absolute;
-    top:0;
-    bottom: 0;
-    left: 0;
-    right: 200px;
-
-    margin: auto;
 }
 
 #loader {

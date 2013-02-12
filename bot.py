@@ -93,6 +93,7 @@ def update(wiki):
 		cache.delete('wiki-data_{0}_{1}'.format(edit['user'], wiki))
 	# update last_updated time
 	db['metadata'].update({'key': 'last_updated'}, {'$set': {'last_updated': datenow}}, upsert=True, safe=True)
+	cache.set('wiki-metadata_last_updated_' + wiki, datenow, timeout=0)
 
 
 if __name__ == '__main__':
