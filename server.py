@@ -65,16 +65,19 @@ def get_last_updated():
 def homepage():
 	return render_template('form.html')
 
+def invalid_args():
+	return render_template('form.html', error=True)
+
 @app.route('/stats', methods=['GET'])
 def anaylze_edits():
-	if 'username' or 'wiki' not in request.args:
-		homepage()
+	if 'username' not in request.args or 'wiki' not in request.args or request.args['wiki'] not in wiki_dict:
+		return invalid_args()
 
 	username = request.args['username']
 	wiki = request.args['wiki']
 	user = wiki_dict[wiki]['db']['users'].find_one({'username': username})
 	if user is None:
-		homepage()  # need a better way to handle dis
+		return invalid_args()
 	wiki_link = config['wikis'][wiki]['wiki_link']
 
 	charts_data = get_chart_data(wiki, wiki_dict[wiki]['db'], user)

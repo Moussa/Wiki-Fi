@@ -26,6 +26,12 @@ body {
   text-align: center;
 }
 
+.error-box {
+  width: 210px;
+  margin: 0px auto;
+  display: none;
+}
+
 #number-stats {
   height: 300px;
   text-align: right;
@@ -35,7 +41,7 @@ body {
 }
 
 #total-edit-form {
-  width:50%;
+  width: 50%;
   margin: 0px auto;
 }
 
@@ -49,10 +55,6 @@ body {
 
 #piechart_div, #bubblechart_div {
   height: 500px;
-}
-
-#loader {
-  visibility:hidden;
 }
 
 #username {

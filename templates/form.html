@@ -10,6 +10,10 @@
 
 <script type="text/javascript">
 $(document).ready(function() {
+  if ("{{ error }}" == "True") {
+  $('.error-box').show();
+  }
+
   var usernames = [];
   $.ajax({
     url: '/get_all_users',
@@ -44,7 +48,7 @@ $(document).ready(function() {
 </script>
 
   <body>
-  	<div class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar navbar-inverse navbar-fixed-top">
       <div class="navbar-inner">
         <div class="container-fluid">
           <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
@@ -76,11 +80,16 @@ $(document).ready(function() {
     </div>
 
     <div class="form-group-wrapper">
-	  <form class="form-search">
-		<input type="text" class="input-large" id="username" placeholder="Username" autocomplete="off">
-		<button type="submit" class="btn btn-large btn-primary">Get Stats</button>
+      <form class="form-search">
+        <input type="text" class="input-large" id="username" placeholder="Username" autocomplete="off">
+        <button type="submit" class="btn btn-large btn-primary">Get Stats</button>
       </form>
-  	</div>
+    </div>
+
+    <div class="alert alert-error error-box">
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+      <strong>Error</strong> Invalid username or wiki
+    </div>
   </body>
 
 </html>
