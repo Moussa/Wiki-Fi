@@ -30,8 +30,11 @@ def get_chart_data(wiki, db, user):
 def is_valid_user():
 	username = request.form['username']
 	wiki = request.form['wiki']
-	user = wiki_dict[wiki]['db']['users'].find_one({'username': username})
-	data = user is not None
+	wikiuserlist = cache.get('wiki-data_userlist_{0}'.format(wiki))
+	if wikiuserlist is None:
+		wikiuserlist = [user['username'] for user in wiki_dict[wiki]['db']['users'].find()]
+		cache.set('wiki-data_userlist_{0}'.format(wiki), wikiuserlist, timeout=0)
+	data = username is in wikiuserlist
 	resp = Response(json.dumps(data), status=200, mimetype='application/json')
 
 	return resp

@@ -30,18 +30,30 @@ $(document).ready(function() {
   $('button[type=submit]').click(function () {
     var username = $('#username').val();
     var wiki = $('.btn-group button.active').val();
-    if ($.inArray(username, usernames) > -1) {
-      $('button[type=submit]').removeClass('btn-primary btn-danger').addClass('btn-success').html('Loading stats...');
-      $('#loader').css('visibility','visible');
+    var data = {username: username, wiki: wiki};
+    $.ajax({
+      url: '/is_valid_user',
+      type: 'POST',
+      dataType: 'json',
+      data: data,
+      success: function(data) {
+        if (data){
+          $('button[type=submit]').removeClass('btn-primary btn-danger').addClass('btn-success').html('Loading stats...');
+          $('#loader').css('visibility','visible');
 
-      window.location = "/stats?username=" + username + "&wiki=" + wiki;
+          window.location = "/stats?username=" + username + "&wiki=" + wiki;
+        }
+        else {
+          $('button[type=submit]').removeClass('btn-primary').addClass('btn-danger').html('Invalid username');
+          setTimeout(function() {
+            $('button[type=submit]').removeClass('btn-danger').addClass('btn-primary').html('Get Stats');
+          }, 2000);
+        }
+      },
+      fail: function(data) {
+        console.log('fail');
       }
-    else {
-      $('button[type=submit]').removeClass('btn-primary').addClass('btn-danger').html('Invalid username');
-      setTimeout(function() {
-        $('button[type=submit]').removeClass('btn-danger').addClass('btn-primary').html('Get Stats');
-        }, 2000);
-      }
+    });
     return false;
   });
 });

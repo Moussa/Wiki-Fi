@@ -14,11 +14,11 @@ def load(wiki):
 	print('Successfully loaded ' + wiki)
 	return db, api
 
-def get_user_id(db, username):
+def get_user_id(db, username, wiki):
 	user = db['users'].find_one({'username': username})
 	if user is None:
 		user_id = db['users'].insert({'username': username})
-		cache.delete('wiki-data_allusers')
+		cache.delete('wiki-data_userlist_{0}'.format(wiki))
 	else:
 		user_id = user['_id']
 
@@ -74,7 +74,7 @@ def update(wiki):
 		# check if edit has already been inserted into db
 		if db['edits'].find_one({'revid': edit['revid']}):
 			continue
-		user_id = get_user_id(db, edit['user'])
+		user_id = get_user_id(db, edit['user'], wiki)
 		d, date_index_string = api.get_date_from_string(edit['timestamp'])
 		output = {'user_id': user_id,
                   'ns': edit['ns'],
