@@ -34,7 +34,7 @@ def is_valid_user():
 	if wikiuserlist is None:
 		wikiuserlist = [user['username'] for user in wiki_dict[wiki]['db']['users'].find()]
 		cache.set('wiki-data_userlist_{0}'.format(wiki), wikiuserlist, timeout=0)
-	data = username is in wikiuserlist
+	data = username in wikiuserlist
 	resp = Response(json.dumps(data), status=200, mimetype='application/json')
 
 	return resp
@@ -49,6 +49,17 @@ def get_all_users():
 		users = list(set(users))
 		cache.set('wiki-data_allusers', users, timeout=0)
 	resp = Response(json.dumps(users), status=200, mimetype='application/json')
+
+	return resp
+
+@app.route('/get_wiki_users', methods=['POST'])
+def get_wiki_users():
+	wiki = request.form['wiki']
+	wikiuserlist = cache.get('wiki-data_userlist_{0}'.format(wiki))
+	if wikiuserlist is None:
+		wikiuserlist = [user['username'] for user in wiki_dict[wiki]['db']['users'].find()]
+		cache.set('wiki-data_userlist_{0}'.format(wiki), wikiuserlist, timeout=0)
+	resp = Response(json.dumps(wikiuserlist), status=200, mimetype='application/json')
 
 	return resp
 
