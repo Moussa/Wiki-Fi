@@ -123,6 +123,10 @@ def analyze_user(wiki, db, user):
 
 		edits_timeline.append(editentry)
 
+	# Check if edit streak is running to today and not just to end of last edit	
+	if end_date.date() != datetime.datetime.today().date():
+		current_edit_days_streak = 0
+
 	distinct_pages_count = len(edits_collection.find({'user_id': user['_id']}).distinct('title'))
 
 	# Generate data table string for day/hour bubble chart
