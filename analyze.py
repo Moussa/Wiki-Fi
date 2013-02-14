@@ -83,6 +83,7 @@ def analyze_user(wiki, db, user):
 	longest_edit_days_streak = 0
 	current_edit_days_streak = 0
 	total_edit_count = 0
+	active_days = 0
 	hour_dict = dict((a, {'count': 0, 'string': '{0}:00'.format("%02d" % (a,))}) for a in range(0, 24))
 	edits_dict = dict((a, {'day': {'string': DAY_MAPPING[a], 'count': 0}, 'hours': copy.deepcopy(hour_dict)}) for a in range(0, 7))
 
@@ -102,6 +103,7 @@ def analyze_user(wiki, db, user):
 			current_edit_days_streak += 1
 			if current_edit_days_streak > longest_edit_days_streak:
 				longest_edit_days_streak = current_edit_days_streak
+			active_days += 1
 		else:
 			current_edit_days_streak = 0
 
@@ -129,6 +131,14 @@ def analyze_user(wiki, db, user):
 
 	distinct_pages_count = len(edits_collection.find({'user_id': user['_id']}).distinct('title'))
 
+	time_period = (end_date - start_date).days
+	if time_period == 0:
+		edits_per_day = '0.00'
+		activity_percentage = '0.00'
+	else:
+		edits_per_day = '%.2f' % (float(total_edit_count)/float(time_period))
+		activity_percentage = '%.2f' % (100 * float(active_days)/float(time_period))
+
 	# Generate data table string for day/hour bubble chart
 	hour_day_bubble_chart_string = process_hour_day_bubble_chart(edits_dict)
 
@@ -146,6 +156,8 @@ def analyze_user(wiki, db, user):
 
 	charts_data = {'total_edit_count': total_edit_count,
                    'distinct_pages_count': distinct_pages_count,
+                   'edits_per_day': edits_per_day,
+                   'activity_percentage': activity_percentage,
                    'longest_edit_days_streak': longest_edit_days_streak,
                    'current_edit_days_streak': current_edit_days_streak,
                    'largest_day_edit_count': largest_day_edit_count,
