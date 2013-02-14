@@ -90,12 +90,15 @@
             data: data,
             success: function(data) {
               if (data) {
-                $('#search-status').removeClass('invalid-username').addClass('valid-username').html('<strong>Loading stats...</strong>');
+                $('#search-status').removeClass('invalid-username').addClass('valid-username').html('Loading stats...').show();
 
                 window.location = "/stats?username=" + search_username + "&wiki=" + wiki;
               }
               else {
-                $('#search-status').addClass('invalid-username').html('<strong>Invalid username</strong>');
+                  $('#search-status').addClass('invalid-username').html('Invalid username').fadeIn();
+                  setTimeout(function() {
+                    $('#search-status').fadeOut();
+                  }, 2000);
               }
             },
             fail: function(data) {
@@ -326,7 +329,7 @@
   <div class="container-fluid">
     <div class="row-fluid">
       <div class="span4"><h2>Edits by namespace</h2></div>
-      <div class="span8"><h2>Map of edit days/hours</h2></div>
+      <div class="span8"><h2>Edits by days & hours</h2></div>
     </div>
   </div>
   <div class="container-fluid">

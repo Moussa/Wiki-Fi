@@ -32,6 +32,11 @@ body {
   display: none;
 }
 
+#search-status {
+  padding-left: 10px; 
+  display: none;
+}
+
 .valid-username {
   color: green !important;
 }
