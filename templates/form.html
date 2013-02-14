@@ -1,63 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <title>Wiki User Stats</title>
 
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.0/bootstrap.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.0/bootstrap.min.js"></script>
 
-<link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.0/css/bootstrap.min.css">
-<link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.0/css/bootstrap-responsive.min.css">
-<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
-
-<script type="text/javascript">
-$(document).ready(function() {
-  if ("{{ error }}" == "True") {
-    $('.error-box').show();
-  }
-
-  var usernames = [];
-  $.ajax({
-    url: '/get_all_users',
-    type: 'GET',
-    success: function(data) {
-      usernames = data;
-      $('#username').typeahead({source: usernames}).focus();
-      },
-    fail: function(data) {
-      console.log('fail');
-      }
-    });
-
-  $('button[type=submit]').click(function () {
-    var username = $('#username').val();
-    var wiki = $('.btn-group button.active').val();
-    var data = {username: username, wiki: wiki};
-    $.ajax({
-      url: '/is_valid_user',
-      type: 'POST',
-      dataType: 'json',
-      data: data,
-      success: function(data) {
-        if (data){
-          $('button[type=submit]').removeClass('btn-primary btn-danger').addClass('btn-success').html('Loading stats...');
-          $('#loader').css('visibility','visible');
-
-          window.location = "/stats?username=" + username + "&wiki=" + wiki;
-        }
-        else {
-          $('button[type=submit]').removeClass('btn-primary').addClass('btn-danger').html('Invalid username');
-          setTimeout(function() {
-            $('button[type=submit]').removeClass('btn-danger').addClass('btn-primary').html('Get Stats');
-          }, 2000);
-        }
-      },
-      fail: function(data) {
-        console.log('fail');
-      }
-    });
-    return false;
-  });
-});
-</script>
+    <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.0/css/bootstrap-responsive.min.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+  </head>
 
   <body>
     <div class="navbar navbar-inverse navbar-fixed-top">
@@ -100,8 +52,63 @@ $(document).ready(function() {
 
     <div class="alert alert-error error-box">
       <button type="button" class="close" data-dismiss="alert">&times;</button>
-      <strong>Error</strong> Invalid username or wiki
+      <strong>Error</strong> invalid username or wiki
     </div>
+
+
+    <script type="text/javascript">
+      $(document).ready(function() {
+        // show error box if user is redirected after entering url with invalid username or wiki
+        if ("{{ error }}" == "True") {
+          $('.error-box').show();
+        }
+
+        // populate array with valid wiki usernames for use in autosuggest in entry form
+        var usernames = [];
+        $.ajax({
+          url: '/get_all_users',
+          type: 'GET',
+          success: function(data) {
+            usernames = data;
+            $('#username').typeahead({source: usernames}).focus();
+            },
+          fail: function(data) {
+            console.log('fail');
+            }
+          });
+
+        // on form submission check if username is valid for wiki selection and redirect. Else display error
+        $('button[type=submit]').click(function () {
+          var username = $('#username').val();
+          var wiki = $('.btn-group button.active').val();
+          var data = {username: username, wiki: wiki};
+          $.ajax({
+            url: '/is_valid_user',
+            type: 'POST',
+            dataType: 'json',
+            data: data,
+            success: function(data) {
+              if (data){
+                $('button[type=submit]').removeClass('btn-primary btn-danger').addClass('btn-success').html('Loading stats...');
+                $('#loader').css('visibility','visible');
+
+                window.location = "/stats?username=" + username + "&wiki=" + wiki;
+              }
+              else {
+                $('button[type=submit]').removeClass('btn-primary').addClass('btn-danger').html('Invalid username');
+                setTimeout(function() {
+                  $('button[type=submit]').removeClass('btn-danger').addClass('btn-primary').html('Get Stats');
+                }, 2000);
+              }
+            },
+            fail: function(data) {
+              console.log('fail');
+            }
+          });
+          return false;
+        });
+      });
+    </script>
   </body>
 
 </html>

@@ -1,226 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-
-    <title>User edits</title>
-    
-    <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.0/css/bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.0/css/bootstrap-responsive.min.css">
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
-
-  </head>
-
-  <body>
+    <title>User statistics - {{ username }}</title>
 
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
     <script type="text/javascript" src="http://www.google.com/jsapi"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.0/bootstrap.min.js"></script>
+    
+    <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.0/css/bootstrap-responsive.min.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+  </head>
 
-
-    <script type="text/javascript">
-      $(document).ready(function() {
-
-        var wiki = "{{ wiki }}";
-        var username = "{{ username }}";
-
-        var usernames = [];
-        $.ajax({
-          url: '/get_wiki_users',
-          type: 'POST',
-          dataType: 'json',
-          data: {wiki: '{{ wiki }}'},
-          success: function(data) {
-            usernames = data;
-            $('#username-entry').typeahead({source: usernames});
-            },
-          fail: function(data) {
-            console.log('fail');
-            }
-          });
-
-        $.ajax({
-          url: '/get_last_updated',
-          type: 'POST',
-          dataType: 'json',
-          data: {wiki: '{{ wiki }}'},
-          success: function(data) {
-            $('#last-updated').html('Last updated: ' + data);
-          },
-          fail: function(data) {
-            console.log('fail');
-          }
-        });
-
-        var wikis = ['tf', 'portal', 'dota2'];
-        $("li#{{ wiki }}").addClass('active');
-        $.each(wikis, function(index, wiki) {
-          var data = {username: username, wiki: wiki};
-          
-          $.ajax({
-            url: '/is_valid_user',
-            type: 'POST',
-            dataType: 'json',
-            data: data,
-            success: function(data) {
-              if (data) {
-                if ("{{ wiki }}" == wiki) {
-                  $('a#' + wiki).attr("href", "#");
-                }
-                else {
-                  $('a#' + wiki).attr("href", "/stats?username=" + username + "&wiki=" + wiki);
-                }
-              }
-              else {
-                $('li#' + wiki).addClass('disabled');
-              }
-            },
-            fail: function(data) {
-              console.log('fail');
-            }
-          });
-        });
-
-        $(".username-search").on("submit", function() {
-          var search_username = $('#username-entry').val();
-          var data = {username: search_username, wiki: wiki};
-          $.ajax({
-            url: '/is_valid_user',
-            type: 'POST',
-            dataType: 'json',
-            data: data,
-            success: function(data) {
-              if (data) {
-                $('#search-status').removeClass('invalid-username').addClass('valid-username').html('Loading stats...').show();
-
-                window.location = "/stats?username=" + search_username + "&wiki=" + wiki;
-              }
-              else {
-                  $('#search-status').addClass('invalid-username').html('Invalid username').fadeIn();
-                  setTimeout(function() {
-                    $('#search-status').fadeOut();
-                  }, 2000);
-              }
-            },
-            fail: function(data) {
-              console.log('fail');
-            }
-          });
-          return false;
-        });
-
-      });
-    </script>
-
-    <script type="text/javascript">
-      function toggleTotalEdits() {
-        var checkbox = document.getElementById('total-edit-toggle');
-        if (checkbox.checked) {
-          edit_timeline_chart.showDataColumns(1);
-        }
-        else {
-          edit_timeline_chart.hideDataColumns(1);
-        }
-      }
-    </script>
-
-    <script type="text/javascript">
-      google.load('visualization', '1', {'packages':['annotatedtimeline']});
-      var edit_timeline_chart;
-      google.setOnLoadCallback(drawChart);
-      function drawChart() {
-        var data = new google.visualization.DataTable();
-        data.addColumn('date', 'Date');
-        data.addColumn('number', 'Edits');
-        data.addColumn('number', 'Total edits');
-        data.addColumn('string', 'Title');
-        data.addColumn('string', 'Description');
-        data.addRows([ {{ charts_data['edits_timeline_string']|safe }} ]);
-        edit_timeline_chart = new google.visualization.AnnotatedTimeLine(document.getElementById('chart_div'));
-        edit_timeline_chart.draw(data, {
-          displayAnnotations: false,
-          dateFormat: 'MMMM dd, yyyy'
-        });
-        edit_timeline_chart.hideDataColumns(1);
-      }
-    </script>
-
-    <script type="text/javascript">
-      google.load("visualization", "1", {packages:["corechart"]});
-      google.setOnLoadCallback(drawPieChart);
-      function drawPieChart() {
-        var data = google.visualization.arrayToDataTable([
-          ['Namespace', 'Edits'],
-          {{ charts_data['namespace_piechart_string']|safe }}
-        ]);
-
-        var namespace_pie_chart = new google.visualization.PieChart(document.getElementById('piechart_div'));
-        namespace_pie_chart.draw(data, {
-          chartArea: {top: 50}
-        });
-      }
-    </script>
-
-    <script type="text/javascript">
-      google.load("visualization", "1", {packages:["corechart"]});
-      google.setOnLoadCallback(drawBubbleChart);
-      function drawBubbleChart() {
-        var data = google.visualization.arrayToDataTable([
-          ['ID', 'Hour', 'Day', '', 'Edits'],
-          {{ charts_data['hour_day_bubble_chart_string']|safe }}
-        ]);
-
-        var edits_bubble_chart = new google.visualization.BubbleChart(document.getElementById('bubblechart_div'));
-        edits_bubble_chart.draw(data, {
-          hAxis: {title: 'Hour', viewWindowMode: 'explicit', viewWindow: {min: -1, max: 24}, baseline: -2},
-          vAxis: {title: 'Day', direction: -1, textPosition: 'none'},
-          bubble: {textStyle: {color: 'none'}},
-          sizeAxis: {minSize: 0},
-          legend: {position: 'none'},
-          chartArea: {top: 30}
-        });
-      }
-    </script>
-
-  	<script type="text/javascript">
-  	  google.load("visualization", "1", {packages:["corechart"]});
-      google.setOnLoadCallback(drawHourColumnChart);
-      function drawHourColumnChart() {
-        var data = google.visualization.arrayToDataTable([
-          ['Hour', 'Edits'],
-          {{ charts_data['hour_column_chart_string']|safe }}
-	      ]);
-
-        var edit_hour_column_chart = new google.visualization.ColumnChart(document.getElementById('columnchart_div'));
-        edit_hour_column_chart.draw(data, {
-          hAxis: {title: 'Time'},
-          vAxis: {title: 'Edits', minValue: 0},
-          legend: {position: 'none'},
-          colors: ['#66CC00'],
-          chartArea: {top: 30}
-        });
-      }
-    </script>
-
-    <script type="text/javascript">
-      google.load("visualization", "1", {packages:["corechart"]});
-      google.setOnLoadCallback(drawDayColumnChart);
-      function drawDayColumnChart() {
-        var data = google.visualization.arrayToDataTable([
-          ['Day', 'Edits'],
-          {{ charts_data['day_column_chart_string']|safe }}
-        ]);
-
-        var edit_day_column_chart = new google.visualization.ColumnChart(document.getElementById('daycolumnchart_div'));
-        edit_day_column_chart.draw(data, {
-          hAxis: {title: 'Day'},
-          vAxis: {title: 'Edits', minValue: 0},
-          legend: {position: 'none'},
-          colors: ['#66CC00'],
-          chartArea: {top: 30}
-        });
-      }
-    </script>
-
+  <body>
     <div class="navbar navbar-inverse navbar-fixed-top">
       <div class="navbar-inner">
         <div class="container-fluid">
@@ -261,7 +53,6 @@
         </div>
       </div>
     </div>
-
 
   <div class="container-fluid" id="number-stats">
     <div class="row-fluid" id="number-stats-row">
@@ -339,5 +130,212 @@
     </div>
   </div>
 
+  <script type="text/javascript">
+    $(document).ready(function() {
+      var wiki = "{{ wiki }}";
+      var username = "{{ username }}";
+
+      // populate array with valid wiki usernames for use in autosuggest in entry form
+      var usernames = [];
+      $.ajax({
+        url: '/get_wiki_users',
+        type: 'POST',
+        dataType: 'json',
+        data: {wiki: '{{ wiki }}'},
+        success: function(data) {
+          usernames = data;
+          $('#username-entry').typeahead({source: usernames});
+          },
+        fail: function(data) {
+          console.log('fail');
+          }
+        });
+
+        // get data last updated date and display
+        $.ajax({
+          url: '/get_last_updated',
+          type: 'POST',
+          dataType: 'json',
+          data: {wiki: '{{ wiki }}'},
+          success: function(data) {
+            $('#last-updated').html('Last updated: ' + data);
+          },
+          fail: function(data) {
+            console.log('fail');
+          }
+        });
+
+        // add active class to wiki tab for wiki being viewed and disable tabs for which user does not exist
+        var wikis = ['tf', 'portal', 'dota2'];
+        $("li#{{ wiki }}").addClass('active');
+        $.each(wikis, function(index, wiki) {
+          var data = {username: username, wiki: wiki};
+          
+          $.ajax({
+            url: '/is_valid_user',
+            type: 'POST',
+            dataType: 'json',
+            data: data,
+            success: function(data) {
+              if (data) {
+                if ("{{ wiki }}" == wiki) {
+                  $('a#' + wiki).attr("href", "#");
+                }
+                else {
+                  $('a#' + wiki).attr("href", "/stats?username=" + username + "&wiki=" + wiki);
+                }
+              }
+              else {
+                $('li#' + wiki).addClass('disabled');
+              }
+            },
+            fail: function(data) {
+              console.log('fail');
+            }
+          });
+        });
+
+        // on form submission check if username is valid for current wiki and redirect. Else display error
+        $(".username-search").on("submit", function() {
+          var search_username = $('#username-entry').val();
+          var data = {username: search_username, wiki: wiki};
+          $.ajax({
+            url: '/is_valid_user',
+            type: 'POST',
+            dataType: 'json',
+            data: data,
+            success: function(data) {
+              if (data) {
+                $('#search-status').removeClass('invalid-username').addClass('valid-username').html('Loading stats...').show();
+
+                window.location = "/stats?username=" + search_username + "&wiki=" + wiki;
+              }
+              else {
+                  $('#search-status').addClass('invalid-username').html('Invalid username').fadeIn();
+                  setTimeout(function() {
+                    $('#search-status').fadeOut();
+                  }, 2000);
+              }
+            },
+            fail: function(data) {
+              console.log('fail');
+            }
+          });
+          return false;
+        });
+
+      });
+    </script>
+
+    <!-- GRAPH SCRIPTS -->
+    <script type="text/javascript">
+      function toggleTotalEdits() {
+        var checkbox = document.getElementById('total-edit-toggle');
+        if (checkbox.checked) {
+          edit_timeline_chart.showDataColumns(1);
+        }
+        else {
+          edit_timeline_chart.hideDataColumns(1);
+        }
+      }
+    </script>
+
+    <script type="text/javascript">
+      google.load('visualization', '1', {'packages':['annotatedtimeline']});
+      var edit_timeline_chart;
+      google.setOnLoadCallback(drawChart);
+      function drawChart() {
+        var data = new google.visualization.DataTable();
+        data.addColumn('date', 'Date');
+        data.addColumn('number', 'Edits');
+        data.addColumn('number', 'Total edits');
+        data.addColumn('string', 'Title');
+        data.addColumn('string', 'Description');
+        data.addRows([ {{ charts_data['edits_timeline_string']|safe }} ]);
+        edit_timeline_chart = new google.visualization.AnnotatedTimeLine(document.getElementById('chart_div'));
+        edit_timeline_chart.draw(data, {
+          displayAnnotations: false,
+          dateFormat: 'MMMM dd, yyyy'
+        });
+        edit_timeline_chart.hideDataColumns(1);
+      }
+    </script>
+
+    <script type="text/javascript">
+      google.load("visualization", "1", {packages:["corechart"]});
+      google.setOnLoadCallback(drawPieChart);
+      function drawPieChart() {
+        var data = google.visualization.arrayToDataTable([
+          ['Namespace', 'Edits'],
+          {{ charts_data['namespace_piechart_string']|safe }}
+        ]);
+
+        var namespace_pie_chart = new google.visualization.PieChart(document.getElementById('piechart_div'));
+        namespace_pie_chart.draw(data, {
+          chartArea: {top: 50}
+        });
+      }
+    </script>
+
+    <script type="text/javascript">
+      google.load("visualization", "1", {packages:["corechart"]});
+      google.setOnLoadCallback(drawBubbleChart);
+      function drawBubbleChart() {
+        var data = google.visualization.arrayToDataTable([
+          ['ID', 'Hour', 'Day', '', 'Edits'],
+          {{ charts_data['hour_day_bubble_chart_string']|safe }}
+        ]);
+
+        var edits_bubble_chart = new google.visualization.BubbleChart(document.getElementById('bubblechart_div'));
+        edits_bubble_chart.draw(data, {
+          hAxis: {title: 'Hour', viewWindowMode: 'explicit', viewWindow: {min: -1, max: 24}, baseline: -2},
+          vAxis: {title: 'Day', direction: -1, textPosition: 'none'},
+          bubble: {textStyle: {color: 'none'}},
+          sizeAxis: {minSize: 0},
+          legend: {position: 'none'},
+          chartArea: {top: 30}
+        });
+      }
+    </script>
+
+    <script type="text/javascript">
+      google.load("visualization", "1", {packages:["corechart"]});
+      google.setOnLoadCallback(drawHourColumnChart);
+      function drawHourColumnChart() {
+        var data = google.visualization.arrayToDataTable([
+          ['Hour', 'Edits'],
+          {{ charts_data['hour_column_chart_string']|safe }}
+        ]);
+
+        var edit_hour_column_chart = new google.visualization.ColumnChart(document.getElementById('columnchart_div'));
+        edit_hour_column_chart.draw(data, {
+          hAxis: {title: 'Time'},
+          vAxis: {title: 'Edits', minValue: 0},
+          legend: {position: 'none'},
+          colors: ['#66CC00'],
+          chartArea: {top: 30}
+        });
+      }
+    </script>
+
+    <script type="text/javascript">
+      google.load("visualization", "1", {packages:["corechart"]});
+      google.setOnLoadCallback(drawDayColumnChart);
+      function drawDayColumnChart() {
+        var data = google.visualization.arrayToDataTable([
+          ['Day', 'Edits'],
+          {{ charts_data['day_column_chart_string']|safe }}
+        ]);
+
+        var edit_day_column_chart = new google.visualization.ColumnChart(document.getElementById('daycolumnchart_div'));
+        edit_day_column_chart.draw(data, {
+          hAxis: {title: 'Day'},
+          vAxis: {title: 'Edits', minValue: 0},
+          legend: {position: 'none'},
+          colors: ['#66CC00'],
+          chartArea: {top: 30}
+        });
+      }
+    </script>
   </body>
 </html>
