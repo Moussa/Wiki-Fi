@@ -83,7 +83,6 @@
         $(".username-search").on("submit", function() {
           var search_username = $('#username-entry').val();
           var data = {username: search_username, wiki: wiki};
-
           $.ajax({
             url: '/is_valid_user',
             type: 'POST',
@@ -91,12 +90,12 @@
             data: data,
             success: function(data) {
               if (data) {
-                // do stuff to show it's loading
+                $('#search-status').removeClass('invalid-username').addClass('valid-username').html('<strong>Loading stats...</strong>');
 
                 window.location = "/stats?username=" + search_username + "&wiki=" + wiki;
               }
               else {
-                // do stuff to show it's invalid
+                $('#search-status').addClass('invalid-username').html('<strong>Invalid username</strong>');
               }
             },
             fail: function(data) {
@@ -247,10 +246,10 @@
               <form class="navbar-search username-search">
                 <input type="text" class="search-query" id="username-entry" placeholder="Username">
               </form>
+              <p class="navbar-text pull-left" id="search-status"></p>
             </ul>
 
             <ul class="nav pull-right">
-              <li class="divider-vertical"></li>
               <li><a href="#">About</a></li>
               <li class="divider-vertical"></li>
               <p class="navbar-text pull-right" id="last-updated"></p>

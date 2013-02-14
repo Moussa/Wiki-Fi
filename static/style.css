@@ -32,6 +32,14 @@ body {
   display: none;
 }
 
+.valid-username {
+  color: green !important;
+}
+
+.invalid-username {
+  color: red !important;
+}
+
 #number-stats {
   height: 300px;
   text-align: right;
