@@ -3,7 +3,6 @@ import json
 import pymongo
 from flask import Flask, url_for, render_template, request, Response
 import analyze
-import wiki_api
 from config import config
 from werkzeug.contrib.cache import MemcachedCache
 
@@ -14,9 +13,8 @@ connection = pymongo.Connection(config['db']['host'], config['db']['port'])
 wiki_dict = {}
 for wiki in config['wikis']:
 	db = connection[config['wikis'][wiki]['db_name']]
-	api = wiki_api.API(config['wikis'][wiki]['api_url'], config['wikis'][wiki]['username'], config['wikis'][wiki]['password'])
 	print('Successfully loaded ' + wiki)
-	wiki_dict[wiki] = {'db': db, 'api': api}
+	wiki_dict[wiki] = db
 
 
 def get_chart_data(wiki, db, user):
@@ -32,7 +30,7 @@ def is_valid_user():
 	wiki = request.form['wiki']
 	wikiuserlist = cache.get('wiki-data_userlist_{0}'.format(wiki))
 	if wikiuserlist is None:
-		wikiuserlist = [user['username'] for user in wiki_dict[wiki]['db']['users'].find()]
+		wikiuserlist = [user['username'] for user in wiki_dict[wiki]['users'].find()]
 		cache.set('wiki-data_userlist_{0}'.format(wiki), wikiuserlist, timeout=0)
 	data = username in wikiuserlist
 	resp = Response(json.dumps(data), status=200, mimetype='application/json')
@@ -45,7 +43,7 @@ def get_all_users():
 	if users is None:
 		users = []
 		for wiki in config['wikis']:
-			users += [user['username'] for user in list(wiki_dict[wiki]['db']['users'].find())]
+			users += [user['username'] for user in list(wiki_dict[wiki]['users'].find())]
 		users = list(set(users))
 		cache.set('wiki-data_allusers', users, timeout=0)
 	resp = Response(json.dumps(users), status=200, mimetype='application/json')
@@ -57,7 +55,7 @@ def get_wiki_users():
 	wiki = request.form['wiki']
 	wikiuserlist = cache.get('wiki-data_userlist_{0}'.format(wiki))
 	if wikiuserlist is None:
-		wikiuserlist = [user['username'] for user in wiki_dict[wiki]['db']['users'].find()]
+		wikiuserlist = [user['username'] for user in wiki_dict[wiki]['users'].find()]
 		cache.set('wiki-data_userlist_{0}'.format(wiki), wikiuserlist, timeout=0)
 	resp = Response(json.dumps(wikiuserlist), status=200, mimetype='application/json')
 
@@ -68,7 +66,7 @@ def get_last_updated():
 	wiki = request.form['wiki']
 	last_updated = cache.get('wiki-metadata_last_updated_' + wiki)
 	if last_updated is None:
-		last_updated = (wiki_dict[wiki]['db']['metadata'].find_one({'key': 'last_updated'}))['last_updated']
+		last_updated = (wiki_dict[wiki]['metadata'].find_one({'key': 'last_updated'}))['last_updated']
 		cache.set('wiki-metadata_last_updated_' + wiki, last_updated, timeout=0)
 	last_updated = last_updated.strftime("%H:%M, %d %B %Y (UTC)")
 	resp = Response(json.dumps(last_updated), status=200, mimetype='application/json')
@@ -89,12 +87,12 @@ def anaylze_edits():
 
 	username = request.args['username']
 	wiki = request.args['wiki']
-	user = wiki_dict[wiki]['db']['users'].find_one({'username': username})
+	user = wiki_dict[wiki]['users'].find_one({'username': username})
 	if user is None:
 		return invalid_args()
 	wiki_link = config['wikis'][wiki]['wiki_link']
 
-	charts_data = get_chart_data(wiki, wiki_dict[wiki]['db'], user)
+	charts_data = get_chart_data(wiki, wiki_dict[wiki], user)
 
 	return render_template('stats.html', username=username, wiki=wiki, wiki_link=wiki_link, charts_data=charts_data)
 
