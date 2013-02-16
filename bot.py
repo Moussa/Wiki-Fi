@@ -30,7 +30,7 @@ def load(wiki):
 	return db, wiki_api
 
 def get_user_id(db, username, wiki):
-	user = db['users'].find_one({'username': username})
+	user = db['users'].find_one({'username': username}, fields=[])
 	if user is None:
 		user_id = db['users'].insert({'username': username})
 		cache.delete('wiki-data_userlist_{0}'.format(wiki))
@@ -43,7 +43,7 @@ def get_user_id(db, username, wiki):
 def get_last_edit_datetime(db):
 	if db['edits'].find().count() == 0:
 		return None
-	return (db['edits'].find({}, sort=[('date', pymongo.DESCENDING)]).limit(1))[0]['timestamp']
+	return (db['edits'].find(fields=['timestamp'], sort=[('date', pymongo.DESCENDING)]).limit(1))[0]['timestamp']
 
 def seed(wiki):
 	db, wiki_api = load(wiki)
@@ -54,10 +54,8 @@ def seed(wiki):
 		username = user['name']
 		tfwiki_registration = user['registration']
 		d, date_index_string = get_date_from_string(tfwiki_registration)
-		if db['users'].find_one({'username': username}) is None:
+		if db['users'].find_one({'username': username}, fields=[]) is None:
 			db['users'].insert({'username': username, 'registration': d}, safe=True)
-		elif 'registration' not in db['users'].find_one({'username': username}):
-			db['users'].update({'username': username}, {'registration': d})
 
 	# define cutoff date so that edits made during seeding are not missed
 	cutoff_date = datetime.datetime.now()
@@ -88,7 +86,7 @@ def update(wiki):
 
 	for edit in recent_edits:
 		# check if edit has already been inserted into db
-		if db['edits'].find_one({'revid': edit['revid']}):
+		if db['edits'].find_one({'revid': edit['revid']}, fields=[]):
 			continue
 		user_id = get_user_id(db, edit['user'], wiki)
 		d, date_index_string = get_date_from_string(edit['timestamp'])

@@ -30,7 +30,7 @@ def is_valid_user():
 	wiki = request.form['wiki']
 	wikiuserlist = cache.get('wiki-data_userlist_{0}'.format(wiki))
 	if wikiuserlist is None:
-		wikiuserlist = [user['username'] for user in wiki_dict[wiki]['users'].find()]
+		wikiuserlist = [user['username'] for user in wiki_dict[wiki]['users'].find(fields=['username'])]
 		cache.set('wiki-data_userlist_{0}'.format(wiki), wikiuserlist, timeout=0)
 	data = username in wikiuserlist
 	resp = Response(json.dumps(data), status=200, mimetype='application/json')
@@ -43,7 +43,7 @@ def get_all_users():
 	if users is None:
 		users = []
 		for wiki in config['wikis']:
-			users += [user['username'] for user in list(wiki_dict[wiki]['users'].find())]
+			users += [user['username'] for user in wiki_dict[wiki]['users'].find(fields=['username'])]
 		users = list(set(users))
 		cache.set('wiki-data_allusers', users, timeout=0)
 	resp = Response(json.dumps(users), status=200, mimetype='application/json')
@@ -55,7 +55,7 @@ def get_wiki_users():
 	wiki = request.form['wiki']
 	wikiuserlist = cache.get('wiki-data_userlist_{0}'.format(wiki))
 	if wikiuserlist is None:
-		wikiuserlist = [user['username'] for user in wiki_dict[wiki]['users'].find()]
+		wikiuserlist = [user['username'] for user in wiki_dict[wiki]['users'].find(fields=['username'])]
 		cache.set('wiki-data_userlist_{0}'.format(wiki), wikiuserlist, timeout=0)
 	resp = Response(json.dumps(wikiuserlist), status=200, mimetype='application/json')
 
@@ -68,7 +68,7 @@ def get_user_wikis():
 	if userwikislist is None:
 		userwikislist = []
 		for wiki in wiki_dict:
-			if wiki_dict[wiki]['users'].find_one({'username': username}):
+			if wiki_dict[wiki]['users'].find_one({'username': username}, fields=[]):
 				userwikislist.append(wiki)
 		cache.set('wiki-data_userwikislist_{0}'.format(username), userwikislist, timeout=0)
 	resp = Response(json.dumps(userwikislist), status=200, mimetype='application/json')
@@ -80,7 +80,7 @@ def get_last_updated():
 	wiki = request.form['wiki']
 	last_updated = cache.get('wiki-metadata_last_updated_' + wiki)
 	if last_updated is None:
-		last_updated = (wiki_dict[wiki]['metadata'].find_one({'key': 'last_updated'}))['last_updated']
+		last_updated = (wiki_dict[wiki]['metadata'].find_one({'key': 'last_updated'}, fields=['last_updated']))['last_updated']
 		cache.set('wiki-metadata_last_updated_' + wiki, last_updated, timeout=0)
 	last_updated = last_updated.strftime("%H:%M, %d %B %Y (UTC)")
 	resp = Response(json.dumps(last_updated), status=200, mimetype='application/json')
@@ -111,4 +111,4 @@ def anaylze_edits():
 	return render_template('stats.html', username=username, wiki=wiki, wiki_link=wiki_link, charts_data=charts_data)
 
 if __name__ == '__main__':
-	app.run(debug=False, host='0.0.0.0', port=5000)
+	app.run(debug=True, host='0.0.0.0', port=5000)

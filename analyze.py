@@ -27,11 +27,11 @@ def daterange(start_date, end_date):
 		yield start_date + datetime.timedelta(days=n)
 
 def get_date_range(db, user):
-	if db['edits'].find({'user_id': user['_id']}).count() == 0:
+	if db['edits'].find_one({'user_id': user['_id']}, fields=[]) is None:
 		return datetime.datetime(2010, 6, 4), datetime.datetime.now()
 
-	user_start = (db['edits'].find({'user_id': user['_id']}, sort=[('date', pymongo.ASCENDING)]).limit(1))[0]['date']
-	user_end = (db['edits'].find({'user_id': user['_id']}, sort=[('date', pymongo.DESCENDING )]).limit(1))[0]['date']
+	user_start = (db['edits'].find({'user_id': user['_id']}, fields=['date'], sort=[('date', pymongo.ASCENDING)]).limit(1))[0]['date']
+	user_end = (db['edits'].find({'user_id': user['_id']}, fields=['date'], sort=[('date', pymongo.DESCENDING )]).limit(1))[0]['date']
 
 	return user_start, user_end
 
@@ -66,7 +66,7 @@ def process_hour_day_bubble_chart(edits_dict):
 def process_namespace_pie_chart(wiki, edits_collection, user):
 	namespace_piechart_output = []
 	for namespace in NAMESPACE_MAPPING:
-		count = edits_collection.find({'user_id': user['_id'], 'ns': namespace}).count()
+		count = edits_collection.find({'user_id': user['_id'], 'ns': namespace}, fields=[]).count()
 		if count > 0:
 			namespace_piechart_output.append('[\'{0}\', {1}]'.format(NAMESPACE_MAPPING[namespace].format(wiki_name=config['wikis'][wiki]['wiki_name']), count))
 	namespace_piechart_output = ',\n'.join(namespace_piechart_output)
@@ -91,7 +91,7 @@ def analyze_user(wiki, db, user):
 
 	for single_date in daterange(start_date, end_date):
 		date_index_string = '{0}-{1}-{2}'.format(single_date.year, single_date.month, single_date.day)
-		edits = list(edits_collection.find({'user_id': user['_id'], 'date_string': date_index_string}))
+		edits = list(edits_collection.find({'user_id': user['_id'], 'date_string': date_index_string}, fields=['date']))
 
 		day_edit_count = len(edits)
 		total_edit_count += day_edit_count
@@ -138,7 +138,7 @@ def analyze_user(wiki, db, user):
 	if end_date.date() < datetime.datetime.today().date() - datetime.timedelta(days=1):
 		current_edit_days_streak = 0
 
-	distinct_pages_count = len(edits_collection.find({'user_id': user['_id']}).distinct('title'))
+	distinct_pages_count = len(edits_collection.find({'user_id': user['_id']}, fields=[]).distinct('title'))
 
 	days_since_first_edit = (datetime.datetime.today() - start_date).days
 
