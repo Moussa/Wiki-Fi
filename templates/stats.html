@@ -55,7 +55,7 @@
     </div>
 
     <div class="page-header">
-      <h1>Stats for {{ username }} <small>from {{charts_data['start_date']}} to {{charts_data['end_date']}}</small></h1>
+      <h1>{{ username }} <small>{{charts_data['start_date']}} to {{charts_data['end_date']}}</small></h1>
     </div>
 
     <div class="container-fluid" id="number-stats">
@@ -78,8 +78,8 @@
               <td>Edits per day:</td>
               <td id="value-list">
                 <ul class="unstyled">
-                  <li id="value-list-row">{{charts_data['edits_per_day_30days']}} <span>(last 30 days)</span></li>
-                  <li id="value-list-row">{{charts_data['edits_per_day']}} <span>(all time)</span></li>
+                  <li id="value-list-row">{{charts_data['edits_per_day_30days']}} <span>last 30 days</span></li>
+                  <li id="value-list-row">{{charts_data['edits_per_day']}} <span>all time</span></li>
                 </ul>
               </td>
             </tr>
@@ -103,8 +103,8 @@
               <td>Activity:</td>
               <td id="value-list">
                 <ul class="unstyled">
-                  <li id="value-list-row">{{charts_data['activity_percentage_30days']}}% <span>(last 30 days)</span></li>
-                  <li id="value-list-row">{{charts_data['activity_percentage']}}% <span>(all time)</span></li>
+                  <li id="value-list-row">{{charts_data['activity_percentage_30days']}}% <span>last 30 days</span></li>
+                  <li id="value-list-row">{{charts_data['activity_percentage']}}% <span>all time</span></li>
                 </ul>
               </td>
             </tr>
