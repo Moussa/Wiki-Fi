@@ -54,125 +54,129 @@
       </div>
     </div>
 
-  <div class="container-fluid" id="number-stats">
-    <div class="row-fluid" id="number-stats-row">
-      <div class="span6">
-        <table class="table-condensed">
-          <tr class="number-stats-tablerow">
-            <td>Total edits:</td>
-            <td id="value">{{charts_data['total_edit_count']}}</td>
-          </tr>
-          <tr class="number-stats-tablerow">
-            <td>Largest number of edits in a day:</td>
-            <td id="value">{{charts_data['largest_day_edit_count']}}</td>
-          </tr>
-          <tr class="number-stats-tablerow">
-            <td>Longest edit streak:</td>
-            <td id="value">{{charts_data['longest_edit_days_streak']}} days</td>
-          </tr>
-          <tr class="number-stats-tablerow">
-            <td>Edits per day:</td>
-            <td id="value-list">
-              <ul class="unstyled">
-                <li id="value-list-row">{{charts_data['edits_per_day_30days']}} <span>(last 30 days)</span></li>
-                <li id="value-list-row">{{charts_data['edits_per_day']}} <span>(all time)</span></li>
-              </ul>
-            </td>
-          </tr>
-        </table>
+    <div class="page-header">
+      <h1>Stats for {{ username }} <small>from {{charts_data['start_date']}} to {{charts_data['end_date']}}</small></h1>
+    </div>
+
+    <div class="container-fluid" id="number-stats">
+      <div class="row-fluid" id="number-stats-row">
+        <div class="span6">
+          <table class="table-condensed">
+            <tr class="number-stats-tablerow">
+              <td>Total edits:</td>
+              <td id="value">{{charts_data['total_edit_count']}}</td>
+            </tr>
+            <tr class="number-stats-tablerow">
+              <td>Largest number of edits in a day:</td>
+              <td id="value">{{charts_data['largest_day_edit_count']}}</td>
+            </tr>
+            <tr class="number-stats-tablerow">
+              <td>Longest edit streak:</td>
+              <td id="value">{{charts_data['longest_edit_days_streak']}} days</td>
+            </tr>
+            <tr class="number-stats-tablerow">
+              <td>Edits per day:</td>
+              <td id="value-list">
+                <ul class="unstyled">
+                  <li id="value-list-row">{{charts_data['edits_per_day_30days']}} <span>(last 30 days)</span></li>
+                  <li id="value-list-row">{{charts_data['edits_per_day']}} <span>(all time)</span></li>
+                </ul>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <div class="span6">
+          <table class="table-condensed">
+            <tr class="number-stats-tablerow">
+              <td>Unique pages edited:</td>
+              <td id="value">{{charts_data['distinct_pages_count']}}</td>
+            </tr>
+            <tr class="number-stats-tablerow">
+              <td>Days since first edit:</td>
+              <td id="value">{{charts_data['days_since_first_edit']}} days</td>
+            </tr>
+            <tr class="number-stats-tablerow">
+              <td>Current edit streak:</td>
+              <td id="value">{{charts_data['current_edit_days_streak']}} days</td>
+            </tr>
+            <tr class="number-stats-tablerow">
+              <td>Activity:</td>
+              <td id="value-list">
+                <ul class="unstyled">
+                  <li id="value-list-row">{{charts_data['activity_percentage_30days']}}% <span>(last 30 days)</span></li>
+                  <li id="value-list-row">{{charts_data['activity_percentage']}}% <span>(all time)</span></li>
+                </ul>
+              </td>
+            </tr>
+          </table>
+        </div>
       </div>
-      <div class="span6">
-        <table class="table-condensed">
-          <tr class="number-stats-tablerow">
-            <td>Unique pages edited:</td>
-            <td id="value">{{charts_data['distinct_pages_count']}}</td>
-          </tr>
-          <tr class="number-stats-tablerow">
-            <td>Days since first edit:</td>
-            <td id="value">{{charts_data['days_since_first_edit']}} days</td>
-          </tr>
-          <tr class="number-stats-tablerow">
-            <td>Current edit streak:</td>
-            <td id="value">{{charts_data['current_edit_days_streak']}} days</td>
-          </tr>
-          <tr class="number-stats-tablerow">
-            <td>Activity:</td>
-            <td id="value-list">
-              <ul class="unstyled">
-                <li id="value-list-row">{{charts_data['activity_percentage_30days']}}% <span>(last 30 days)</span></li>
-                <li id="value-list-row">{{charts_data['activity_percentage']}}% <span>(all time)</span></li>
-              </ul>
-            </td>
-          </tr>
-        </table>
+    </div>
+
+    <div class="container-fluid">
+      <div class="row-fluid">
+        <div class="span12"><h2>Edits timeline</h2></div>
       </div>
     </div>
-  </div>
+    <div class="container-fluid">
+      <div class="row-fluid">
+        <div class="span10 offset1" id="chart_div"></div>
+      </div>
+    </div>
 
-  <div class="container-fluid">
-    <div class="row-fluid">
-      <div class="span12"><h2>Edits timeline</h2></div>
+    <div class="btn-group-wrapper edits-toggle">
+      <div class="btn-group" data-toggle="buttons-radio">
+        <button type="button" class="btn btn-large active" value="daily">Daily edits</button>
+        <button type="button" class="btn btn-large" value="cumulative">Cumulative edits</button>
+      </div>
     </div>
-  </div>
-  <div class="container-fluid">
-    <div class="row-fluid">
-      <div class="span10 offset1" id="chart_div"></div>
-    </div>
-  </div>
 
-  <div class="btn-group-wrapper edits-toggle">
-    <div class="btn-group" data-toggle="buttons-radio">
-      <button type="button" class="btn btn-large active" value="daily">Daily edits</button>
-      <button type="button" class="btn btn-large" value="cumulative">Cumulative edits</button>
+    <div class="container-fluid">
+      <div class="row-fluid">
+        <div class="span6"><h2>Edits by day</h2></div>
+        <div class="span6"><h2>Edits by hour</h2></div>
+      </div>
     </div>
-  </div>
+    <div class="container-fluid">
+      <div class="row-fluid">
+        <div class="span6" id="daycolumnchart_div"></div>
+        <div class="span6" id="columnchart_div"></div>
+      </div>
+    </div>
 
-  <div class="container-fluid">
-    <div class="row-fluid">
-      <div class="span6"><h2>Edits by day</h2></div>
-      <div class="span6"><h2>Edits by hour</h2></div>
+    <div class="container-fluid">
+      <div class="row-fluid">
+        <div class="span4"><h2>Edits by namespace</h2></div>
+        <div class="span8"><h2>Edits by days & hours</h2></div>
+      </div>
     </div>
-  </div>
-  <div class="container-fluid">
-    <div class="row-fluid">
-      <div class="span6" id="daycolumnchart_div"></div>
-      <div class="span6" id="columnchart_div"></div>
+    <div class="container-fluid">
+      <div class="row-fluid">
+        <div class="span4" id="piechart_div"></div>
+        <div class="span8" id="bubblechart_div"></div>
+      </div>
     </div>
-  </div>
 
-  <div class="container-fluid">
-    <div class="row-fluid">
-      <div class="span4"><h2>Edits by namespace</h2></div>
-      <div class="span8"><h2>Edits by days & hours</h2></div>
-    </div>
-  </div>
-  <div class="container-fluid">
-    <div class="row-fluid">
-      <div class="span4" id="piechart_div"></div>
-      <div class="span8" id="bubblechart_div"></div>
-    </div>
-  </div>
+    <script type="text/javascript">
+      $(document).ready(function() {
+        var wiki = "{{ wiki }}";
+        var username = "{{ username }}";
 
-  <script type="text/javascript">
-    $(document).ready(function() {
-      var wiki = "{{ wiki }}";
-      var username = "{{ username }}";
-
-      // populate array with valid wiki usernames for use in autosuggest in entry form
-      var usernames = [];
-      $.ajax({
-        url: '/get_wiki_users',
-        type: 'POST',
-        dataType: 'json',
-        data: {wiki: '{{ wiki }}'},
-        success: function(data) {
-          usernames = data;
-          $('#username-entry').typeahead({source: usernames});
-          },
-        fail: function(data) {
-          console.log('fail');
-          }
-        });
+        // populate array with valid wiki usernames for use in autosuggest in entry form
+        var usernames = [];
+        $.ajax({
+          url: '/get_wiki_users',
+          type: 'POST',
+          dataType: 'json',
+          data: {wiki: '{{ wiki }}'},
+          success: function(data) {
+            usernames = data;
+            $('#username-entry').typeahead({source: usernames});
+            },
+          fail: function(data) {
+            console.log('fail');
+            }
+          });
 
         // get data last updated date and display
         $.ajax({

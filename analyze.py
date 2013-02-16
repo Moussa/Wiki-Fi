@@ -154,6 +154,9 @@ def analyze_user(wiki, db, user):
 		edits_per_day_30days = '%.2f' % (float(last_30_days_edits)/30.0)
 		activity_percentage_30days = '%.2f' % (100 * float(last_30_days_active_days)/30.0)
 
+	start_date = start_date.strftime("%d %B %Y")
+	end_date = end_date.strftime("%d %B %Y")
+
 	# Generate data table string for day/hour bubble chart
 	hour_day_bubble_chart_string = process_hour_day_bubble_chart(edits_dict)
 
@@ -169,7 +172,9 @@ def analyze_user(wiki, db, user):
 	# Generate data table string for edits timeline chart
 	edits_timeline_string = ',\n'.join(sorted(edits_timeline))
 
-	charts_data = {'total_edit_count': total_edit_count,
+	charts_data = {'start_date': start_date,
+                   'end_date': end_date,	
+	               'total_edit_count': total_edit_count,
                    'distinct_pages_count': distinct_pages_count,
                    'days_since_first_edit': days_since_first_edit,
                    'edits_per_day': edits_per_day,
