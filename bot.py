@@ -6,7 +6,7 @@ from config import config
 from werkzeug.contrib.cache import MemcachedCache
 
 cache = MemcachedCache(['{0}:{1}'.format(config['memcached']['host'], config['memcached']['port'])])
-connection = pymongo.Connection(config['db']['host'], config['db']['port'])
+connection = pymongo.Connection(config['db']['host'], config['db']['port'], w=1)
 
 dateRE = re.compile(r'(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})Z')
 
@@ -55,7 +55,7 @@ def seed(wiki):
 		tfwiki_registration = user['registration']
 		d, date_index_string = get_date_from_string(tfwiki_registration)
 		if db['users'].find_one({'username': username}, fields=[]) is None:
-			db['users'].insert({'username': username, 'registration': d}, safe=True)
+			db['users'].insert({'username': username, 'registration': d})
 
 	# define cutoff date so that edits made during seeding are not missed
 	cutoff_date = datetime.datetime.now()
@@ -75,7 +75,7 @@ def seed(wiki):
                           'date_string': date_index_string,
                           'timestamp': edit['timestamp']
                           }
-				db['edits'].insert(output, safe=True)
+				db['edits'].insert(output)
 
 def update(wiki):
 	db, wiki_api = load(wiki)
@@ -98,11 +98,11 @@ def update(wiki):
                   'date_string': date_index_string,
                   'timestamp': edit['timestamp']
                   }
-		db['edits'].insert(output, safe=True)
+		db['edits'].insert(output)
 		# delete cache key to load fresh data on next retrieval
 		cache.delete('wiki-data_{0}_{1}'.format(edit['user'], wiki))
 	# update last_updated time
-	db['metadata'].update({'key': 'last_updated'}, {'$set': {'last_updated': datenow}}, upsert=True, safe=True)
+	db['metadata'].update({'key': 'last_updated'}, {'$set': {'last_updated': datenow}}, upsert=True)
 	cache.set('wiki-metadata_last_updated_' + wiki, datenow, timeout=0)
 
 
