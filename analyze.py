@@ -122,7 +122,7 @@ def analyze_user(wiki, db, user):
 			edits_dict[edit_day]['hours'][edit_hour]['count'] += 1
 			edits_dict[edit_day]['day']['count'] += 1
 
-		entry = """[new Date({year}, {month}, {day}), {edits}, {total_edits}, undefined, undefined]"""
+		entry = """[new Date({year}, {month}, {day}), {edits}, {total_edits}]"""
 		
 		editentry = entry.format(year=single_date.year,
                                  month=single_date.month-1,

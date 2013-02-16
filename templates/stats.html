@@ -269,8 +269,6 @@
         data.addColumn('date', 'Date');
         data.addColumn('number', 'Edits');
         data.addColumn('number', 'Total edits');
-        data.addColumn('string', 'Title');
-        data.addColumn('string', 'Description');
         data.addRows([ {{ charts_data['edits_timeline_string']|safe }} ]);
         edit_timeline_chart = new google.visualization.AnnotatedTimeLine(document.getElementById('chart_div'));
         edit_timeline_chart.draw(data, {
