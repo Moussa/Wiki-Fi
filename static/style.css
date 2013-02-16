@@ -50,11 +50,14 @@ body {
 }
 
 #number-stats {
-  height: 300px;
   text-align: right;
   font-size: 30px;
   font-weight: 600;
   line-height: normal;
+}
+
+.number-stats-tablerow {
+  height: 120px;
 }
 
 #total-edit-form {
@@ -75,7 +78,7 @@ body {
 }
 
 #username {
-    height: 34px;
+  height: 34px;
 }
 
 #number-stats-row {
@@ -86,4 +89,18 @@ body {
   font-size: 80px;
   text-align: left;
   font-weight: bold;
+}
+
+#value-list {
+  font-size: 55px;
+  text-align: left;
+  font-weight: bold;
+}
+
+#value-list-row {
+  line-height: normal;
+}
+
+#value-list-row > span {
+  font-size: 15px;
 }

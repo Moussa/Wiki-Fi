@@ -83,6 +83,8 @@ def analyze_user(wiki, db, user):
 	longest_edit_days_streak = 0
 	current_edit_days_streak = 0
 	total_edit_count = 0
+	last_30_days_edits = 0
+	last_30_days_active_days = 0
 	active_days = 0
 	hour_dict = dict((a, {'count': 0, 'string': '{0}:00'.format("%02d" % (a,))}) for a in range(0, 24))
 	edits_dict = dict((a, {'day': {'string': DAY_MAPPING[a], 'count': 0}, 'hours': copy.deepcopy(hour_dict)}) for a in range(0, 7))
@@ -93,6 +95,12 @@ def analyze_user(wiki, db, user):
 
 		day_edit_count = len(edits)
 		total_edit_count += day_edit_count
+
+		# Keep track of activity in last 30 days
+		if (datetime.datetime.today() - single_date).days < 30:
+			last_30_days_edits += day_edit_count
+			if day_edit_count > 0:
+				last_30_days_active_days += 1
 
 		# Keep track of largest edit counts in a day
 		if day_edit_count > largest_day_edit_count:
@@ -138,9 +146,13 @@ def analyze_user(wiki, db, user):
 	if time_period == 0:
 		edits_per_day = '0.00'
 		activity_percentage = '0.00'
+		edits_per_day_30days = '0.00'
+		activity_percentage_30days = '0.00'
 	else:
 		edits_per_day = '%.2f' % (float(total_edit_count)/float(time_period))
 		activity_percentage = '%.2f' % (100 * float(active_days)/float(time_period))
+		edits_per_day_30days = '%.2f' % (float(last_30_days_edits)/30.0)
+		activity_percentage_30days = '%.2f' % (100 * float(last_30_days_active_days)/30.0)
 
 	# Generate data table string for day/hour bubble chart
 	hour_day_bubble_chart_string = process_hour_day_bubble_chart(edits_dict)
@@ -162,6 +174,8 @@ def analyze_user(wiki, db, user):
                    'days_since_first_edit': days_since_first_edit,
                    'edits_per_day': edits_per_day,
                    'activity_percentage': activity_percentage,
+                   'edits_per_day_30days': edits_per_day_30days,
+                   'activity_percentage_30days': activity_percentage_30days,
                    'longest_edit_days_streak': longest_edit_days_streak,
                    'current_edit_days_streak': current_edit_days_streak,
                    'largest_day_edit_count': largest_day_edit_count,
