@@ -97,7 +97,7 @@ def analyze_user(wiki, db, user):
 		total_edit_count += day_edit_count
 
 		# Keep track of activity in last 30 days
-		if ((datetime.datetime.today() - datetime.timedelta(days=1)) - single_date).days < 30:
+		if (datetime.datetime.today() - single_date).days < 30:
 			last_30_days_edits += day_edit_count
 			if day_edit_count > 0:
 				last_30_days_active_days += 1
