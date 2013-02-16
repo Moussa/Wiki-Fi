@@ -120,10 +120,11 @@
     </div>
   </div>
 
-  <div class="row">
-    <form class="container" id="total-edit-form">
-      <label><input type="checkbox" onclick="javascript:toggleTotalEdits()" id="total-edit-toggle">Display cumulative edits</label>
-    </form>
+  <div class="btn-group-wrapper edits-toggle">
+    <div class="btn-group" data-toggle="buttons-radio">
+      <button type="button" class="btn btn-large active" value="daily">Daily edits</button>
+      <button type="button" class="btn btn-large" value="cumulative">Cumulative edits</button>
+    </div>
   </div>
 
   <div class="container-fluid">
@@ -249,15 +250,15 @@
 
     <!-- GRAPH SCRIPTS -->
     <script type="text/javascript">
-      function toggleTotalEdits() {
-        var checkbox = document.getElementById('total-edit-toggle');
-        if (checkbox.checked) {
-          edit_timeline_chart.showDataColumns(1);
-        }
-        else {
+      $('button').click(function () {
+        var editsdisplay = $(this).val();
+        if (editsdisplay == 'daily') {
           edit_timeline_chart.hideDataColumns(1);
         }
-      }
+        else {
+          edit_timeline_chart.showDataColumns(1);
+        }
+      });
     </script>
 
     <script type="text/javascript">
