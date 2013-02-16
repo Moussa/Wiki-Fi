@@ -125,11 +125,14 @@ def analyze_user(wiki, db, user):
 
 		edits_timeline.append(editentry)
 
-	# Check if edit streak is running to today and not just to end of last edit	
-	if end_date.date() != datetime.datetime.today().date():
+	# Check if edit streak is running to today and not just to end of last edit
+	# Add extra day to allow for user adding edit before the end of the current day	
+	if end_date.date() < datetime.datetime.today().date() - datetime.timedelta(days=1):
 		current_edit_days_streak = 0
 
 	distinct_pages_count = len(edits_collection.find({'user_id': user['_id']}).distinct('title'))
+
+	days_since_first_edit = (datetime.datetime.today() - start_date).days
 
 	time_period = (end_date - start_date).days
 	if time_period == 0:
@@ -156,6 +159,7 @@ def analyze_user(wiki, db, user):
 
 	charts_data = {'total_edit_count': total_edit_count,
                    'distinct_pages_count': distinct_pages_count,
+                   'days_since_first_edit': days_since_first_edit,
                    'edits_per_day': edits_per_day,
                    'activity_percentage': activity_percentage,
                    'longest_edit_days_streak': longest_edit_days_streak,
