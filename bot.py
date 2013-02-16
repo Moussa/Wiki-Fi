@@ -8,17 +8,33 @@ from werkzeug.contrib.cache import MemcachedCache
 cache = MemcachedCache(['{0}:{1}'.format(config['memcached']['host'], config['memcached']['port'])])
 connection = pymongo.Connection(config['db']['host'], config['db']['port'])
 
+dateRE = re.compile(r'(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})Z')
+
+def get_date_from_string(date_string):
+	res = dateRE.search(date_string)
+	year = int(res.group(1))
+	month = int(res.group(2))
+	day = int(res.group(3))
+	hour = int(res.group(4))
+	minute = int(res.group(5))
+	second = int(res.group(6))
+	d = datetime.datetime(year, month, day, hour, minute, second)
+	date_index_string = '{0}-{1}-{2}'.format(year, month, day)
+
+	return d, date_index_string
+
 def load(wiki):
 	db = connection[config['wikis'][wiki]['db_name']]
-	api = wiki_api.API(config['wikis'][wiki]['api_url'], config['wikis'][wiki]['username'], config['wikis'][wiki]['password'])
+	wiki_api = wiki_api.Wiki_API(config['wikis'][wiki]['api_url'], config['wikis'][wiki]['username'], config['wikis'][wiki]['password'])
 	print('Successfully loaded ' + wiki)
-	return db, api
+	return db, wiki_api
 
 def get_user_id(db, username, wiki):
 	user = db['users'].find_one({'username': username})
 	if user is None:
 		user_id = db['users'].insert({'username': username})
 		cache.delete('wiki-data_userlist_{0}'.format(wiki))
+		cache.delete('wiki-data_userwikislist_{0}'.format(username))
 	else:
 		user_id = user['_id']
 
@@ -30,14 +46,14 @@ def get_last_edit_datetime(db):
 	return (db['edits'].find({}, sort=[('date', pymongo.DESCENDING)]).limit(1))[0]['timestamp']
 
 def seed(wiki):
-	db, api = load(wiki)
+	db, wiki_api = load(wiki)
 
-	users = api.get_users(edited_only=True)
+	users = wiki_api.get_users(edited_only=True)
 
 	for user in users:
 		username = user['name']
 		tfwiki_registration = user['registration']
-		d, date_index_string = api.get_date_from_string(tfwiki_registration)
+		d, date_index_string = get_date_from_string(tfwiki_registration)
 		if db['users'].find_one({'username': username}) is None:
 			db['users'].insert({'username': username, 'registration': d}, safe=True)
 		elif 'registration' not in db['users'].find_one({'username': username}):
@@ -49,9 +65,9 @@ def seed(wiki):
 
 	for user in db['users'].find():
 		print('Inserting edits for ' + user['username'].encode('utf-8'))
-		edits = api.get_user_edits(user['username'])
+		edits = wiki_api.get_user_edits(user['username'])
 		for edit in edits:
-			d, date_index_string = api.get_date_from_string(edit['timestamp'])
+			d, date_index_string = get_date_from_string(edit['timestamp'])
 			if d < cutoff_date:
 				output = {'user_id': user['_id'],
                           'ns': edit['ns'],
@@ -64,10 +80,10 @@ def seed(wiki):
 				db['edits'].insert(output, safe=True)
 
 def update(wiki):
-	db, api = load(wiki)
+	db, wiki_api = load(wiki)
 
 	last_edit = get_last_edit_datetime(db)
-	recent_edits = api.get_recent_changes(last_edit)
+	recent_edits = wiki_api.get_recent_changes(last_edit)
 	datenow = datetime.datetime.now()
 
 	for edit in recent_edits:
@@ -75,7 +91,7 @@ def update(wiki):
 		if db['edits'].find_one({'revid': edit['revid']}):
 			continue
 		user_id = get_user_id(db, edit['user'], wiki)
-		d, date_index_string = api.get_date_from_string(edit['timestamp'])
+		d, date_index_string = get_date_from_string(edit['timestamp'])
 		output = {'user_id': user_id,
                   'ns': edit['ns'],
                   'revid': edit['revid'],

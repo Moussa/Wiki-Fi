@@ -45,6 +45,10 @@ body {
   color: red !important;
 }
 
+.disabled-link {
+  color: #444 !important;
+}
+
 #number-stats {
   height: 300px;
   text-align: right;

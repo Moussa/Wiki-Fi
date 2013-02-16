@@ -176,32 +176,30 @@
         // add active class to wiki tab for wiki being viewed and disable tabs for which user does not exist
         var wikis = ['tf', 'portal', 'dota2'];
         $("li#{{ wiki }}").addClass('active');
-        $.each(wikis, function(index, wiki) {
-          var data = {username: username, wiki: wiki};
+          var data = {username: username};
           
           $.ajax({
-            url: '/is_valid_user',
+            url: '/get_user_wikis',
             type: 'POST',
             dataType: 'json',
             data: data,
-            success: function(data) {
-              if (data) {
+            success: function(userwikislist) {
+              $.each(wikis, function(index, wiki) {
                 if ("{{ wiki }}" == wiki) {
                   $('a#' + wiki).attr("href", "#");
                 }
-                else {
+                else if ($.inArray(wiki, userwikislist) > -1) {
                   $('a#' + wiki).attr("href", "/stats?username=" + username + "&wiki=" + wiki);
                 }
-              }
-              else {
-                $('li#' + wiki).addClass('disabled');
-              }
-            },
+                else {
+                  $('li#' + wiki + ' > a').addClass('disabled-link');
+                }
+              });
+            }, 
             fail: function(data) {
               console.log('fail');
             }
           });
-        });
 
         // on form submission check if username is valid for current wiki and redirect. Else display error
         $(".username-search").on("submit", function() {

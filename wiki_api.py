@@ -1,27 +1,12 @@
 # -*- coding: utf-8 -*-
-import json, re, datetime
+import re, datetime
 import pymongo
 import wikitools
-from config import config
 
-class API:
+class Wiki_API:
 	def __init__(self, wiki_api_url, username, password):
 		self.wiki = wikitools.Wiki(wiki_api_url)
 		self.wiki.login(username=username, password=password)
-		self.dateRE = re.compile(r'(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})Z')
-
-	def get_date_from_string(self, date_string):
-		res = self.dateRE.search(date_string)
-		year = int(res.group(1))
-		month = int(res.group(2))
-		day = int(res.group(3))
-		hour = int(res.group(4))
-		minute = int(res.group(5))
-		second = int(res.group(6))
-		d = datetime.datetime(year, month, day, hour, minute, second)
-		date_index_string = '{0}-{1}-{2}'.format(year, month, day)
-
-		return d, date_index_string
 
 	def get_users(self, edited_only=False):
 		params = {'action': 'query',

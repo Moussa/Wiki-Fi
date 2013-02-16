@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import json, datetime, copy
+import datetime, copy
 import pymongo
 from config import config
 

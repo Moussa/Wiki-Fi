@@ -61,6 +61,20 @@ def get_wiki_users():
 
 	return resp
 
+@app.route('/get_user_wikis', methods=['POST'])
+def get_user_wikis():
+	username = request.form['username']
+	userwikislist = cache.get('wiki-data_userwikislist_{0}'.format(username))
+	if userwikislist is None:
+		userwikislist = []
+		for wiki in wiki_dict:
+			if wiki_dict[wiki]['users'].find_one({'username': username}):
+				userwikislist.append(wiki)
+		cache.set('wiki-data_userwikislist_{0}'.format(username), userwikislist, timeout=0)
+	resp = Response(json.dumps(userwikislist), status=200, mimetype='application/json')
+
+	return resp
+
 @app.route('/get_last_updated', methods=['POST'])
 def get_last_updated():
 	wiki = request.form['wiki']
