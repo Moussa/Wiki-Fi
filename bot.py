@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import datetime, sys
+import datetime, sys, re
 import pymongo
 import wiki_api
 from config import config
@@ -25,9 +25,9 @@ def get_date_from_string(date_string):
 
 def load(wiki):
 	db = connection[config['wikis'][wiki]['db_name']]
-	wiki_api = wiki_api.Wiki_API(config['wikis'][wiki]['api_url'], config['wikis'][wiki]['username'], config['wikis'][wiki]['password'])
+	w_api = wiki_api.Wiki_API(config['wikis'][wiki]['api_url'], config['wikis'][wiki]['username'], config['wikis'][wiki]['password'])
 	print('Successfully loaded ' + wiki)
-	return db, wiki_api
+	return db, w_api
 
 def get_user_id(db, username, wiki):
 	user = db['users'].find_one({'username': username}, fields=[])
@@ -46,9 +46,9 @@ def get_last_edit_datetime(db):
 	return (db['edits'].find(fields=['timestamp'], sort=[('date', pymongo.DESCENDING)]).limit(1))[0]['timestamp']
 
 def seed(wiki):
-	db, wiki_api = load(wiki)
+	db, w_api = load(wiki)
 
-	users = wiki_api.get_users(edited_only=True)
+	users = w_api.get_users(edited_only=True)
 
 	for user in users:
 		username = user['name']
@@ -63,7 +63,7 @@ def seed(wiki):
 
 	for user in db['users'].find():
 		print('Inserting edits for ' + user['username'].encode('utf-8'))
-		edits = wiki_api.get_user_edits(user['username'])
+		edits = w_api.get_user_edits(user['username'])
 		for edit in edits:
 			d, date_index_string = get_date_from_string(edit['timestamp'])
 			if d < cutoff_date:
@@ -78,10 +78,10 @@ def seed(wiki):
 				db['edits'].insert(output)
 
 def update(wiki):
-	db, wiki_api = load(wiki)
+	db, w_api = load(wiki)
 
 	last_edit = get_last_edit_datetime(db)
-	recent_edits = wiki_api.get_recent_changes(last_edit)
+	recent_edits = w_api.get_recent_changes(last_edit)
 	datenow = datetime.datetime.now()
 
 	for edit in recent_edits:
@@ -98,6 +98,7 @@ def update(wiki):
                   'date_string': date_index_string,
                   'timestamp': edit['timestamp']
                   }
+		print('Inserting revid ' + str(edit['revid']) + ': \'' + edit['title'].encode('utf-8') + '\' by ' + edit['user'].encode('utf-8'))
 		db['edits'].insert(output)
 		# delete cache key to load fresh data on next retrieval
 		cache.delete('wiki-data_{0}_{1}'.format(edit['user'], wiki))
