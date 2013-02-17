@@ -94,6 +94,10 @@ def homepage():
 def invalid_args():
 	return render_template('form.html', error=True)
 
+@app.route('/about')
+def about():
+	return render_template('about.html')
+
 @app.route('/stats', methods=['GET'])
 def anaylze_edits():
 	if 'username' not in request.args or 'wiki' not in request.args or request.args['wiki'] not in wiki_dict:
