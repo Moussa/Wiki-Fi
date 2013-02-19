@@ -2,6 +2,10 @@
 import datetime, copy
 import pymongo
 from config import config
+try:
+	from collections import Counter
+except:
+	from counter import Counter
 
 DAY_MAPPING = {0: 'Monday', 1: 'Tuesday', 2: 'Wednesday', 3: 'Thursday', 4: 'Friday', 5: 'Saturday', 6: 'Sunday'}
 NAMESPACE_MAPPING = {0: 'Main',
@@ -73,12 +77,21 @@ def process_namespace_pie_chart(wiki, edits_collection, user):
 
 	return namespace_piechart_output
 
+def process_most_edited_pages(page_titles):
+	most_edited = Counter(page_titles).most_common(5)
+
+	if len(most_edited) < 5:
+		most_edited.extend([('', '')] * (5 - len(most_edited)))
+
+	return most_edited
+
 def analyze_user(wiki, db, user):
 	edits_collection = db['edits']
 
 	start_date, end_date = get_date_range(db, user)
 
 	edits_timeline = []
+	page_titles = []
 	largest_day_edit_count = 0
 	longest_edit_days_streak = 0
 	current_edit_days_streak = 0
@@ -91,10 +104,13 @@ def analyze_user(wiki, db, user):
 
 	for single_date in daterange(start_date, end_date):
 		date_index_string = '{0}-{1}-{2}'.format(single_date.year, single_date.month, single_date.day)
-		edits = edits_collection.find({'user_id': user['_id'], 'date_string': date_index_string}, fields=['date'])
+		edits = list(edits_collection.find({'user_id': user['_id'], 'date_string': date_index_string}, fields=['date', 'title']))
 
-		day_edit_count = edits.count()
+		day_edit_count = len(edits)
 		total_edit_count += day_edit_count
+
+		for edit in edits:
+			page_titles.append(edit['title'])
 
 		# Keep track of activity in last 30 days
 		if (datetime.datetime.today() - single_date).days < 30:
@@ -157,6 +173,9 @@ def analyze_user(wiki, db, user):
 	start_date = start_date.strftime("%d %B %Y")
 	end_date = end_date.strftime("%d %B %Y")
 
+	# Generate list of most edited pages
+	most_edited_pages = process_most_edited_pages(page_titles)
+
 	# Generate data table string for day/hour bubble chart
 	hour_day_bubble_chart_string = process_hour_day_bubble_chart(edits_dict)
 
@@ -184,6 +203,7 @@ def analyze_user(wiki, db, user):
                    'longest_edit_days_streak': longest_edit_days_streak,
                    'current_edit_days_streak': current_edit_days_streak,
                    'largest_day_edit_count': largest_day_edit_count,
+                   'most_edited_pages': most_edited_pages,
                    'edits_timeline_string': edits_timeline_string,
                    'namespace_piechart_string': namespace_piechart_string,
                    'hour_column_chart_string': hour_column_chart_string,
