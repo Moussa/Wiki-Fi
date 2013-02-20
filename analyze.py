@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import datetime, copy
+import datetime, copy, json
 import pymongo
 from config import config
 try:
@@ -77,13 +77,11 @@ def process_namespace_pie_chart(wiki, edits_collection, user):
 
 	return namespace_piechart_output
 
-def process_most_edited_pages(page_titles):
-	most_edited = Counter(page_titles).most_common(5)
+def process_most_edited_pages(wiki, page_titles):
+	most_edited = Counter(page_titles).most_common(100)
+	output = [{'text': entry[0] + ' (' + str(entry[1]) + ')', 'weight': entry[1], 'link': {'href': config['wikis'][wiki]['wiki_link'] + '/wiki/' + entry[0], 'target': '_blank'}} for entry in most_edited]
 
-	if len(most_edited) < 5:
-		most_edited.extend([('', '')] * (5 - len(most_edited)))
-
-	return most_edited
+	return json.dumps(output).replace(r"'", r"\'")
 
 def analyze_user(wiki, db, user):
 	edits_collection = db['edits']
@@ -174,7 +172,7 @@ def analyze_user(wiki, db, user):
 	end_date = end_date.strftime("%d %B %Y")
 
 	# Generate list of most edited pages
-	most_edited_pages = process_most_edited_pages(page_titles)
+	most_edited_pages = process_most_edited_pages(wiki, page_titles)
 
 	# Generate data table string for day/hour bubble chart
 	hour_day_bubble_chart_string = process_hour_day_bubble_chart(edits_dict)

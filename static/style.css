@@ -64,15 +64,11 @@ body {
   height: 120px;
 }
 
-#chart_div {
-  height: 500px;
-}
-
 #columnchart_div, #daycolumnchart_div {
   height: 400px;
 }
 
-#piechart_div, #bubblechart_div {
+#chart_div, #piechart_div, #bubblechart_div, #word_cloud {
   height: 500px;
 }
 
@@ -106,14 +102,5 @@ body {
 }
 
 #value-list-row > span {
-  font-size: 15px;
-}
-
-#page-list-row {
-  line-height: normal;
-  font-size: 30px;
-}
-
-#page-list-row > span {
   font-size: 15px;
 }
