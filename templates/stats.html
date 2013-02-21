@@ -6,10 +6,12 @@
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
     <script type="text/javascript" src="http://www.google.com/jsapi"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.0/bootstrap.min.js"></script>
+    <script src="{{ url_for('static', filename='jqcloud-1.0.3.min.js') }}"></script>
     
     <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.0/css/bootstrap-responsive.min.css">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='jqcloud.css') }}"/>
   </head>
 
   <body>
@@ -85,18 +87,6 @@
                 </ul>
               </td>
             </tr>
-            <tr class="number-stats-tablerow">
-              <td>Mosted edited pages:</td>
-              <td id="value-list">
-                <ol>
-                  <li id="page-list-row">{{charts_data['most_edited_pages'][0][0]}} <span>{{charts_data['most_edited_pages'][0][1]}} edits</span></li>
-                  <li id="page-list-row">{{charts_data['most_edited_pages'][1][0]}} <span>{{charts_data['most_edited_pages'][1][1]}} edits</span></li>
-                  <li id="page-list-row">{{charts_data['most_edited_pages'][2][0]}} <span>{{charts_data['most_edited_pages'][2][1]}} edits</span></li>
-                  <li id="page-list-row">{{charts_data['most_edited_pages'][3][0]}} <span>{{charts_data['most_edited_pages'][3][1]}} edits</span></li>
-                  <li id="page-list-row">{{charts_data['most_edited_pages'][4][0]}} <span>{{charts_data['most_edited_pages'][4][1]}} edits</span></li>
-                </ol>
-              </td>
-            </tr>
           </table>
         </div>
         <div class="span6">
@@ -168,6 +158,17 @@
       <div class="row-fluid">
         <div class="span4" id="piechart_div"></div>
         <div class="span8" id="bubblechart_div"></div>
+      </div>
+    </div>
+
+    <div class="container-fluid">
+      <div class="row-fluid">
+        <div class="span12"><h2>Most edited pages</h2></div>
+      </div>
+    </div>
+    <div class="container-fluid">
+      <div class="row-fluid">
+        <div class="span10 offset1" id="word_cloud"></div>
       </div>
     </div>
 
@@ -373,6 +374,13 @@
           chartArea: {top: 30}
         });
       }
+    </script>
+
+    <script type="text/javascript">
+      var word_list = JSON.parse('{{ charts_data['most_edited_pages']|safe }}');
+      $(function() {
+        $("#word_cloud").jQCloud(word_list);
+      });
     </script>
   </body>
 </html>
