@@ -7,11 +7,13 @@
     <script type="text/javascript" src="http://www.google.com/jsapi"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.0/bootstrap.min.js"></script>
     <script src="{{ url_for('static', filename='jqcloud-1.0.3.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='heading-anchors.js') }}"></script>
     
     <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.0/css/bootstrap-responsive.min.css">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='jqcloud.css') }}"/>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='heading-anchors.css') }}"/>
   </head>
 
   <body>
@@ -381,6 +383,10 @@
       $(function() {
         $("#word_cloud").jQCloud(word_list);
       });
+    </script>
+
+    <script type="text/javascript">
+      HeadingAnchors.init();
     </script>
   </body>
 </html>
