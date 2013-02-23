@@ -38,9 +38,14 @@
                 </ul>
               </li>
               <li class="divider-vertical"></li>
-              <li id="tf"><a id="tf">Official TF Wiki</a></li>
-              <li id="portal"><a id="portal">Portal Wiki</a></li>
-              <li id="dota2"><a id="dota2">Dota2 Wiki</a></li>
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Wiki <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  <li id="tf"><a id="tf">Official TF Wiki</a></li>
+                  <li id="portal"><a id="portal">Portal Wiki</a></li>
+                  <li id="dota2"><a id="dota2">Dota2 Wiki</a></li>
+                </ul>
+              </li>
               <li class="divider-vertical"></li>
               <form class="navbar-search username-search">
                 <input type="text" class="search-query" id="username-entry" placeholder="Username">
@@ -209,9 +214,9 @@
           }
         });
 
-        // add active class to wiki tab for wiki being viewed and disable tabs for which user does not exist
+        // add bullet point for wiki being viewed and disable links for which user does not exist
+        $("a#{{ wiki }}").append(' <b>•</b>');
         var wikis = ['tf', 'portal', 'dota2'];
-        $("li#{{ wiki }}").addClass('active');
           var data = {username: username};
           
           $.ajax({
@@ -228,7 +233,7 @@
                   $('a#' + wiki).attr("href", "/stats?username=" + username + "&wiki=" + wiki);
                 }
                 else {
-                  $('li#' + wiki + ' > a').addClass('disabled-link');
+                  $('li#' + wiki).addClass('disabled');
                 }
               });
             }, 
@@ -387,7 +392,7 @@
 
     <script type="text/javascript">
       $('ul.nav li.dropdown').hover(function() {
-        $(this).find('.dropdown-menu').stop(true, true).delay(20).fadeIn();
+        $(this).find('.dropdown-menu').stop(true, true).delay(10).fadeIn();
       }, function() {
         $(this).find('.dropdown-menu').stop(true, true).delay(150).fadeOut();
       });
