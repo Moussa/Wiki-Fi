@@ -12,6 +12,8 @@ dateRE = re.compile(r'(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})Z')
 
 def get_date_from_string(date_string):
 	res = dateRE.search(date_string)
+	if not res:
+		return None
 	year = int(res.group(1))
 	month = int(res.group(2))
 	day = int(res.group(3))
@@ -19,9 +21,8 @@ def get_date_from_string(date_string):
 	minute = int(res.group(5))
 	second = int(res.group(6))
 	d = datetime.datetime(year, month, day, hour, minute, second)
-	date_index_string = '{0}-{1}-{2}'.format(year, month, day)
 
-	return d, date_index_string
+	return d
 
 def load(wiki):
 	db = connection[config['wikis'][wiki]['db_name']]
@@ -52,9 +53,9 @@ def seed(wiki):
 
 	for user in users:
 		username = user['name']
-		tfwiki_registration = user['registration']
-		d, date_index_string = get_date_from_string(tfwiki_registration)
 		if db['users'].find_one({'username': username}, fields=[]) is None:
+			wiki_registration = user['registration']
+			d = get_date_from_string(wiki_registration)
 			db['users'].insert({'username': username, 'registration': d})
 
 	# define cutoff date so that edits made during seeding are not missed
@@ -65,14 +66,13 @@ def seed(wiki):
 		print('Inserting edits for ' + user['username'].encode('utf-8'))
 		edits = w_api.get_user_edits(user['username'])
 		for edit in edits:
-			d, date_index_string = get_date_from_string(edit['timestamp'])
+			d = get_date_from_string(edit['timestamp'])
 			if d < cutoff_date:
 				output = {'user_id': user['_id'],
                           'ns': edit['ns'],
                           'revid': edit['revid'],
-                          'date': d,
+                          'datetime': d,
                           'title': edit['title'],
-                          'date_string': date_index_string,
                           'timestamp': edit['timestamp']
                           }
 				db['edits'].insert(output)
@@ -89,13 +89,12 @@ def update(wiki):
 		if db['edits'].find_one({'revid': edit['revid']}, fields=[]):
 			continue
 		user_id = get_user_id(db, edit['user'], wiki)
-		d, date_index_string = get_date_from_string(edit['timestamp'])
+		d = get_date_from_string(edit['timestamp'])
 		output = {'user_id': user_id,
                   'ns': edit['ns'],
                   'revid': edit['revid'],
-                  'date': d,
+                  'datetime': d,
                   'title': edit['title'],
-                  'date_string': date_index_string,
                   'timestamp': edit['timestamp']
                   }
 		print('Inserting revid ' + str(edit['revid']) + ': \'' + edit['title'].encode('utf-8') + '\' by ' + edit['user'].encode('utf-8'))
