@@ -34,8 +34,8 @@ def get_date_range(db, user):
 	if db['edits'].find_one({'user_id': user['_id']}, fields=[]) is None:
 		return datetime.datetime(2010, 6, 4), datetime.datetime.now()
 
-	user_start = (db['edits'].find({'user_id': user['_id']}, fields=['datetime'], sort=[('datetime', pymongo.ASCENDING)]).limit(1))[0]['datetime']
-	user_end = (db['edits'].find({'user_id': user['_id']}, fields=['datetime'], sort=[('datetime', pymongo.DESCENDING )]).limit(1))[0]['datetime']
+	user_start = (db['edits'].find({'user_id': user['_id']}, fields=['timestamp'], sort=[('timestamp', pymongo.ASCENDING)]).limit(1))[0]['timestamp']
+	user_end = (db['edits'].find({'user_id': user['_id']}, fields=['timestamp'], sort=[('timestamp', pymongo.DESCENDING )]).limit(1))[0]['timestamp']
 
 	return user_start, user_end
 
@@ -103,7 +103,7 @@ def analyze_user(wiki, db, user):
 	for single_date in daterange(start_date, end_date):
 		start = datetime.datetime(single_date.year, single_date.month, single_date.day)
 		end = start + datetime.timedelta(days=1)
-		edits = list(edits_collection.find({'user_id': user['_id'], 'datetime': {'$gte': start, '$lt': end}}, fields=['datetime', 'title']))
+		edits = list(edits_collection.find({'user_id': user['_id'], 'timestamp': {'$gte': start, '$lt': end}}, fields=['timestamp', 'title']))
 
 		day_edit_count = len(edits)
 		total_edit_count += day_edit_count
@@ -132,8 +132,8 @@ def analyze_user(wiki, db, user):
 
 		# Add hourly edits data to dict
 		for edit in edits:
-			edit_hour = edit['datetime'].hour
-			edit_day = edit['datetime'].weekday()
+			edit_hour = edit['timestamp'].hour
+			edit_day = edit['timestamp'].weekday()
 			edits_dict[edit_day]['hours'][edit_hour]['count'] += 1
 			edits_dict[edit_day]['day']['count'] += 1
 

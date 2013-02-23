@@ -55,8 +55,8 @@ def seed(wiki):
 		username = user['name']
 		if db['users'].find_one({'username': username}, fields=[]) is None:
 			wiki_registration = user['registration']
-			d = get_date_from_string(wiki_registration)
-			db['users'].insert({'username': username, 'registration': d})
+			timestamp = get_date_from_string(wiki_registration)
+			db['users'].insert({'username': username, 'registration': timestamp})
 
 	# define cutoff date so that edits made during seeding are not missed
 	cutoff_date = datetime.datetime.now()
@@ -66,14 +66,13 @@ def seed(wiki):
 		print('Inserting edits for ' + user['username'].encode('utf-8'))
 		edits = w_api.get_user_edits(user['username'])
 		for edit in edits:
-			d = get_date_from_string(edit['timestamp'])
-			if d < cutoff_date:
+			timestamp = get_date_from_string(edit['timestamp'])
+			if timestamp < cutoff_date:
 				output = {'user_id': user['_id'],
                           'ns': edit['ns'],
                           'revid': edit['revid'],
-                          'datetime': d,
                           'title': edit['title'],
-                          'timestamp': edit['timestamp']
+                          'timestamp': timestamp
                           }
 				db['edits'].insert(output)
 
@@ -89,13 +88,12 @@ def update(wiki):
 		if db['edits'].find_one({'revid': edit['revid']}, fields=[]):
 			continue
 		user_id = get_user_id(db, edit['user'], wiki)
-		d = get_date_from_string(edit['timestamp'])
+		timestamp = get_date_from_string(edit['timestamp'])
 		output = {'user_id': user_id,
                   'ns': edit['ns'],
                   'revid': edit['revid'],
-                  'datetime': d,
                   'title': edit['title'],
-                  'timestamp': edit['timestamp']
+                  'timestamp': timestamp
                   }
 		print('Inserting revid ' + str(edit['revid']) + ': \'' + edit['title'].encode('utf-8') + '\' by ' + edit['user'].encode('utf-8'))
 		db['edits'].insert(output)
