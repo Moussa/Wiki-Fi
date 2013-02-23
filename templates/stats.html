@@ -386,6 +386,14 @@
     </script>
 
     <script type="text/javascript">
+      $('ul.nav li.dropdown').hover(function() {
+        $(this).find('.dropdown-menu').stop(true, true).delay(20).fadeIn();
+      }, function() {
+        $(this).find('.dropdown-menu').stop(true, true).delay(150).fadeOut();
+      });
+    </script>
+
+    <script type="text/javascript">
       HeadingAnchors.init();
     </script>
   </body>
