@@ -75,6 +75,10 @@ def seed(wiki):
                           'timestamp': timestamp
                           }
 				db['edits'].insert(output)
+	# update last_updated time
+	datenow = datetime.datetime.now()
+	db['metadata'].update({'key': 'last_updated'}, {'$set': {'last_updated': datenow}}, upsert=True)
+	cache.set('wiki-metadata_last_updated_' + wiki, datenow, timeout=0)
 
 def update(wiki):
 	db, w_api = load(wiki)
