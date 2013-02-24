@@ -157,17 +157,11 @@ def analyze_user(wiki, db, user):
 
 	days_since_first_edit = (datetime.datetime.today() - start_date).days
 
-	time_period = (end_date - start_date).days
-	if time_period == 0:
-		edits_per_day = '0.00'
-		activity_percentage = '0.00'
-		edits_per_day_30days = '0.00'
-		activity_percentage_30days = '0.00'
-	else:
-		edits_per_day = '%.2f' % (float(total_edit_count)/float(time_period))
-		activity_percentage = '%.2f' % (100 * float(active_days)/float(time_period))
-		edits_per_day_30days = '%.2f' % (float(last_30_days_edits)/30.0)
-		activity_percentage_30days = '%.2f' % (100 * float(last_30_days_active_days)/30.0)
+	time_period = (end_date - start_date).days + 1
+	edits_per_day = '%.2f' % (float(total_edit_count)/float(time_period))
+	activity_percentage = '%.2f' % (100 * float(active_days)/float(time_period))
+	edits_per_day_30days = '%.2f' % (float(last_30_days_edits)/30.0)
+	activity_percentage_30days = '%.2f' % (100 * float(last_30_days_active_days)/30.0)
 
 	start_date = start_date.strftime("%d %B %Y")
 	end_date = end_date.strftime("%d %B %Y")
