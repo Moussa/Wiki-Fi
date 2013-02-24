@@ -8,7 +8,7 @@
 
     <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.0/css/bootstrap-responsive.min.css">
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
   </head>
 
   <body>
@@ -51,6 +51,9 @@
 
       <p>Written by <a href="http://steamcommunity.com/id/moussekateer/" target="_blank">Moussekateer</a>.</p>
     </div>
+
+    <!-- Tracking -->
+    <script src="{{ url_for('static', filename='js/analytics.js') }}"></script>
   </body>
 
 </html>

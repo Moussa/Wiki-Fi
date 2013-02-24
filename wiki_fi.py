@@ -98,7 +98,7 @@ def invalid_args():
 def about():
 	return render_template('about.html')
 
-@app.route('/stats', methods=['GET'])
+@app.route('/user', methods=['GET'])
 def anaylze_edits():
 	if 'username' not in request.args or 'wiki' not in request.args or request.args['wiki'] not in wiki_dict:
 		return invalid_args()

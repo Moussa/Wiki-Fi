@@ -8,7 +8,7 @@
 
     <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.0/css/bootstrap-responsive.min.css">
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
   </head>
 
   <body>
@@ -93,7 +93,7 @@
                 $('button[type=submit]').removeClass('btn-primary btn-danger').addClass('btn-success').html('Loading stats...');
                 $('#loader').css('visibility','visible');
 
-                window.location = "/stats?username=" + username + "&wiki=" + wiki;
+                window.location = "/user?username=" + username + "&wiki=" + wiki;
               }
               else {
                 $('button[type=submit]').removeClass('btn-primary').addClass('btn-danger').html('Invalid username');
@@ -110,6 +110,9 @@
         });
       });
     </script>
+
+    <!-- Tracking -->
+    <script src="{{ url_for('static', filename='js/analytics.js') }}"></script>
   </body>
 
 </html>
