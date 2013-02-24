@@ -84,9 +84,13 @@ def update(wiki):
 	db, w_api = load(wiki)
 
 	last_edit = get_last_edit_datetime(db)
-	recent_edits = w_api.get_recent_changes(last_edit)
-	datenow = datetime.datetime.now()
+	print('Last edit time was: ' + str(last_edit))
 
+	print('Fetching edits from wiki...')
+	recent_edits = w_api.get_recent_changes(last_edit)
+	print('Successfully fetched edits from wiki')
+
+	datenow = datetime.datetime.now()
 	for edit in recent_edits:
 		# check if edit has already been inserted into db
 		if db['edits'].find_one({'revid': edit['revid']}, fields=[]):
