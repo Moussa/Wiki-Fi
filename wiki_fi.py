@@ -17,11 +17,18 @@ for wiki in config['wikis']:
 	wiki_dict[wiki] = db
 
 
-def get_chart_data(wiki, db, user):
+def get_user_chart_data(wiki, db, user):
 	charts_data = cache.get('wiki-data_{0}_{1}'.format(user['username'].replace(' ', '_'), wiki))
 	if charts_data is None:
 		charts_data = analyze.analyze_user(wiki, db, user)
 		cache.set('wiki-data_{0}_{1}'.format(user['username'].replace(' ', '_'), wiki), charts_data, timeout=0)
+	return charts_data
+
+def get_wiki_chart_data(wiki, db):
+	charts_data = cache.get('wiki-data_{0}'.format(wiki))
+	if charts_data is None:
+		charts_data = analyze.analyze_wiki(wiki, db)
+		cache.set('wiki-data_{0}'.format(wiki), charts_data, timeout=0)
 	return charts_data
 
 @app.route('/is_valid_user', methods=['POST'])
@@ -64,13 +71,13 @@ def get_wiki_users():
 @app.route('/get_user_wikis', methods=['POST'])
 def get_user_wikis():
 	username = request.form['username']
-	userwikislist = cache.get('wiki-data_userwikislist_{0}'.format(username))
+	userwikislist = cache.get('wiki-data_userwikislist_{0}'.format(username.replace(' ', '_')))
 	if userwikislist is None:
 		userwikislist = []
 		for wiki in wiki_dict:
 			if wiki_dict[wiki]['users'].find_one({'username': username}, fields=[]):
 				userwikislist.append(wiki)
-		cache.set('wiki-data_userwikislist_{0}'.format(username), userwikislist, timeout=0)
+		cache.set('wiki-data_userwikislist_{0}'.format(username.replace(' ', '_')), userwikislist, timeout=0)
 	resp = Response(json.dumps(userwikislist), status=200, mimetype='application/json')
 
 	return resp
@@ -110,9 +117,20 @@ def anaylze_edits():
 		return invalid_args()
 	wiki_link = config['wikis'][wiki]['wiki_link']
 
-	charts_data = get_chart_data(wiki, wiki_dict[wiki], user)
+	charts_data = get_user_chart_data(wiki, wiki_dict[wiki], user)
 
-	return render_template('stats.html', username=username, wiki=wiki, wiki_link=wiki_link, charts_data=charts_data)
+	return render_template('user_stats.html', username=username, wiki=wiki, wiki_link=wiki_link, charts_data=charts_data)
+
+@app.route('/wiki', methods=['GET'])
+def anaylze_wiki():
+	if request.args['wiki'] not in wiki_dict:
+		return invalid_args()
+
+	wiki = request.args['wiki']
+	wiki_link = config['wikis'][wiki]['wiki_link']
+	charts_data = get_wiki_chart_data(wiki, wiki_dict[wiki])
+
+	return render_template('wiki_stats.html', wiki_name=config['wikis'][wiki]['wiki_name'], wiki=wiki, wiki_link=wiki_link, charts_data=charts_data)
 
 if __name__ == '__main__':
 	app.run(debug=True, host='0.0.0.0', port=5000)
