@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import datetime, copy, json
+import datetime, copy, json, locale
 import pymongo
 from config import config
 try:
@@ -165,6 +165,15 @@ def analyze_user(wiki, db, user):
 
 	start_date = start_date.strftime("%d %B %Y")
 	end_date = end_date.strftime("%d %B %Y")
+
+	# Format numbers with separators
+	locale.setlocale(locale.LC_ALL, 'en_US.utf8')
+	total_edit_count = locale.format("%d", total_edit_count, grouping=True)
+	distinct_pages_count = locale.format("%d", distinct_pages_count, grouping=True)
+	days_since_first_edit = locale.format("%d", days_since_first_edit, grouping=True)
+	longest_edit_days_streak = locale.format("%d", longest_edit_days_streak, grouping=True)
+	current_edit_days_streak = locale.format("%d", current_edit_days_streak, grouping=True)
+	largest_day_edit_count = locale.format("%d", largest_day_edit_count, grouping=True)
 
 	# Generate list of most edited pages
 	most_edited_pages = process_most_edited_pages(wiki, page_titles)
