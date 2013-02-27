@@ -145,6 +145,17 @@
 
     <div class="container-fluid">
       <div class="row-fluid">
+        <div class="span4"><h2>Article namespaces</h2></div>
+      </div>
+    </div>
+    <div class="container-fluid">
+      <div class="row-fluid">
+        <div class="span4" id="distribution_piechart_div"></div>
+      </div>
+    </div>
+
+    <div class="container-fluid">
+      <div class="row-fluid">
         <div class="span12"><h2>Most edited pages</h2></div>
       </div>
     </div>
@@ -304,6 +315,22 @@
         ]);
 
         var namespace_pie_chart = new google.visualization.PieChart(document.getElementById('piechart_div'));
+        namespace_pie_chart.draw(data, {
+          chartArea: {top: 50}
+        });
+      }
+    </script>
+
+    <script type="text/javascript">
+      google.load("visualization", "1", {packages:["corechart"]});
+      google.setOnLoadCallback(drawPieChart);
+      function drawPieChart() {
+        var data = google.visualization.arrayToDataTable([
+          ['Namespace', 'Number of articles'],
+          {{ charts_data['namespace_distribution_piechart_string']|safe }}
+        ]);
+
+        var namespace_pie_chart = new google.visualization.PieChart(document.getElementById('distribution_piechart_div'));
         namespace_pie_chart.draw(data, {
           chartArea: {top: 50}
         });
