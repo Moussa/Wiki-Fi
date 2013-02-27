@@ -23,10 +23,23 @@ class Wiki_API:
 
 		return res['query']['allusers']
 
+	def get_user(self, username):
+		params = {'action': 'query',
+                  'list': 'users',
+                  'ususers': username,
+                  'usprop': 'registration'
+                  }
+
+		req = wikitools.api.APIRequest(self.wiki, params)
+		res = req.query(querycontinue=True)
+
+		return res['query']['users'][0]
+
 	def get_user_edits(self, user, start=None):
 		params = {'action': 'query',
                   'list': 'usercontribs',
                   'ucuser': user,
+                  'ucprop': 'ids|title|timestamp|comment|flags',
                   'uclimit': '5000'
                   }
 
@@ -34,16 +47,19 @@ class Wiki_API:
 			params['ucend'] = start
 			params['ucstart'] = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
 
-		req = wikitools.api.APIRequest(self.wiki, params)
-		res = req.query(querycontinue=True)
+		try:
+			req = wikitools.api.APIRequest(self.wiki, params)
+			res = req.query(querycontinue=True)
+		except wikitools.api.APIError:
+			return None
 
 		return res['query']['usercontribs']
 
 	def get_recent_changes(self, start=None):
 		params = {'action': 'query',
                   'list': 'recentchanges',
-                  'rcprop': 'user|timestamp|title|ids',
-                  'rctype': 'edit|new',
+                  'rcprop': 'user|timestamp|title|ids|loginfo',
+                  'rctype': 'edit|new|log',
                   'rcdir': 'newer',
                   'rclimit': '5000'
                   }
