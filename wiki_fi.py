@@ -18,10 +18,10 @@ for wiki in config['wikis']:
 
 
 def get_user_chart_data(wiki, db, user):
-	charts_data = cache.get('wiki-data_{0}_{1}'.format(user['username'].replace(' ', '_'), wiki))
+	charts_data = cache.get('wiki-fi_userdata_{0}_{1}'.format(user['username'].replace(' ', '_'), wiki))
 	if charts_data is None:
 		charts_data = analyze.analyze_user(wiki, db, user)
-		cache.set('wiki-data_{0}_{1}'.format(user['username'].replace(' ', '_'), wiki), charts_data, timeout=0)
+		cache.set('wiki-fi_userdata_{0}_{1}'.format(user['username'].replace(' ', '_'), wiki), charts_data, timeout=0)
 	return charts_data
 
 def get_wiki_chart_data(wiki, db):
@@ -35,10 +35,10 @@ def get_wiki_chart_data(wiki, db):
 def is_valid_user():
 	username = request.form['username']
 	wiki = request.form['wiki']
-	wikiuserlist = cache.get('wiki-data_userlist_{0}'.format(wiki))
+	wikiuserlist = cache.get('wiki-fi_userlist_{0}'.format(wiki))
 	if wikiuserlist is None:
 		wikiuserlist = [user['username'] for user in wiki_dict[wiki]['users'].find(fields=['username'])]
-		cache.set('wiki-data_userlist_{0}'.format(wiki), wikiuserlist, timeout=0)
+		cache.set('wiki-fi_userlist_{0}'.format(wiki), wikiuserlist, timeout=0)
 	data = username in wikiuserlist
 	resp = Response(json.dumps(data), status=200, mimetype='application/json')
 
@@ -46,13 +46,13 @@ def is_valid_user():
 
 @app.route('/get_all_users', methods=['GET'])
 def get_all_users():
-	users = cache.get('wiki-data_allusers')
+	users = cache.get('wiki-fi_allusers')
 	if users is None:
 		users = []
 		for wiki in config['wikis']:
 			users += [user['username'] for user in wiki_dict[wiki]['users'].find(fields=['username'])]
 		users = list(set(users))
-		cache.set('wiki-data_allusers', users, timeout=0)
+		cache.set('wiki-fi_allusers', users, timeout=0)
 	resp = Response(json.dumps(users), status=200, mimetype='application/json')
 
 	return resp
@@ -60,10 +60,10 @@ def get_all_users():
 @app.route('/get_wiki_users', methods=['POST'])
 def get_wiki_users():
 	wiki = request.form['wiki']
-	wikiuserlist = cache.get('wiki-data_userlist_{0}'.format(wiki))
+	wikiuserlist = cache.get('wiki-fi_userlist_{0}'.format(wiki))
 	if wikiuserlist is None:
 		wikiuserlist = [user['username'] for user in wiki_dict[wiki]['users'].find(fields=['username'])]
-		cache.set('wiki-data_userlist_{0}'.format(wiki), wikiuserlist, timeout=0)
+		cache.set('wiki-fi_userlist_{0}'.format(wiki), wikiuserlist, timeout=0)
 	resp = Response(json.dumps(wikiuserlist), status=200, mimetype='application/json')
 
 	return resp
@@ -71,13 +71,13 @@ def get_wiki_users():
 @app.route('/get_user_wikis', methods=['POST'])
 def get_user_wikis():
 	username = request.form['username']
-	userwikislist = cache.get('wiki-data_userwikislist_{0}'.format(username.replace(' ', '_')))
+	userwikislist = cache.get('wiki-fi_userwikislist_{0}'.format(username.replace(' ', '_')))
 	if userwikislist is None:
 		userwikislist = []
 		for wiki in wiki_dict:
 			if wiki_dict[wiki]['users'].find_one({'username': username}, fields=[]):
 				userwikislist.append(wiki)
-		cache.set('wiki-data_userwikislist_{0}'.format(username.replace(' ', '_')), userwikislist, timeout=0)
+		cache.set('wiki-fi_userwikislist_{0}'.format(username.replace(' ', '_')), userwikislist, timeout=0)
 	resp = Response(json.dumps(userwikislist), status=200, mimetype='application/json')
 
 	return resp
@@ -85,10 +85,10 @@ def get_user_wikis():
 @app.route('/get_last_updated', methods=['POST'])
 def get_last_updated():
 	wiki = request.form['wiki']
-	last_updated = cache.get('wiki-metadata_last_updated_' + wiki)
+	last_updated = cache.get('wiki-fi_wiki_last_updated_' + wiki)
 	if last_updated is None:
 		last_updated = (wiki_dict[wiki]['metadata'].find_one({'key': 'last_updated'}, fields=['last_updated']))['last_updated']
-		cache.set('wiki-metadata_last_updated_' + wiki, last_updated, timeout=0)
+		cache.set('wiki-fi_wiki_last_updated_' + wiki, last_updated, timeout=0)
 	last_updated = last_updated.strftime("%H:%M, %d %B %Y (UTC)")
 	resp = Response(json.dumps(last_updated), status=200, mimetype='application/json')
 

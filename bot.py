@@ -43,8 +43,9 @@ def get_user_id(db, wiki, w_api, username, registration=None):
 		else:
 			registration = get_date_from_string(registration)
 		user_id = db['users'].insert({'username': username, 'registration': registration})
-		cache.delete('wiki-data_userlist_{0}'.format(wiki))
-		cache.delete('wiki-data_userwikislist_{0}'.format(username))
+		cache.delete('wiki-fi_userlist_{0}'.format(wiki))
+		cache.delete('wiki-fi_userwikislist_{0}'.format(username))
+		cache.delete('wiki-fi_allusers')
 	else:
 		user_id = user['_id']
 
@@ -107,7 +108,7 @@ def seed(wiki):
 	# update last_updated time
 	datenow = datetime.datetime.now()
 	db['metadata'].update({'key': 'last_updated'}, {'$set': {'last_updated': datenow}}, upsert=True)
-	cache.set('wiki-metadata_last_updated_' + wiki, datenow, timeout=0)
+	cache.set('wiki-fi_wiki_last_updated_' + wiki, datenow, timeout=0)
 
 def update(wiki):
 	db, w_api = load(wiki)
@@ -139,6 +140,7 @@ def update(wiki):
                       'upload': False
                       }
 			db['edits'].insert(output)
+			cache.delete('wiki-fi_pagedata_{0}_{1}'.format(edit['title'].replace(' ', '_'), wiki))
 
 		elif edit['type'] == 'edit':
 			print('RCID: {0} - EDIT: {1}'.format(edit['rcid'], edit['title'].encode('utf-8')))
@@ -151,6 +153,7 @@ def update(wiki):
                       'upload': False
                       }
 			db['edits'].insert(output)
+			cache.delete('wiki-fi_pagedata_{0}_{1}'.format(edit['title'].replace(' ', '_'), wiki))
 
 		elif edit['type'] == 'log':
 			if edit['logtype'] == 'move':
@@ -161,6 +164,7 @@ def update(wiki):
 
 				# rename oldpage to newpage
 				db['pages'].update({'_id': page_id}, {'title': new_page_title, 'ns': new_page_ns})
+				cache.delete('wiki-fi_pagedata_{0}_{1}'.format(edit['title'].replace(' ', '_'), wiki))
 
 				if 'suppressedredirect' not in edit['move']:
 					# left behind a redirect
@@ -175,6 +179,7 @@ def update(wiki):
                               'upload': False
                               }
 					db['edits'].insert(output)
+					cache.delete('wiki-fi_pagedata_{0}_{1}'.format(edit['title'].replace(' ', '_'), wiki))
 
 			elif edit['logtype'] == 'upload':
 				print('RCID: {0} - FILE UPLOAD: {1}'.format(edit['rcid'], edit['title'].encode('utf-8')))
@@ -188,11 +193,18 @@ def update(wiki):
                           'upload': True
                          }
 				db['edits'].insert(output)
+				cache.delete('wiki-fi_pagedata_{0}_{1}'.format(edit['title'].replace(' ', '_'), wiki))
 
 			elif edit['logtype'] == 'delete':
 				print('RCID: {0} - DELETION: {1}'.format(edit['rcid'], edit['title'].encode('utf-8')))
+
+				editstodelete = db['edits'].find({'page_id': page_id}, fields=['user_id'])
+				for edit_delete in editstodelete:
+					user = db['users'].find_one({'_id': edit_delete['user_id']}
+					cache.delete('wiki-fi_userdata_{0}_{1}'.format(user['username'].replace(' ', '_'), wiki))
 				db['edits'].remove({'page_id': page_id})
 				db['pages'].remove({'_id': page_id})
+				cache.delete('wiki-fi_pagedata_{0}_{1}'.format(edit['title'].replace(' ', '_'), wiki))
 
 			else:
 				print('MISSED')
@@ -201,12 +213,10 @@ def update(wiki):
 			print('MISSED')
 			print edit
 
-		# delete cache key to load fresh data on next retrieval
-		cache.delete('wiki-data_{0}_{1}'.format(edit['user'], wiki))
-		## TO ADD: KILL PAGE STATS CACHE
+		cache.delete('wiki-fi_userdata_{0}_{1}'.format(edit['user'], wiki))
 	# update last_updated time
 	db['metadata'].update({'key': 'last_updated'}, {'$set': {'last_updated': datenow}}, upsert=True)
-	cache.set('wiki-metadata_last_updated_' + wiki, datenow, timeout=0)
+	cache.set('wiki-fi_wiki_last_updated_' + wiki, datenow, timeout=0)
 
 
 if __name__ == '__main__':
