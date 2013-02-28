@@ -53,14 +53,15 @@
 
     <div class="alert alert-error error-box">
       <button type="button" class="close" data-dismiss="alert">&times;</button>
-      <strong>Error</strong> invalid username or wiki
+      <strong>Error</strong> <span id="error-text"></span>
     </div>
 
 
     <script type="text/javascript">
       $(document).ready(function() {
         // show error box if user is redirected after entering url with invalid username or wiki
-        if ("{{ error }}" == "True") {
+        if ("{{ error }}" != "") {
+          $('#error-text').html("{{ error }}");
           $('.error-box').show();
         }
 

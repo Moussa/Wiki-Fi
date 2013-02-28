@@ -105,8 +105,8 @@ def get_last_updated():
 def homepage():
 	return render_template('form.html')
 
-def invalid_args():
-	return render_template('form.html', error=True)
+def invalid_args(error):
+	return render_template('form.html', error=error)
 
 @app.route('/about')
 def about():
@@ -114,14 +114,16 @@ def about():
 
 @app.route('/user', methods=['GET'])
 def anaylze_user():
-	if 'username' not in request.args or 'wiki' not in request.args or request.args['wiki'] not in wiki_dict:
-		return invalid_args()
+	if 'username' not in request.args:
+		return invalid_args(error="invalid username")
+	if 'wiki' not in request.args or request.args['wiki'] not in wiki_dict:
+		return invalid_args(error="invalid wiki")
 
 	username = request.args['username']
 	wiki = request.args['wiki']
 	user = wiki_dict[wiki]['users'].find_one({'username': username})
 	if user is None:
-		return invalid_args()
+		return invalid_args(error="invalid username")
 	wiki_link = config['wikis'][wiki]['wiki_link']
 
 	charts_data = get_user_chart_data(wiki, wiki_dict[wiki], user)
@@ -130,14 +132,16 @@ def anaylze_user():
 
 @app.route('/page', methods=['GET'])
 def anaylze_page():
-	if 'page' not in request.args or 'wiki' not in request.args or request.args['wiki'] not in wiki_dict:
-		return invalid_args()
+	if 'page' not in request.args:
+		return invalid_args('invalid page')
+	if 'wiki' not in request.args or request.args['wiki'] not in wiki_dict:
+		return invalid_args('invalid wiki')
 
 	page = request.args['page']
 	wiki = request.args['wiki']
 	page = wiki_dict[wiki]['pages'].find_one({'title': page})
 	if page is None:
-		return invalid_args()
+		return invalid_args('invalid page')
 	wiki_link = config['wikis'][wiki]['wiki_link']
 
 	charts_data = get_page_chart_data(wiki, wiki_dict[wiki], page)
@@ -147,7 +151,7 @@ def anaylze_page():
 @app.route('/wiki', methods=['GET'])
 def anaylze_wiki():
 	if request.args['wiki'] not in wiki_dict:
-		return invalid_args()
+		return invalid_args('invalid wiki')
 
 	wiki = request.args['wiki']
 	wiki_link = config['wikis'][wiki]['wiki_link']
