@@ -117,13 +117,13 @@ def process_namespace_distribution_pie_chart(wiki, edits_collection):
 
 def process_most_edited_pages(wiki, db, page_ids):
 	most_edited = Counter(page_ids).most_common(100)
-	output = [{'text': get_page_name(db, entry[0]) + ' (' + str(entry[1]) + ')', 'weight': entry[1], 'link': {'href': '/page?wiki={0}&page={1}'.format(wiki, get_page_name(db, entry[0])), 'target': '_blank'}} for entry in most_edited]
+	output = [{'text': get_page_name(db, entry[0]) + ' (' + str(entry[1]) + ')', 'weight': entry[1], 'link': {'href': '/page?wiki={0}&page={1}'.format(wiki, get_page_name(db, entry[0])), 'title': 'See stats for ' + get_page_name(db, entry[0])}} for entry in most_edited]
 
 	return json.dumps(output).replace(r"'", r"\'")
 
 def process_most_frequent_editors(wiki, db, user_ids):
 	most_edited = Counter(user_ids).most_common(50)
-	output = [{'text': get_user_name(db, entry[0]) + ' (' + str(entry[1]) + ')', 'weight': entry[1], 'link': {'href': '/user?wiki={0}&username={1}'.format(wiki, get_user_name(db, entry[0])), 'target': '_blank'}} for entry in most_edited]
+	output = [{'text': get_user_name(db, entry[0]) + ' (' + str(entry[1]) + ')', 'weight': entry[1], 'link': {'href': '/user?wiki={0}&username={1}'.format(wiki, get_user_name(db, entry[0])), 'title': 'See stats for User:' + get_user_name(db, entry[0])}} for entry in most_edited]
 
 	return json.dumps(output).replace(r"'", r"\'")
 
@@ -265,7 +265,7 @@ def analyze_page(wiki, db, page):
 	hour_dict = dict((a, {'count': 0, 'string': '{0}:00'.format("%02d" % (a,))}) for a in range(0, 24))
 	edits_dict = dict((a, {'day': {'string': DAY_MAPPING[a], 'count': 0}, 'hours': copy.deepcopy(hour_dict)}) for a in range(0, 7))
 
-	edits = list(edits_collection.find({'page_id': page['_id']}, fields=['timestamp', 'user_id']))
+	edits = list(edits_collection.find({'page_id': page['_id']}, fields=['user_id', 'timestamp', 'upload', 'new_page']))
 
 	total_edit_count = len(edits)
 
@@ -281,10 +281,11 @@ def analyze_page(wiki, db, page):
 
 	creation_edit = edits_collection.find({'page_id': page['_id'], 'new_page': True}, fields=['user_id', 'timestamp'])
 
+	distinct_editors_count = len(edits_collection.find({'page_id': page['_id']}, fields=[]).distinct('user_id'))
+
 	# Format numbers with separators
 	locale.setlocale(locale.LC_ALL, 'en_US.utf8')
 	total_edit_count = locale.format("%d", total_edit_count, grouping=True)
-	# distinct_pages_count = locale.format("%d", distinct_pages_count, grouping=True)
 
 	# Generate list of most frequent editors
 	most_frequent_editors = process_most_frequent_editors(wiki, db, user_ids)
@@ -298,16 +299,9 @@ def analyze_page(wiki, db, page):
 	# Generate data table string for day column chart
 	day_column_chart_string = process_day_column_chart(edits_dict)
 
-	# Generate data table string for namespace pie chart
-	namespace_piechart_string = process_namespace_pie_chart(wiki, edits_collection)
-
-	# Generate data table string for namespace distribution pie chart
-	namespace_distribution_piechart_string = process_namespace_distribution_pie_chart(wiki, edits_collection)
-
 	charts_data = {'total_edit_count': total_edit_count,
                    'most_edited_pages': most_frequent_editors,
-                   'namespace_piechart_string': namespace_piechart_string,
-                   'namespace_distribution_piechart_string': namespace_distribution_piechart_string,
+                   'distinct_editors_count': distinct_editors_count,
                    'hour_column_chart_string': hour_column_chart_string,
                    'hour_day_bubble_chart_string': hour_day_bubble_chart_string,
                    'day_column_chart_string': day_column_chart_string

@@ -69,30 +69,13 @@
               <td>Total edits:</td>
               <td id="value">{{charts_data['total_edit_count']}}</td>
             </tr>
-            <tr class="number-stats-tablerow">
-              <td>Largest number of edits in a day:</td>
-              <td id="value">{{charts_data['largest_day_edit_count']}}</td>
-            </tr>
-            <tr class="number-stats-tablerow">
-              <td>Edits per day:</td>
-              <td id="value-list">
-                <ul class="unstyled">
-                  <li id="value-list-row">{{charts_data['edits_per_day_30days']}} <span>last 30 days</span></li>
-                  <li id="value-list-row">{{charts_data['edits_per_day']}} <span>all time</span></li>
-                </ul>
-              </td>
-            </tr>
           </table>
         </div>
         <div class="span6">
           <table class="table-condensed">
             <tr class="number-stats-tablerow">
-              <td>Unique pages edited:</td>
-              <td id="value">{{charts_data['distinct_pages_count']}}</td>
-            </tr>
-            <tr class="number-stats-tablerow">
-              <td>Days since first edit:</td>
-              <td id="value">{{charts_data['days_since_first_edit']}} days</td>
+              <td>Unique editors:</td>
+              <td id="value">{{charts_data['distinct_editors_count']}}</td>
             </tr>
           </table>
         </div>
@@ -132,25 +115,12 @@
 
     <div class="container-fluid">
       <div class="row-fluid">
-        <div class="span4"><h2>Edits by namespace</h2></div>
         <div class="span8"><h2>Edits by days & hours</h2></div>
       </div>
     </div>
     <div class="container-fluid">
       <div class="row-fluid">
-        <div class="span4" id="piechart_div"></div>
         <div class="span8" id="bubblechart_div"></div>
-      </div>
-    </div>
-
-    <div class="container-fluid">
-      <div class="row-fluid">
-        <div class="span4"><h2>Article namespaces</h2></div>
-      </div>
-    </div>
-    <div class="container-fluid">
-      <div class="row-fluid">
-        <div class="span4" id="distribution_piechart_div"></div>
       </div>
     </div>
 
@@ -307,38 +277,6 @@
 
     <script type="text/javascript">
       google.load("visualization", "1", {packages:["corechart"]});
-      google.setOnLoadCallback(drawPieChart);
-      function drawPieChart() {
-        var data = google.visualization.arrayToDataTable([
-          ['Namespace', 'Edits'],
-          {{ charts_data['namespace_piechart_string']|safe }}
-        ]);
-
-        var namespace_pie_chart = new google.visualization.PieChart(document.getElementById('piechart_div'));
-        namespace_pie_chart.draw(data, {
-          chartArea: {top: 50}
-        });
-      }
-    </script>
-
-    <script type="text/javascript">
-      google.load("visualization", "1", {packages:["corechart"]});
-      google.setOnLoadCallback(drawPieChart);
-      function drawPieChart() {
-        var data = google.visualization.arrayToDataTable([
-          ['Namespace', 'Number of articles'],
-          {{ charts_data['namespace_distribution_piechart_string']|safe }}
-        ]);
-
-        var namespace_pie_chart = new google.visualization.PieChart(document.getElementById('distribution_piechart_div'));
-        namespace_pie_chart.draw(data, {
-          chartArea: {top: 50}
-        });
-      }
-    </script>
-
-    <script type="text/javascript">
-      google.load("visualization", "1", {packages:["corechart"]});
       google.setOnLoadCallback(drawBubbleChart);
       function drawBubbleChart() {
         var data = google.visualization.arrayToDataTable([
@@ -351,7 +289,7 @@
           hAxis: {title: 'Hour', viewWindowMode: 'explicit', viewWindow: {min: -1, max: 24}, baseline: -2},
           vAxis: {title: 'Day', direction: -1, textPosition: 'none'},
           bubble: {textStyle: {color: 'none'}},
-          sizeAxis: {minSize: 0},
+          sizeAxis: {minSize: 3},
           legend: {position: 'none'},
           chartArea: {top: 30}
         });
