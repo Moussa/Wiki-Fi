@@ -59,6 +59,11 @@ def get_page_name(db, _id):
 
 	return page['title']
 
+def get_user_name(db, _id):
+	user = db['users'].find_one(_id, fields=['username'])
+
+	return user['username']
+
 def process_day_column_chart(edits_dict):
 	day_output = []
 	for day, day_entry in edits_dict.iteritems():
@@ -112,7 +117,13 @@ def process_namespace_distribution_pie_chart(wiki, edits_collection):
 
 def process_most_edited_pages(wiki, db, page_ids):
 	most_edited = Counter(page_ids).most_common(100)
-	output = [{'text': get_page_name(db, entry[0]) + ' (' + str(entry[1]) + ')', 'weight': entry[1], 'link': {'href': config['wikis'][wiki]['wiki_link'] + '/wiki/' + get_page_name(db, entry[0]), 'target': '_blank'}} for entry in most_edited]
+	output = [{'text': get_page_name(db, entry[0]) + ' (' + str(entry[1]) + ')', 'weight': entry[1], 'link': {'href': '/page?wiki={0}&page={1}'.format(wiki, get_page_name(db, entry[0])), 'target': '_blank'}} for entry in most_edited]
+
+	return json.dumps(output).replace(r"'", r"\'")
+
+def process_most_frequent_editors(wiki, db, user_ids):
+	most_edited = Counter(user_ids).most_common(50)
+	output = [{'text': get_user_name(db, entry[0]) + ' (' + str(entry[1]) + ')', 'weight': entry[1], 'link': {'href': '/user?wiki={0}&username={1}'.format(wiki, get_user_name(db, entry[0])), 'target': '_blank'}} for entry in most_edited]
 
 	return json.dumps(output).replace(r"'", r"\'")
 
@@ -254,7 +265,7 @@ def analyze_page(wiki, db, page):
 	hour_dict = dict((a, {'count': 0, 'string': '{0}:00'.format("%02d" % (a,))}) for a in range(0, 24))
 	edits_dict = dict((a, {'day': {'string': DAY_MAPPING[a], 'count': 0}, 'hours': copy.deepcopy(hour_dict)}) for a in range(0, 7))
 
-	edits = list(edits_collection.find({'page_id': page_id}, fields=['timestamp', 'user_id']))
+	edits = list(edits_collection.find({'page_id': page['_id']}, fields=['timestamp', 'user_id']))
 
 	total_edit_count = len(edits)
 
@@ -268,22 +279,15 @@ def analyze_page(wiki, db, page):
 		edits_dict[edit_day]['hours'][edit_hour]['count'] += 1
 		edits_dict[edit_day]['day']['count'] += 1
 
-	creation_edit = edits_collection.find({'page_id': page_id, 'new_page': True}, fields=['user_id', 'timestamp'])
-
-	edits_per_day = '%.2f' % (float(total_edit_count)/float(time_period))
-
-	start_date = start_date.strftime("%d %B %Y")
-	end_date = end_date.strftime("%d %B %Y")
+	creation_edit = edits_collection.find({'page_id': page['_id'], 'new_page': True}, fields=['user_id', 'timestamp'])
 
 	# Format numbers with separators
 	locale.setlocale(locale.LC_ALL, 'en_US.utf8')
 	total_edit_count = locale.format("%d", total_edit_count, grouping=True)
-	distinct_pages_count = locale.format("%d", distinct_pages_count, grouping=True)
-	days_since_first_edit = locale.format("%d", days_since_first_edit, grouping=True)
-	largest_day_edit_count = locale.format("%d", largest_day_edit_count, grouping=True)
+	# distinct_pages_count = locale.format("%d", distinct_pages_count, grouping=True)
 
-	# Generate list of most edited pages
-	most_edited_pages = process_most_edited_pages(wiki, db, user_ids)
+	# Generate list of most frequent editors
+	most_frequent_editors = process_most_frequent_editors(wiki, db, user_ids)
 
 	# Generate data table string for day/hour bubble chart
 	hour_day_bubble_chart_string = process_hour_day_bubble_chart(edits_dict)
@@ -300,16 +304,8 @@ def analyze_page(wiki, db, page):
 	# Generate data table string for namespace distribution pie chart
 	namespace_distribution_piechart_string = process_namespace_distribution_pie_chart(wiki, edits_collection)
 
-	charts_data = {'start_date': start_date,
-                   'end_date': end_date,
-	               'total_edit_count': total_edit_count,
-                   'distinct_pages_count': distinct_pages_count,
-                   'days_since_first_edit': days_since_first_edit,
-                   'edits_per_day': edits_per_day,
-                   'edits_per_day_30days': edits_per_day_30days,
-                   'largest_day_edit_count': largest_day_edit_count,
-                   'most_edited_pages': most_edited_pages,
-                   'edits_timeline_string': edits_timeline_string,
+	charts_data = {'total_edit_count': total_edit_count,
+                   'most_edited_pages': most_frequent_editors,
                    'namespace_piechart_string': namespace_piechart_string,
                    'namespace_distribution_piechart_string': namespace_distribution_piechart_string,
                    'hour_column_chart_string': hour_column_chart_string,

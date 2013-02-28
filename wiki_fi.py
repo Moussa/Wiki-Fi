@@ -24,6 +24,13 @@ def get_user_chart_data(wiki, db, user):
 		cache.set('wiki-fi_userdata_{0}_{1}'.format(user['username'].replace(' ', '_'), wiki), charts_data, timeout=0)
 	return charts_data
 
+def get_page_chart_data(wiki, db, page):
+	charts_data = cache.get('wiki-fi_pagedata_{0}_{1}'.format(page['title'].replace(' ', '_'), wiki))
+	if charts_data is None:
+		charts_data = analyze.analyze_page(wiki, db, page)
+		cache.set('wiki-fi_pagedata_{0}_{1}'.format(page['title'].replace(' ', '_'), wiki), charts_data, timeout=0)
+	return charts_data
+
 def get_wiki_chart_data(wiki, db):
 	charts_data = cache.get('wiki-data_{0}'.format(wiki))
 	if charts_data is None:
@@ -106,7 +113,7 @@ def about():
 	return render_template('about.html')
 
 @app.route('/user', methods=['GET'])
-def anaylze_edits():
+def anaylze_user():
 	if 'username' not in request.args or 'wiki' not in request.args or request.args['wiki'] not in wiki_dict:
 		return invalid_args()
 
@@ -120,6 +127,22 @@ def anaylze_edits():
 	charts_data = get_user_chart_data(wiki, wiki_dict[wiki], user)
 
 	return render_template('user_stats.html', username=username, wiki=wiki, wiki_link=wiki_link, charts_data=charts_data)
+
+@app.route('/page', methods=['GET'])
+def anaylze_page():
+	if 'page' not in request.args or 'wiki' not in request.args or request.args['wiki'] not in wiki_dict:
+		return invalid_args()
+
+	page = request.args['page']
+	wiki = request.args['wiki']
+	page = wiki_dict[wiki]['pages'].find_one({'title': page})
+	if page is None:
+		return invalid_args()
+	wiki_link = config['wikis'][wiki]['wiki_link']
+
+	charts_data = get_page_chart_data(wiki, wiki_dict[wiki], page)
+
+	return render_template('page_stats.html', page_name=page, wiki=wiki, wiki_link=wiki_link, charts_data=charts_data)
 
 @app.route('/wiki', methods=['GET'])
 def anaylze_wiki():
