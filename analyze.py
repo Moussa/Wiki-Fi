@@ -279,7 +279,8 @@ def analyze_page(wiki, db, page):
 		edits_dict[edit_day]['hours'][edit_hour]['count'] += 1
 		edits_dict[edit_day]['day']['count'] += 1
 
-	creation_edit = edits_collection.find({'page_id': page['_id'], 'new_page': True}, fields=['user_id', 'timestamp'])
+	creation_edit = edits_collection.find_one({'page_id': page['_id'], 'new_page': True}, fields=['user_id', 'timestamp'])
+	creation_date = creation_edit['timestamp'].strftime("%d %B %Y")
 
 	distinct_editors_count = len(edits_collection.find({'page_id': page['_id']}, fields=[]).distinct('user_id'))
 
@@ -302,6 +303,7 @@ def analyze_page(wiki, db, page):
 	charts_data = {'total_edit_count': total_edit_count,
                    'most_edited_pages': most_frequent_editors,
                    'distinct_editors_count': distinct_editors_count,
+                   'creation_date': creation_date,
                    'hour_column_chart_string': hour_column_chart_string,
                    'hour_day_bubble_chart_string': hour_day_bubble_chart_string,
                    'day_column_chart_string': day_column_chart_string

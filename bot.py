@@ -69,7 +69,7 @@ def get_last_edit_datetime(db):
 def seed(wiki):
 	db, w_api = load(wiki)
 
-	users = w_api.get_users(edited_only=True)
+	users = w_api.get_users(edited_only=False)
 
 	for user in users:
 		username = user['name'].encode('utf-8')

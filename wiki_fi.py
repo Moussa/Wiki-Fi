@@ -146,7 +146,7 @@ def anaylze_page():
 
 	charts_data = get_page_chart_data(wiki, wiki_dict[wiki], page)
 
-	return render_template('page_stats.html', page_name=page, wiki=wiki, wiki_link=wiki_link, charts_data=charts_data)
+	return render_template('page_stats.html', page_name=page['title'], wiki=wiki, wiki_link=wiki_link, charts_data=charts_data)
 
 @app.route('/wiki', methods=['GET'])
 def anaylze_wiki():
