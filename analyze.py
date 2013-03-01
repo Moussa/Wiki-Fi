@@ -280,7 +280,10 @@ def analyze_page(wiki, db, page):
 		edits_dict[edit_day]['day']['count'] += 1
 
 	creation_edit = edits_collection.find_one({'page_id': page['_id'], 'new_page': True}, fields=['user_id', 'timestamp'])
-	creation_date = creation_edit['timestamp'].strftime("%d %B %Y")
+	if creation_edit:
+		creation_date = creation_edit['timestamp'].strftime("%d %B %Y")
+	else:
+		creation_date = 'unknown date'
 
 	distinct_editors_count = len(edits_collection.find({'page_id': page['_id']}, fields=[]).distinct('user_id'))
 
