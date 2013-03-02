@@ -71,6 +71,8 @@ def seed(wiki):
 
 	db['metadata'].update({'key': 'namespaces'}, {'$set': {'value': {}}}, upsert=True)
 
+	users = {}
+
 	for namespace in namespaces:
 		# skip invalid namespace ids
 		if int(namespace) < 0:
@@ -101,7 +103,11 @@ def seed(wiki):
 				revid = revision['revid']
 
 				if timestamp < cutoff_date:
-					user_id = get_user_id(db, wiki, w_api, username)
+					if username in users:
+						user_id = users[username]
+					else:
+						user_id = get_user_id(db, wiki, w_api, username)
+						users[username] = user_id
 
 					output = {'user_id': user_id,
 	                          'ns': namespace,
@@ -125,7 +131,11 @@ def seed(wiki):
 					timestamp = get_date_from_string(upload['timestamp'])
 
 					if timestamp < cutoff_date:
-						user_id = get_user_id(db, wiki, w_api, username)
+						if username in users:
+							user_id = users[username]
+						else:
+							user_id = get_user_id(db, wiki, w_api, username)
+							users[username] = user_id
 
 						output = {'user_id': user_id,
 		                          'page_id': page_id,
