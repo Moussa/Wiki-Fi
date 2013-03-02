@@ -237,7 +237,7 @@ def update(wiki):
 		                  }
 				db['files'].insert(output)
 
-				if edit['logaction'] == 'upload'
+				if edit['logaction'] == 'upload':
 					output = {'user_id': user_id,
 	                          'ns': ns,
 	                          'revid': edit['revid'],

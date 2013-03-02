@@ -8,23 +8,6 @@ except:
 	from counter import Counter
 
 DAY_MAPPING = {0: 'Monday', 1: 'Tuesday', 2: 'Wednesday', 3: 'Thursday', 4: 'Friday', 5: 'Saturday', 6: 'Sunday'}
-NAMESPACE_MAPPING = {0: 'Main',
-                     1: 'Talk',
-                     2: 'User',
-                     3: 'User talk',
-                     4: '{wiki_name} Wiki',
-                     5: '{wiki_name} Wiki talk',
-                     6: 'File',
-                     7: 'File talk',
-                     8: 'MediaWiki',
-                     9: 'MediaWiki talk',
-                    10: 'Template',
-                    11: 'Template talk',
-                    12: 'Help',
-                    13: 'Help talk',
-                    14: 'Category',
-                    15: 'Category talk'
-                     }
 
 creationDateRE = re.compile(r'(\d{2})/(\d{2})/(\d{4})')
 
@@ -92,7 +75,8 @@ def process_hour_day_bubble_chart(edits_dict):
 
 	return day_hour_output
 
-def process_namespace_pie_chart(wiki, edits_collection, user=None):
+def process_namespace_pie_chart(wiki, db, edits_collection, user=None):
+	NAMESPACE_MAPPING = db['metadata'].find_one({'key': 'namespaces'})['value']
 	namespace_piechart_output = []
 	for namespace in NAMESPACE_MAPPING:
 		if user:
@@ -100,17 +84,18 @@ def process_namespace_pie_chart(wiki, edits_collection, user=None):
 		else:
 			count = edits_collection.find({'ns': namespace}, fields=[]).count()
 		if count > 0:
-			namespace_piechart_output.append('[\'{0}\', {1}]'.format(NAMESPACE_MAPPING[namespace].format(wiki_name=config['wikis'][wiki]['wiki_name']), count))
+			namespace_piechart_output.append('[\'{0}\', {1}]'.format(NAMESPACE_MAPPING[namespace], count))
 	namespace_piechart_output = ',\n'.join(namespace_piechart_output)
 
 	return namespace_piechart_output
 
-def process_namespace_distribution_pie_chart(wiki, edits_collection):
+def process_namespace_distribution_pie_chart(wiki, db, edits_collection):
+	NAMESPACE_MAPPING = db['metadata'].find_one({'key': 'namespaces'})['value']
 	namespace_distribution_piechart_output = []
 	for namespace in NAMESPACE_MAPPING:
 		count = len(edits_collection.find({'ns': namespace}, fields=[]).distinct('page_id'))
 		if count > 0:
-			namespace_distribution_piechart_output.append('[\'{0}\', {1}]'.format(NAMESPACE_MAPPING[namespace].format(wiki_name=config['wikis'][wiki]['wiki_name']), count))
+			namespace_distribution_piechart_output.append('[\'{0}\', {1}]'.format(NAMESPACE_MAPPING[namespace], count))
 	namespace_distribution_piechart_output = ',\n'.join(namespace_distribution_piechart_output)
 
 	return namespace_distribution_piechart_output
@@ -231,7 +216,7 @@ def analyze_user(wiki, db, user):
 	day_column_chart_string = process_day_column_chart(edits_dict)
 
 	# Generate data table string for namespace pie chart
-	namespace_piechart_string = process_namespace_pie_chart(wiki, edits_collection, user)
+	namespace_piechart_string = process_namespace_pie_chart(wiki, db, edits_collection, user)
 
 	# Generate data table string for edits timeline chart
 	edits_timeline_string = ',\n'.join(sorted(edits_timeline))
@@ -397,7 +382,7 @@ def analyze_wiki(wiki, db):
 	namespace_piechart_string = process_namespace_pie_chart(wiki, edits_collection)
 
 	# Generate data table string for namespace distribution pie chart
-	namespace_distribution_piechart_string = process_namespace_distribution_pie_chart(wiki, edits_collection)
+	namespace_distribution_piechart_string = process_namespace_distribution_pie_chart(wiki, db, edits_collection)
 
 	# Generate data table string for edits timeline chart
 	edits_timeline_string = ',\n'.join(sorted(edits_timeline))
