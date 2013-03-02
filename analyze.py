@@ -11,27 +11,26 @@ DAY_MAPPING = {0: 'Monday', 1: 'Tuesday', 2: 'Wednesday', 3: 'Thursday', 4: 'Fri
 
 creationDateRE = re.compile(r'(\d{2})/(\d{2})/(\d{4})')
 
-def daterange(start_date, end_date):
-	for n in range(int((end_date - start_date).days) + 1):
-		yield start_date + datetime.timedelta(days=n)
-
-def get_user_registration_date(db, user):
-	registration_date = db['users'].find_one(user['_id'])['registration']
-
-	return registration_date
-
-def get_wiki_date_range(db, creation_date):
+def get_creation_datetime_from_string(creation_date):
 	res = creationDateRE.search(creation_date)
-	if not res:
-		return None
 	day = int(res.group(1))
 	month = int(res.group(2))
 	year = int(res.group(3))
 
-	start = datetime.datetime(year, month, day)
-	end = (db['edits'].find({}, fields=['timestamp'], sort=[('timestamp', pymongo.DESCENDING )]).limit(1))[0]['timestamp']
+	return datetime.datetime(year, month, day)
 
-	return start, end
+def daterange(start_date, end_date):
+	for n in range(int((end_date - start_date).days) + 1):
+		yield start_date + datetime.timedelta(days=n)
+
+def get_user_registration_date(wiki, db, user):
+	registration_date = db['users'].find_one(user['_id'])['registration']
+	# some users have no registration date for whatever reason
+	if registration_date is None:
+		# use wiki creation date instead
+		registration_date = get_creation_datetime_from_string(config['wikis'][wiki]['creation_date'])
+
+	return registration_date
 
 def get_page_name(db, _id):
 	page = db['pages'].find_one(_id, fields=['title'])
@@ -111,7 +110,7 @@ def process_most_frequent_editors(wiki, db, user_ids):
 def analyze_user(wiki, db, user):
 	edits_collection = db['edits']
 
-	start_date = get_user_registration_date(db, user)
+	start_date = get_user_registration_date(wiki, db, user)
 	end_date = datetime.datetime.today()
 
 	edits_timeline = []
@@ -296,7 +295,8 @@ def analyze_page(wiki, db, page):
 def analyze_wiki(wiki, db):
 	edits_collection = db['edits']
 
-	start_date, end_date = get_wiki_date_range(db, config['wikis'][wiki]['creation_date'])
+	start_date = get_creation_datetime_from_string(config['wikis'][wiki]['creation_date'])
+	end_date = datetime.datetime.today()
 
 	edits_timeline = []
 	page_ids = []
