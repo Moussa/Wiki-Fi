@@ -15,14 +15,10 @@ def daterange(start_date, end_date):
 	for n in range(int((end_date - start_date).days) + 1):
 		yield start_date + datetime.timedelta(days=n)
 
-def get_date_range(db, user):
-	if db['edits'].find_one({'user_id': user['_id']}, fields=[]) is None:
-		return datetime.datetime(2010, 6, 4), datetime.datetime.now()
+def get_user_registration_date(db, user):
+	registration_date = db['users'].find_one(user['_id'])['registration']
 
-	user_start = (db['edits'].find({'user_id': user['_id']}, fields=['timestamp'], sort=[('timestamp', pymongo.ASCENDING)]).limit(1))[0]['timestamp']
-	user_end = (db['edits'].find({'user_id': user['_id']}, fields=['timestamp'], sort=[('timestamp', pymongo.DESCENDING )]).limit(1))[0]['timestamp']
-
-	return user_start, user_end
+	return registration_date
 
 def get_wiki_date_range(db, creation_date):
 	res = creationDateRE.search(creation_date)
@@ -115,7 +111,8 @@ def process_most_frequent_editors(wiki, db, user_ids):
 def analyze_user(wiki, db, user):
 	edits_collection = db['edits']
 
-	start_date, end_date = get_date_range(db, user)
+	start_date = get_user_registration_date(db, user)
+	end_date = datetime.datetime.today()
 
 	edits_timeline = []
 	page_ids = []
@@ -176,11 +173,6 @@ def analyze_user(wiki, db, user):
 
 		edits_timeline.append(editentry)
 
-	# Check if edit streak is running to today and not just to end of last edit
-	# Add extra day to allow for user adding edit before the end of the current day	
-	if end_date.date() < datetime.datetime.today().date() - datetime.timedelta(days=1):
-		current_edit_days_streak = 0
-
 	distinct_pages_count = len(edits_collection.find({'user_id': user['_id']}, fields=[]).distinct('page_id'))
 
 	days_since_first_edit = (datetime.datetime.today() - start_date).days
@@ -222,7 +214,6 @@ def analyze_user(wiki, db, user):
 	edits_timeline_string = ',\n'.join(sorted(edits_timeline))
 
 	charts_data = {'start_date': start_date,
-                   'end_date': end_date,	
 	               'total_edit_count': total_edit_count,
                    'distinct_pages_count': distinct_pages_count,
                    'days_since_first_edit': days_since_first_edit,
