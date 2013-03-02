@@ -70,7 +70,10 @@ class Wiki_API:
 		res = req.query(querycontinue=True)
 
 		page_id = res['query']['pages'].keys()[0]
-		return res['query']['pages'][page_id]['imageinfo']
+		if 'imageinfo' in res['query']['pages'][page_id]:
+			return res['query']['pages'][page_id]['imageinfo']
+		else:
+			return None
 
 	def get_recent_changes(self, start=None):
 		params = {'action': 'query',

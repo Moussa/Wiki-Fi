@@ -116,6 +116,9 @@ def seed(wiki):
 
 			if namespace == '6':
 				uploads = w_api.get_file_uploads(page_name)
+				if uploads is None:
+					# it's a redirect page
+					continue
 
 				for upload in uploads:
 					username = upload['user'].encode('utf-8')
