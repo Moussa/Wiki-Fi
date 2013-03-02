@@ -174,6 +174,10 @@ def analyze_user(wiki, db, user):
 
 	distinct_pages_count = len(edits_collection.find({'user_id': user['_id']}, fields=[]).distinct('page_id'))
 
+	pages_created = edits_collection.find({'user_id': user['_id'], 'new_page': True}, fields=[]).count()
+
+	files_uploaded = db['files'].find({'user_id': user['_id']}, fields=[]).count()
+
 	days_since_first_edit = (datetime.datetime.today() - start_date).days
 
 	time_period = (end_date - start_date).days + 1
@@ -215,6 +219,8 @@ def analyze_user(wiki, db, user):
 	charts_data = {'start_date': start_date,
 	               'total_edit_count': total_edit_count,
                    'distinct_pages_count': distinct_pages_count,
+                   'pages_created': pages_created,
+                   'files_uploaded': files_uploaded,
                    'days_since_first_edit': days_since_first_edit,
                    'edits_per_day': edits_per_day,
                    'activity_percentage': activity_percentage,
