@@ -35,12 +35,12 @@ def get_user_registration_date(wiki, db, user):
 def get_page_name(db, _id):
 	page = db['pages'].find_one(_id, fields=['title'])
 
-	return page['title']
+	return page['title'].encode('utf-8')
 
 def get_user_name(db, _id):
 	user = db['users'].find_one(_id, fields=['username'])
 
-	return user['username']
+	return user['username'].encode('utf-8')
 
 def process_day_column_chart(edits_dict):
 	day_output = []
