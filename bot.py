@@ -157,42 +157,49 @@ def update(wiki):
 			continue
 
 		timestamp = get_date_from_string(edit['timestamp'])
+		if 'user' in edit:
+			username = edit['user'].encode('utf-8')
+		if 'title' in edit:
+			title = edit['title'].encode('utf-8')
+		if 'ns' in edit:
+			ns = edit['ns']
+		if 'rcid' in edit:
+			rcid = edit['rcid']
+
 		if edit['type'] == 'new':
-			print('RCID: {0} - NEWPAGE: {1}'.format(edit['rcid'], edit['title'].encode('utf-8')))
-			user_id = get_user_id(db, wiki, w_api, edit['user'].encode('utf-8'))
-			page_id = get_page_id(db, wiki, edit['title'].encode('utf-8'), edit['ns'])
+			print('RCID: {0} - NEWPAGE: {1}'.format(rcid, title))
+			user_id = get_user_id(db, wiki, w_api, username)
+			page_id = get_page_id(db, wiki, title, ns)
 			output = {'user_id': user_id,
-                      'ns': edit['ns'],
+                      'ns': ns,
                       'revid': edit['revid'],
                       'page_id': page_id,
                       'timestamp': timestamp,
-                      'new_page': True,
-                      'upload': False
+                      'new_page': True
                       }
 			db['edits'].insert(output)
-			cache.delete('wiki-fi:pagedata_{0}_{1}'.format(edit['title'].replace(' ', '_').encode('utf-8'), wiki))
+			cache.delete('wiki-fi:pagedata_{0}_{1}'.format(title.replace(' ', '_'), wiki))
 
 		elif edit['type'] == 'edit':
-			print('RCID: {0} - EDIT: {1}'.format(edit['rcid'], edit['title'].encode('utf-8')))
-			user_id = get_user_id(db, wiki, w_api, edit['user'].encode('utf-8'))
-			page_id = get_page_id(db, wiki, edit['title'].encode('utf-8'), edit['ns'])
+			print('RCID: {0} - EDIT: {1}'.format(rcid, title))
+			user_id = get_user_id(db, wiki, w_api, username)
+			page_id = get_page_id(db, wiki, title, ns)
 			output = {'user_id': user_id,
-                      'ns': edit['ns'],
+                      'ns': ns,
                       'revid': edit['revid'],
                       'page_id': page_id,
                       'timestamp': timestamp,
-                      'new_page': False,
-                      'upload': False
+                      'new_page': False
                       }
 			db['edits'].insert(output)
-			cache.delete('wiki-fi:pagedata_{0}_{1}'.format(edit['title'].replace(' ', '_').encode('utf-8'), wiki))
+			cache.delete('wiki-fi:pagedata_{0}_{1}'.format(title.replace(' ', '_'), wiki))
 
 		elif edit['type'] == 'log':
 			if edit['logtype'] == 'move':
-				print('RCID: {0} - PAGEMOVE: {1} -> {2}'.format(edit['rcid'], edit['title'].encode('utf-8'), edit['move']['new_title'].encode('utf-8')))
-				page_id = get_page_id(db, wiki, edit['title'].encode('utf-8'), edit['ns'])
-				old_page_title = edit['title']
-				new_page_title = edit['move']['new_title']
+				print('RCID: {0} - PAGEMOVE: {1} -> {2}'.format(rcid, title, edit['move']['new_title'].encode('utf-8')))
+				page_id = get_page_id(db, wiki, title, ns)
+				old_page_title = edit['title'].encode('utf-8')
+				new_page_title = edit['move']['new_title'].encode('utf-8')
 				new_page_ns = edit['move']['new_ns']
 
 				# delete existing target page and any edits that referenced it
@@ -202,51 +209,57 @@ def update(wiki):
 					db['edits'].remove({'page_id': target_page['_id']})
 				# rename oldpage to newpage
 				db['pages'].update({'_id': page_id}, {'title': new_page_title, 'ns': new_page_ns})
-				cache.delete('wiki-fi:pagedata_{0}_{1}'.format(edit['title'].replace(' ', '_').encode('utf-8'), wiki))
+				cache.delete('wiki-fi:pagedata_{0}_{1}'.format(title.replace(' ', '_'), wiki))
 
 				if 'suppressedredirect' not in edit['move']:
 					# left behind a redirect
-					print('RCID: {0} - REDIRECTCREATION: {1}'.format(edit['rcid'], edit['title'].encode('utf-8')))
-					page_id = get_page_id(db, wiki, edit['title'].encode('utf-8'), edit['ns'])
-					user_id = get_user_id(db, wiki, w_api, edit['user'].encode('utf-8'))
+					print('RCID: {0} - REDIRECTCREATION: {1}'.format(rcid, title))
+					page_id = get_page_id(db, wiki, title, ns)
+					user_id = get_user_id(db, wiki, w_api, username)
 					output = {'user_id': user_id,
-                              'ns': edit['ns'],
+                              'ns': ns,
                               'revid': edit['revid'],
                               'page_id': page_id,
                               'timestamp': timestamp,
-                              'new_page': True,
-                              'upload': False
+                              'new_page': True
                               }
 					db['edits'].insert(output)
-					cache.delete('wiki-fi:pagedata_{0}_{1}'.format(edit['title'].replace(' ', '_').encode('utf-8'), wiki))
+					cache.delete('wiki-fi:pagedata_{0}_{1}'.format(title.replace(' ', '_'), wiki))
 
 			elif edit['logtype'] == 'upload':
-				print('RCID: {0} - FILEUPLOAD: {1}'.format(edit['rcid'], edit['title'].encode('utf-8')))
-				user_id = get_user_id(db, wiki, w_api, edit['user'].encode('utf-8'))
-				page_id = get_page_id(db, wiki, edit['title'].encode('utf-8'), edit['ns'])
+				print('RCID: {0} - FILEUPLOAD: {1}'.format(rcid, title))
+				user_id = get_user_id(db, wiki, w_api, username)
+				page_id = get_page_id(db, wiki, title, ns)
+
 				output = {'user_id': user_id,
-                          'ns': edit['ns'],
-                          'revid': edit['revid'],
-                          'page_id': page_id,
-                          'timestamp': timestamp,
-                          'new_page': edit['logaction'] == 'upload',
-                          'upload': True
-                         }
-				db['edits'].insert(output)
-				cache.delete('wiki-fi:pagedata_{0}_{1}'.format(edit['title'].replace(' ', '_').encode('utf-8'), wiki))
+		                  'page_id': page_id,
+		                  'timestamp': timestamp
+		                  }
+				db['files'].insert(output)
+
+				if edit['logaction'] == 'upload'
+					output = {'user_id': user_id,
+	                          'ns': ns,
+	                          'revid': edit['revid'],
+	                          'page_id': page_id,
+	                          'timestamp': timestamp,
+	                          'new_page': True
+	                          }
+					db['edits'].insert(output)
+					cache.delete('wiki-fi:pagedata_{0}_{1}'.format(title.replace(' ', '_'), wiki))
 
 			elif edit['logtype'] == 'delete':
-				print('RCID: {0} - DELETION: {1}'.format(edit['rcid'], edit['title'].encode('utf-8')))
-				page_id = get_page_id(db, wiki, edit['title'], edit['ns'])
+				print('RCID: {0} - DELETION: {1}'.format(rcid, title))
+				page_id = get_page_id(db, wiki, edit['title'], ns)
 				db['edits'].remove({'page_id': page_id})
 				db['pages'].remove({'_id': page_id})
-				cache.delete('wiki-fi:pagedata_{0}_{1}'.format(edit['title'].replace(' ', '_').encode('utf-8'), wiki))
+				cache.delete('wiki-fi:pagedata_{0}_{1}'.format(title.replace(' ', '_'), wiki))
 
 			elif edit['logtype'] == 'newusers':
-				print('RCID: {0} - NEWUSER: {1}'.format(edit['rcid'], edit['user'].encode('utf-8')))
+				print('RCID: {0} - NEWUSER: {1}'.format(rcid, username))
 
 			elif edit['logtype'] == 'block':
-				print('RCID: {0} - BLOCK: {1}'.format(edit['rcid'], edit['title'].encode('utf-8')))
+				print('RCID: {0} - BLOCK: {1}'.format(rcid, title))
 
 			else:
 				print('MISSED')
@@ -257,7 +270,8 @@ def update(wiki):
 
 		last_seen_rcid = edit['rcid']
 
-		cache.delete('wiki-fi:userdata_{0}_{1}'.format(edit['user'].replace(' ', '_').encode('utf-8'), wiki))
+		cache.delete('wiki-fi:userdata_{0}_{1}'.format(username.replace(' ', '_'), wiki))
+
 	# update last_updated time
 	db['metadata'].update({'key': 'last_seen_rcid'}, {'$set': {'value': last_seen_rcid}}, upsert=True)
 	db['metadata'].update({'key': 'last_updated'}, {'$set': {'last_updated': datenow}}, upsert=True)
