@@ -8,22 +8,30 @@ class Wiki_API:
 		self.wiki = wikitools.Wiki(wiki_api_url)
 		self.wiki.login(username=username, password=password)
 
-	def get_users(self, edited_only=False):
+	def get_all_namespaces(self):
 		params = {'action': 'query',
-                  'list': 'allusers',
-                  'aulimit': '5000',
-                  'auprop': 'registration'
+                  'meta': 'siteinfo',
+                  'siprop': 'namespaces'
                   }
 
-		if edited_only:
-			params['auwitheditsonly'] = ''
+		req = wikitools.api.APIRequest(self.wiki, params)
+		res = req.query()
+
+		return res['query']['namespaces']
+
+	def get_all_pages(self, namespace):
+		params = {'action': 'query',
+                  'list': 'allpages',
+                  'aplimit': '5000',
+                  'apnamespace': namespace
+                  }
 
 		req = wikitools.api.APIRequest(self.wiki, params)
 		res = req.query(querycontinue=True)
 
-		return res['query']['allusers']
+		return res['query']['allpages']
 
-	def get_user(self, username):
+	def get_user_info(self, username):
 		params = {'action': 'query',
                   'list': 'users',
                   'ususers': username,
@@ -31,29 +39,38 @@ class Wiki_API:
                   }
 
 		req = wikitools.api.APIRequest(self.wiki, params)
-		res = req.query(querycontinue=True)
+		res = req.query()
 
 		return res['query']['users'][0]
 
-	def get_user_edits(self, user, start=None):
+	def get_page_revisions(self, page):
 		params = {'action': 'query',
-                  'list': 'usercontribs',
-                  'ucuser': user,
-                  'ucprop': 'ids|title|timestamp|comment|flags',
-                  'uclimit': '5000'
+                  'prop': 'revisions',
+                  'rvlimit': '5000',
+                  'titles': page,
+                  'rvprop': 'ids|timestamp|user',
+                  'rvdir': 'newer'
                   }
 
-		if start:
-			params['ucend'] = start
-			params['ucstart'] = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
+		req = wikitools.api.APIRequest(self.wiki, params)
+		res = req.query(querycontinue=True)
 
-		try:
-			req = wikitools.api.APIRequest(self.wiki, params)
-			res = req.query(querycontinue=True)
-		except wikitools.api.APIError:
-			return None
+		page_id = res['query']['pages'].keys()[0]
+		return res['query']['pages'][page_id]['revisions']
 
-		return res['query']['usercontribs']
+	def get_file_uploads(self, _file):
+		params = {'action': 'query',
+                  'prop': 'imageinfo',
+                  'iilimit': '5000',
+                  'titles': _file,
+                  'iiprop': 'timestamp|user'
+                  }
+
+		req = wikitools.api.APIRequest(self.wiki, params)
+		res = req.query(querycontinue=True)
+
+		page_id = res['query']['pages'].keys()[0]
+		return res['query']['pages'][page_id]['imageinfo']
 
 	def get_recent_changes(self, start=None):
 		params = {'action': 'query',

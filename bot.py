@@ -9,7 +9,6 @@ cache = MemcachedCache(['{0}:{1}'.format(config['memcached']['host'], config['me
 connection = pymongo.Connection(config['db']['host'], config['db']['port'], w=1)
 
 dateRE = re.compile(r'(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})Z')
-linkRE = re.compile(r'\[\[(.+)\]\]')
 
 def get_date_from_string(date_string):
 	res = dateRE.search(date_string)
@@ -31,21 +30,17 @@ def load(wiki):
 	print('Successfully loaded ' + wiki)
 	return db, w_api
 
-def get_user_id(db, wiki, w_api, username, registration=None):
+def get_user_id(db, wiki, w_api, username):
 	user = db['users'].find_one({'username': username}, fields=[])
 	if user is None:
-		if registration is None:
-			print username
-			user = w_api.get_user(username)
-			if 'registration' in user:
-				registration = get_date_from_string(user['registration'])
-			else:
-				registration = None
+		user = w_api.get_user_info(username)
+		if 'registration' in user:
+			registration = get_date_from_string(user['registration'])
 		else:
-			registration = get_date_from_string(registration)
+			registration = None
 		user_id = db['users'].insert({'username': username, 'registration': registration})
 		cache.delete('wiki-fi:userlist_{0}'.format(wiki))
-		cache.delete('wiki-fi:userwikislist_{0}'.format(username))
+		cache.delete('wiki-fi:userwikislist_{0}'.format(username.replace(' ', '_')))
 		cache.delete('wiki-fi:allusers')
 	else:
 		user_id = user['_id']
@@ -69,48 +64,75 @@ def get_last_edit_datetime(db):
 def seed(wiki):
 	db, w_api = load(wiki)
 
-	users = w_api.get_users(edited_only=False)
-
-	for user in users:
-		username = user['name'].encode('utf-8')
-		registration = user['registration']
-		user_id = get_user_id(db, wiki, w_api, username, registration)
-
-	# define cutoff date so that edits made during seeding are not missed
 	cutoff_date = datetime.datetime.now()
 	print('cutoff date for edits is: ' + str(cutoff_date))
 
-	for user in users:
-		print('Inserting edits for ' + user['name'].encode('utf-8'))
-		user_id = get_user_id(db, wiki, w_api, user['name'].encode('utf-8'))
-		edits = w_api.get_user_edits(user['name'])
-		if edits is None:
-			print('Invalid username. Skipping.')
-			continue
-		for edit in edits:
-			if db['edits'].find_one({'revid': edit['revid']}, fields=[]):
-				continue
-			timestamp = get_date_from_string(edit['timestamp'])
-			if timestamp < cutoff_date:
-				page_id = get_page_id(db, wiki, edit['title'], edit['ns'])
-				if edit['ns'] == 6 and ('new' in edit or edit['comment'].encode('utf-8').startswith("uploaded a new version of")):
-					upload = True
-				else:
-					upload = False
+	namespaces = w_api.get_all_namespaces()
 
-				output = {'user_id': user_id,
-                          'ns': edit['ns'],
-                          'revid': edit['revid'],
-                          'page_id': page_id,
-                          'timestamp': timestamp,
-                          'new_page': 'new' in edit,
-                          'upload': upload
-                          }
-				db['edits'].insert(output)
+	db['metadata'].update({'key': 'namespaces'}, {'$set': {'value': {}}}, upsert=True)
+
+	for namespace in namespaces:
+		# skip invalid namespace ids
+		if int(namespace) < 0:
+			continue
+
+		# main namespace has no name
+		if namespace == '0':
+			namespace_name = 'Main'
+		else:
+			namespace_name = namespaces[namespace]['*']
+
+		namespaces_dict = db['metadata'].find_one({'key': 'namespaces'})['value']
+		namespaces_dict[namespace] = namespace_name
+		db['metadata'].update({'key': 'namespaces'}, {'$set': {'value': namespaces_dict}})
+
+		pages = w_api.get_all_pages(namespace)
+
+		for page in pages:
+			page_name = page['title'].encode('utf-8')
+			page_id = get_page_id(db, wiki, page_name, namespace)
+			revisions = w_api.get_page_revisions(page_name)
+
+			print('Inserting edits for ' + page_name)
+			first = True
+			for revision in revisions:
+				username = revision['user'].encode('utf-8')
+				timestamp = get_date_from_string(revision['timestamp'])
+				revid = revision['revid']
+
+				if timestamp < cutoff_date:
+					user_id = get_user_id(db, wiki, w_api, username)
+
+					output = {'user_id': user_id,
+	                          'ns': namespace,
+	                          'revid': revid,
+	                          'page_id': page_id,
+	                          'timestamp': timestamp,
+	                          'new_page': first
+	                          }
+					db['edits'].insert(output)
+
+					first = False
+
+			if namespace == '6':
+				uploads = w_api.get_file_uploads(page_name)
+
+				for upload in uploads:
+					username = upload['user'].encode('utf-8')
+					timestamp = get_date_from_string(upload['timestamp'])
+
+					if timestamp < cutoff_date:
+						user_id = get_user_id(db, wiki, w_api, username)
+
+						output = {'user_id': user_id,
+		                          'page_id': page_id,
+		                          'timestamp': timestamp
+		                          }
+						db['files'].insert(output)
+
 	# update last_updated time
-	datenow = datetime.datetime.now()
-	db['metadata'].update({'key': 'last_updated'}, {'$set': {'last_updated': datenow}}, upsert=True)
-	cache.set('wiki-fi:wiki_last_updated_' + wiki, datenow, timeout=0)
+	db['metadata'].update({'key': 'last_updated'}, {'$set': {'value': cutoff_date}}, upsert=True)
+	cache.set('wiki-fi:wiki_last_updated_' + wiki, cutoff_date, timeout=0)
 
 def update(wiki):
 	db, w_api = load(wiki)
