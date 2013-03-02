@@ -265,10 +265,11 @@ def analyze_page(wiki, db, page):
 		edits_dict[edit_day]['day']['count'] += 1
 
 	creation_edit = edits_collection.find_one({'page_id': page['_id'], 'new_page': True}, fields=['user_id', 'timestamp'])
-	if creation_edit:
-		creation_date = creation_edit['timestamp'].strftime("%d %B %Y")
-	else:
-		creation_date = 'unknown date'
+	creation_date = creation_edit['timestamp'].strftime("%d %B %Y")
+	days_since_first_edit = (datetime.datetime.today() - creation_edit['timestamp']).days
+
+	edits_per_day = '%.2f' % (float(total_edit_count)/float(days_since_first_edit))
+	days_per_edit = '%.2f' % (float(days_since_first_edit)/float(total_edit_count))
 
 	distinct_editors_count = len(edits_collection.find({'page_id': page['_id']}, fields=[]).distinct('user_id'))
 
@@ -291,6 +292,8 @@ def analyze_page(wiki, db, page):
 	charts_data = {'total_edit_count': total_edit_count,
                    'most_edited_pages': most_frequent_editors,
                    'distinct_editors_count': distinct_editors_count,
+                   'edits_per_day': edits_per_day,
+                   'days_per_edit': days_per_edit,
                    'creation_date': creation_date,
                    'hour_column_chart_string': hour_column_chart_string,
                    'hour_day_bubble_chart_string': hour_day_bubble_chart_string,
