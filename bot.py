@@ -253,6 +253,7 @@ def update(wiki):
 				page_id = get_page_id(db, wiki, edit['title'], ns)
 				db['edits'].remove({'page_id': page_id})
 				db['pages'].remove({'_id': page_id})
+				db['files'].remove({'page_id': page_id})
 				cache.delete('wiki-fi:pagedata_{0}_{1}'.format(title.replace(' ', '_'), wiki))
 
 			elif edit['logtype'] == 'newusers':
