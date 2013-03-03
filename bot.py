@@ -117,7 +117,6 @@ def seed(wiki):
 	                          'new_page': first
 	                          }
 					db['edits'].insert(output)
-
 					first = False
 
 			if namespace == '6':
@@ -181,6 +180,7 @@ def update(wiki):
 
 		if edit['type'] == 'new':
 			print('RCID: {0} - NEWPAGE: {1}'.format(rcid, title))
+
 			user_id = get_user_id(db, wiki, w_api, username)
 			page_id = get_page_id(db, wiki, title, ns)
 			output = {'user_id': user_id,
@@ -195,6 +195,7 @@ def update(wiki):
 
 		elif edit['type'] == 'edit':
 			print('RCID: {0} - EDIT: {1}'.format(rcid, title))
+
 			user_id = get_user_id(db, wiki, w_api, username)
 			page_id = get_page_id(db, wiki, title, ns)
 			output = {'user_id': user_id,
@@ -210,6 +211,7 @@ def update(wiki):
 		elif edit['type'] == 'log':
 			if edit['logtype'] == 'move':
 				print('RCID: {0} - PAGEMOVE: {1} -> {2}'.format(rcid, title, edit['move']['new_title'].encode('utf-8')))
+
 				page_id = get_page_id(db, wiki, title, ns)
 				old_page_title = edit['title'].encode('utf-8')
 				new_page_title = edit['move']['new_title'].encode('utf-8')
@@ -227,6 +229,7 @@ def update(wiki):
 				if 'suppressedredirect' not in edit['move']:
 					# left behind a redirect
 					print('RCID: {0} - REDIRECTCREATION: {1}'.format(rcid, title))
+
 					page_id = get_page_id(db, wiki, title, ns)
 					user_id = get_user_id(db, wiki, w_api, username)
 					output = {'user_id': user_id,
@@ -241,6 +244,7 @@ def update(wiki):
 
 			elif edit['logtype'] == 'upload':
 				print('RCID: {0} - FILEUPLOAD: {1}'.format(rcid, title))
+
 				user_id = get_user_id(db, wiki, w_api, username)
 				page_id = get_page_id(db, wiki, title, ns)
 
@@ -262,12 +266,56 @@ def update(wiki):
 					cache.delete('wiki-fi:pagedata_{0}_{1}'.format(title.replace(' ', '_'), wiki))
 
 			elif edit['logtype'] == 'delete':
-				print('RCID: {0} - DELETION: {1}'.format(rcid, title))
-				page_id = get_page_id(db, wiki, edit['title'], ns)
-				db['edits'].remove({'page_id': page_id})
-				db['pages'].remove({'_id': page_id})
-				db['files'].remove({'page_id': page_id})
-				cache.delete('wiki-fi:pagedata_{0}_{1}'.format(title.replace(' ', '_'), wiki))
+				if edit['logaction'] == 'delete':
+					print('RCID: {0} - DELETION: {1}'.format(rcid, title))
+
+					page_id = get_page_id(db, wiki, edit['title'], ns)
+					db['edits'].remove({'page_id': page_id})
+					db['pages'].remove({'_id': page_id})
+					db['files'].remove({'page_id': page_id})
+					cache.delete('wiki-fi:pagedata_{0}_{1}'.format(title.replace(' ', '_'), wiki))
+
+				elif edit['logaction'] == 'restore':
+					print('RCID: {0} - RESTORE: {1}'.format(rcid, title))
+
+					page_id = get_page_id(db, wiki, edit['title'], ns)
+					revisions = w_api.get_page_revisions(edit['title'])
+
+					first = True
+					for revision in revisions:
+						username = revision['user'].encode('utf-8')
+						timestamp = get_date_from_string(revision['timestamp'])
+						revid = revision['revid']
+
+						user_id = get_user_id(db, wiki, w_api, username)
+
+						output = {'user_id': user_id,
+		                          'ns': ns,
+		                          'revid': revid,
+		                          'page_id': page_id,
+		                          'timestamp': timestamp,
+		                          'new_page': first
+		                          }
+						db['edits'].insert(output)
+						first = False
+
+					if ns == 6:
+						uploads = w_api.get_file_uploads(edit['title'])
+						if uploads is None:
+							# it's a redirect page
+							continue
+
+						for upload in uploads:
+							username = upload['user'].encode('utf-8')
+							timestamp = get_date_from_string(upload['timestamp'])
+
+							user_id = get_user_id(db, wiki, w_api, username)
+
+							output = {'user_id': user_id,
+			                          'page_id': page_id,
+			                          'timestamp': timestamp
+			                          }
+							db['files'].insert(output)
 
 			elif edit['logtype'] == 'newusers':
 				print('RCID: {0} - NEWUSER: {1}'.format(rcid, username))
