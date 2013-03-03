@@ -64,12 +64,16 @@ body {
   height: 120px;
 }
 
-#columnchart_div, #daycolumnchart_div {
+#hour_columnchart_div, #day_columnchart_div {
   height: 400px;
 }
 
 #chart_div, #piechart_div, #distribution_piechart_div, #bubblechart_div, #word_cloud {
   height: 500px;
+}
+
+#bubblechart_div_large {
+  height: 700px;
 }
 
 #username {

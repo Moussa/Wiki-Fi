@@ -98,8 +98,8 @@
     </div>
     <div class="container-fluid">
       <div class="row-fluid">
-        <div class="span6" id="daycolumnchart_div"></div>
-        <div class="span6" id="columnchart_div"></div>
+        <div class="span6" id="day_columnchart_div"></div>
+        <div class="span6" id="hour_columnchart_div"></div>
       </div>
     </div>
 
@@ -110,7 +110,7 @@
     </div>
     <div class="container-fluid">
       <div class="row-fluid">
-        <div class="span8" id="bubblechart_div"></div>
+        <div class="span10 offset1" id="bubblechart_div_large"></div>
       </div>
     </div>
 
@@ -243,7 +243,7 @@
           {{ charts_data['hour_day_bubble_chart_string']|safe }}
         ]);
 
-        var edits_bubble_chart = new google.visualization.BubbleChart(document.getElementById('bubblechart_div'));
+        var edits_bubble_chart = new google.visualization.BubbleChart(document.getElementById('bubblechart_div_large'));
         edits_bubble_chart.draw(data, {
           hAxis: {title: 'Hour', viewWindowMode: 'explicit', viewWindow: {min: -1, max: 24}, baseline: -2},
           vAxis: {title: 'Day', direction: -1, textPosition: 'none'},
@@ -264,7 +264,7 @@
           {{ charts_data['hour_column_chart_string']|safe }}
         ]);
 
-        var edit_hour_column_chart = new google.visualization.ColumnChart(document.getElementById('columnchart_div'));
+        var edit_hour_column_chart = new google.visualization.ColumnChart(document.getElementById('hour_columnchart_div'));
         edit_hour_column_chart.draw(data, {
           hAxis: {title: 'Time'},
           vAxis: {title: 'Edits', minValue: 0},
@@ -284,7 +284,7 @@
           {{ charts_data['day_column_chart_string']|safe }}
         ]);
 
-        var edit_day_column_chart = new google.visualization.ColumnChart(document.getElementById('daycolumnchart_div'));
+        var edit_day_column_chart = new google.visualization.ColumnChart(document.getElementById('day_columnchart_div'));
         edit_day_column_chart.draw(data, {
           hAxis: {title: 'Day'},
           vAxis: {title: 'Edits', minValue: 0},

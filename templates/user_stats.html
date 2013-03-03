@@ -159,8 +159,8 @@
     </div>
     <div class="container-fluid">
       <div class="row-fluid">
-        <div class="span6" id="daycolumnchart_div"></div>
-        <div class="span6" id="columnchart_div"></div>
+        <div class="span6" id="day_columnchart_div"></div>
+        <div class="span6" id="hour_columnchart_div"></div>
       </div>
     </div>
 
@@ -374,7 +374,7 @@
           {{ charts_data['hour_column_chart_string']|safe }}
         ]);
 
-        var edit_hour_column_chart = new google.visualization.ColumnChart(document.getElementById('columnchart_div'));
+        var edit_hour_column_chart = new google.visualization.ColumnChart(document.getElementById('hour_columnchart_div'));
         edit_hour_column_chart.draw(data, {
           hAxis: {title: 'Time'},
           vAxis: {title: 'Edits', minValue: 0},
@@ -394,7 +394,7 @@
           {{ charts_data['day_column_chart_string']|safe }}
         ]);
 
-        var edit_day_column_chart = new google.visualization.ColumnChart(document.getElementById('daycolumnchart_div'));
+        var edit_day_column_chart = new google.visualization.ColumnChart(document.getElementById('day_columnchart_div'));
         edit_day_column_chart.draw(data, {
           hAxis: {title: 'Day'},
           vAxis: {title: 'Edits', minValue: 0},
