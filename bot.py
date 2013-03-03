@@ -89,6 +89,8 @@ def seed(wiki):
 		db['metadata'].update({'key': 'namespaces'}, {'$set': {'value': namespaces_dict}})
 
 		pages = w_api.get_all_pages(namespace)
+		# better to store namespace id as int
+		namespace = int(namespace)
 
 		for page in pages:
 			page_name = page['title'].encode('utf-8')
@@ -119,7 +121,7 @@ def seed(wiki):
 					db['edits'].insert(output)
 					first = False
 
-			if namespace == '6':
+			if namespace == 6:
 				uploads = w_api.get_file_uploads(page_name)
 				if uploads is None:
 					# it's a redirect page
