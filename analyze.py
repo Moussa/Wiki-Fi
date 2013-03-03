@@ -197,6 +197,8 @@ def analyze_user(wiki, db, user):
 	longest_edit_days_streak = locale.format("%d", longest_edit_days_streak, grouping=True)
 	current_edit_days_streak = locale.format("%d", current_edit_days_streak, grouping=True)
 	largest_day_edit_count = locale.format("%d", largest_day_edit_count, grouping=True)
+	pages_created = locale.format("%d", pages_created, grouping=True)
+	files_uploaded = locale.format("%d", files_uploaded, grouping=True)
 
 	# Generate list of most edited pages
 	most_edited_pages = process_most_edited_pages(wiki, db, page_ids)
