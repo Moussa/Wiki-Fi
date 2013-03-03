@@ -71,26 +71,26 @@ def process_hour_day_bubble_chart(edits_dict):
 	return day_hour_output
 
 def process_namespace_pie_chart(wiki, db, edits_collection, user=None):
-	NAMESPACE_MAPPING = db['metadata'].find_one({'key': 'namespaces'})['value']
+	namespace_mapping = db['metadata'].find_one({'key': 'namespaces'})['value']
 	namespace_piechart_output = []
-	for namespace in NAMESPACE_MAPPING:
+	for namespace in namespace_mapping:
 		if user:
-			count = edits_collection.find({'user_id': user['_id'], 'ns': namespace}, fields=[]).count()
+			count = edits_collection.find({'user_id': user['_id'], 'ns': int(namespace)}, fields=[]).count()
 		else:
-			count = edits_collection.find({'ns': namespace}, fields=[]).count()
+			count = edits_collection.find({'ns': int(namespace)}, fields=[]).count()
 		if count > 0:
-			namespace_piechart_output.append('[\'{0}\', {1}]'.format(NAMESPACE_MAPPING[namespace], count))
+			namespace_piechart_output.append('[\'{0}\', {1}]'.format(namespace_mapping[namespace], count))
 	namespace_piechart_output = ',\n'.join(namespace_piechart_output)
 
 	return namespace_piechart_output
 
 def process_namespace_distribution_pie_chart(wiki, db, edits_collection):
-	NAMESPACE_MAPPING = db['metadata'].find_one({'key': 'namespaces'})['value']
+	namespace_mapping = db['metadata'].find_one({'key': 'namespaces'})['value']
 	namespace_distribution_piechart_output = []
-	for namespace in NAMESPACE_MAPPING:
-		count = len(edits_collection.find({'ns': namespace}, fields=[]).distinct('page_id'))
+	for namespace in namespace_mapping:
+		count = len(edits_collection.find({'ns': int(namespace)}, fields=[]).distinct('page_id'))
 		if count > 0:
-			namespace_distribution_piechart_output.append('[\'{0}\', {1}]'.format(NAMESPACE_MAPPING[namespace], count))
+			namespace_distribution_piechart_output.append('[\'{0}\', {1}]'.format(namespace_mapping[namespace], count))
 	namespace_distribution_piechart_output = ',\n'.join(namespace_distribution_piechart_output)
 
 	return namespace_distribution_piechart_output
