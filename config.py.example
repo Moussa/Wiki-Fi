@@ -12,17 +12,19 @@ config = {
 			'api_url': r'http://wiki.tf2.com/w/api.php',
 			'username': '',
 			'password': '',
-			'db_name': 'tfwiki-data',
-			'wiki_name' : 'Team Fortress',
-			'wiki_link': 'http://wiki.tf2.com'
+			'db_name': 'wiki-fi:tfwiki',
+			'wiki_name': 'Official Team Fortress Wiki',
+			'wiki_link': 'http://wiki.tf2.com',
+			'creation_date': '30/06/2010'
 			},
 		'portal': {
 			'api_url': r'http://theportalwiki.com/w/api.php',
 			'username': '',
 			'password': '',
-			'db_name': 'portalwiki-data',
-			'wiki_name' : 'Portal',
-			'wiki_link': 'http://theportalwiki.com'
+			'db_name': 'wiki-fi:portalwiki',
+			'wiki_name': 'Portal Wiki',
+			'wiki_link': 'http://theportalwiki.com',
+			'creation_date': '20/04/2011'
 			}
 		}
 }
