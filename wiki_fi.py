@@ -75,6 +75,18 @@ def get_wiki_users():
 
 	return resp
 
+@app.route('/get_wiki_pages', methods=['POST'])
+def get_wiki_pages():
+	## THIS NEEDS TO BE REWRITTEN. LIST SIZE IS TOO BIG TO SAVE TO MEMCACHE
+	wiki = request.form['wiki']
+	wikipagelist = cache.get('wiki-fi:pagelist_{0}'.format(wiki))
+	if wikipagelist is None:
+		wikipagelist = [page['title'] for page in wiki_dict[wiki]['pages'].find(fields=['title'])]
+		cache.set('wiki-fi:pagelist_{0}'.format(wiki), wikipagelist, timeout=0)
+	resp = Response(json.dumps(wikipagelist), status=200, mimetype='application/json')
+
+	return resp
+
 @app.route('/get_user_wikis', methods=['POST'])
 def get_user_wikis():
 	username = request.form['username']

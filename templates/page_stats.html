@@ -30,6 +30,14 @@
             <ul class="nav pull-left">
               <li class="divider-vertical"></li>
               <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  <li><a data-target="#" href="{{ wiki_link }}/wiki/{{ page_name }}" target="_blank">View page</a></li>
+                  <li><a data-target="#" href="{{ wiki_link }}/w/index.php?title={{ page_name }}&action=history" target="_blank">View page history</a></li>
+                </ul>
+              </li>
+              <li class="divider-vertical"></li>
+              <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">Wiki <b class="caret"></b></a>
                 <ul class="dropdown-menu">
                   <li id="combineoverwiki"><a id="combineoverwiki">Combine OverWiki</a></li>
@@ -40,7 +48,7 @@
               </li>
               <li class="divider-vertical"></li>
               <form class="navbar-search username-search">
-                <input type="text" class="search-query" id="username-entry" placeholder="Username">
+                <input type="text" class="search-query" id="page-entry" placeholder="Page">
               </form>
               <p class="navbar-text pull-left" id="search-status"></p>
             </ul>
@@ -130,21 +138,21 @@
         var wiki = "{{ wiki }}";
         var username = "{{ wiki_name }}";
 
-        // populate array with valid wiki usernames for use in autosuggest in entry form
-        var usernames = [];
-        $.ajax({
-          url: '/get_wiki_users',
-          type: 'POST',
-          dataType: 'json',
-          data: {wiki: '{{ wiki }}'},
-          success: function(data) {
-            usernames = data;
-            $('#username-entry').typeahead({source: usernames});
-            },
-          fail: function(data) {
-            console.log('fail');
-            }
-          });
+        // populate array with valid wiki pages for use in autosuggest in entry form
+        // var usernames = [];
+        // $.ajax({
+        //   url: '/get_wiki_pages',
+        //   type: 'POST',
+        //   dataType: 'json',
+        //   data: {wiki: '{{ wiki }}'},
+        //   success: function(data) {
+        //     pages = data;
+        //     $('#page-entry').typeahead({source: pages});
+        //     },
+        //   fail: function(data) {
+        //     console.log('fail');
+        //     }
+        //   });
 
         // get data last updated date and display
         $.ajax({
