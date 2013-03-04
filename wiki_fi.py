@@ -131,7 +131,7 @@ def anaylze_user():
 	if 'wiki' not in request.args or request.args['wiki'] not in wiki_dict:
 		return invalid_args(error="invalid wiki")
 
-	username = request.args['username']
+	username = request.args['username'].replace('_', ' ')
 	wiki = request.args['wiki']
 	user = wiki_dict[wiki]['users'].find_one({'username': username})
 	if user is None:
@@ -149,7 +149,7 @@ def anaylze_page():
 	if 'wiki' not in request.args or request.args['wiki'] not in wiki_dict:
 		return invalid_args('invalid wiki')
 
-	page = request.args['page']
+	page = request.args['page'].replace('_', ' ')
 	wiki = request.args['wiki']
 	page = wiki_dict[wiki]['pages'].find_one({'title': page})
 	if page is None:
