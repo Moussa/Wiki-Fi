@@ -41,11 +41,11 @@ body {
   display: none;
 }
 
-.valid-username {
+.valid-username, .valid-page {
   color: green !important;
 }
 
-.invalid-username {
+.invalid-username, .invalid-page {
   color: red !important;
 }
 

@@ -40,13 +40,23 @@ def get_wiki_chart_data(wiki, db):
 
 @app.route('/is_valid_user', methods=['POST'])
 def is_valid_user():
-	username = request.form['username']
+	username = request.form['username'].replace('_', ' ')
 	wiki = request.form['wiki']
 	wikiuserlist = cache.get('wiki-fi:userlist_{0}'.format(wiki))
 	if wikiuserlist is None:
 		wikiuserlist = [user['username'] for user in wiki_dict[wiki]['users'].find(fields=['username'])]
 		cache.set('wiki-fi:userlist_{0}'.format(wiki), wikiuserlist, timeout=0)
 	data = username in wikiuserlist
+	resp = Response(json.dumps(data), status=200, mimetype='application/json')
+
+	return resp
+
+@app.route('/is_valid_page', methods=['POST'])
+def is_valid_page():
+	page = request.form['page'].replace('_', ' ')
+	wiki = request.form['wiki']
+	page_info = wiki_dict[wiki]['pages'].find_one({'title': page}, fields=['title'])
+	data = page_info is not None
 	resp = Response(json.dumps(data), status=200, mimetype='application/json')
 
 	return resp
@@ -89,7 +99,7 @@ def get_wiki_pages():
 
 @app.route('/get_user_wikis', methods=['POST'])
 def get_user_wikis():
-	username = request.form['username']
+	username = request.form['username'].replace('_', ' ')
 	userwikislist = cache.get('wiki-fi:userwikislist_{0}'.format(username.replace(' ', '_')))
 	if userwikislist is None:
 		userwikislist = []
@@ -98,6 +108,20 @@ def get_user_wikis():
 				userwikislist.append(wiki)
 		cache.set('wiki-fi:userwikislist_{0}'.format(username.replace(' ', '_')), userwikislist, timeout=0)
 	resp = Response(json.dumps(userwikislist), status=200, mimetype='application/json')
+
+	return resp
+
+@app.route('/get_page_wikis', methods=['POST'])
+def get_page_wikis():
+	page = request.form['page'].replace('_', ' ')
+	pagewikislist = cache.get('wiki-fi:pagewikislist_{0}'.format(page.replace(' ', '_')))
+	if pagewikislist is None:
+		pagewikislist = []
+		for wiki in wiki_dict:
+			if wiki_dict[wiki]['pages'].find_one({'title': page}, fields=[]):
+				pagewikislist.append(wiki)
+		cache.set('wiki-fi:userwikislist_{0}'.format(page.replace(' ', '_')), pagewikislist, timeout=0)
+	resp = Response(json.dumps(pagewikislist), status=200, mimetype='application/json')
 
 	return resp
 

@@ -47,7 +47,7 @@
                 </ul>
               </li>
               <li class="divider-vertical"></li>
-              <form class="navbar-search username-search">
+              <form class="navbar-search page-search">
                 <input type="text" class="search-query" id="page-entry" placeholder="Page">
               </form>
               <p class="navbar-text pull-left" id="search-status"></p>
@@ -136,7 +136,7 @@
     <script type="text/javascript">
       $(document).ready(function() {
         var wiki = "{{ wiki }}";
-        var username = "{{ wiki_name }}";
+        var page = "{{ page_name }}";
 
         // populate array with valid wiki pages for use in autosuggest in entry form
         // var usernames = [];
@@ -168,24 +168,24 @@
           }
         });
 
-        // add bullet point for wiki being viewed and disable links for which user does not exist
+        // add bullet point for wiki being viewed and disable links for which page does not exist
         $("li#{{ wiki }}").addClass('disabled')
         $("a#{{ wiki }}").append(' <b>•</b>');
         var wikis = ['tf', 'portal', 'dota2', 'combineoverwiki'];
-        var data = {username: username};
+        var data = {page: page};
         
         $.ajax({
-          url: '/get_user_wikis',
+          url: '/get_page_wikis',
           type: 'POST',
           dataType: 'json',
           data: data,
-          success: function(userwikislist) {
+          success: function(pagewikislist) {
             $.each(wikis, function(index, wiki) {
               if ("{{ wiki }}" == wiki) {
                 $('a#' + wiki).attr("href", "#");
               }
-              else if ($.inArray(wiki, userwikislist) > -1) {
-                $('a#' + wiki).attr("href", "/user?username=" + username + "&wiki=" + wiki);
+              else if ($.inArray(wiki, pagewikislist) > -1) {
+                $('a#' + wiki).attr("href", "/page?page=" + page + "&wiki=" + wiki);
               }
               else {
                 $('li#' + wiki).addClass('disabled');
@@ -197,23 +197,24 @@
           }
         });
 
-        // on form submission check if username is valid for current wiki and redirect. Else display error
-        $(".username-search").on("submit", function() {
-          var search_username = $('#username-entry').val();
-          var data = {username: search_username, wiki: wiki};
+        // on form submission check if page is valid for current wiki and redirect. Else display error
+        $(".page-search").on("submit", function() {
+          var search_page = $('#page-entry').val();
+          console.log(search_page);
+          var data = {page: search_page, wiki: wiki};
           $.ajax({
-            url: '/is_valid_user',
+            url: '/is_valid_page',
             type: 'POST',
             dataType: 'json',
             data: data,
             success: function(data) {
               if (data) {
-                $('#search-status').removeClass('invalid-username').addClass('valid-username').html('Loading stats...').show();
+                $('#search-status').removeClass('invalid-page').addClass('valid-page').html('Loading stats...').show();
 
-                window.location = "/user?username=" + search_username + "&wiki=" + wiki;
+                window.location = "/page?page=" + search_page + "&wiki=" + wiki;
               }
               else {
-                  $('#search-status').addClass('invalid-username').html('Invalid username').fadeIn();
+                  $('#search-status').addClass('invalid-page').html('Invalid page').fadeIn();
                   setTimeout(function() {
                     $('#search-status').fadeOut();
                   }, 2000);
