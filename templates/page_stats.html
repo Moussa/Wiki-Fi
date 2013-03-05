@@ -200,7 +200,6 @@
         // on form submission check if page is valid for current wiki and redirect. Else display error
         $(".page-search").on("submit", function() {
           var search_page = $('#page-entry').val();
-          console.log(search_page);
           var data = {page: search_page, wiki: wiki};
           $.ajax({
             url: '/is_valid_page',
