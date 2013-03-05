@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
-import datetime, sys, re
+import datetime, sys, re, threading
 import pymongo
 import wiki_api
+import threadpool
 from config import config
 from werkzeug.contrib.cache import MemcachedCache
 
 cache = MemcachedCache(['{0}:{1}'.format(config['memcached']['host'], config['memcached']['port'])])
-connection = pymongo.Connection(config['db']['host'], config['db']['port'], w=1)
+connection = pymongo.MongoClient(config['db']['host'], config['db']['port'], w=1)
 
 dateRE = re.compile(r'(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})Z')
 
@@ -34,7 +35,7 @@ def get_user_id(db, wiki, w_api, username):
 	user = db['users'].find_one({'username': username}, fields=[])
 	if user is None:
 		user = w_api.get_user_info(username)
-		if 'registration' in user:
+		if 'registration' in user and user['registration'] is not None:
 			registration = get_date_from_string(user['registration'])
 		else:
 			registration = None
@@ -61,8 +62,70 @@ def get_last_edit_datetime(db):
 		return None
 	return (db['edits'].find(fields=['timestamp'], sort=[('timestamp', pymongo.DESCENDING)]).limit(1))[0]['timestamp']
 
+def seeder(wiki, db, w_api, namespace, cutoff_date, lock):
+	pages = w_api.get_all_pages(namespace)
+	users = {}
+
+	for page in pages:
+		page_name = page['title'].encode('utf-8')
+		page_id = get_page_id(db, wiki, page_name, namespace)
+		revisions = w_api.get_page_revisions(page_name)
+
+		print('Inserting edits for ' + page_name)
+		first = True
+		for revision in revisions:
+			username = revision['user'].encode('utf-8')
+			timestamp = get_date_from_string(revision['timestamp'])
+			revid = revision['revid']
+
+			if timestamp < cutoff_date:
+				if username in users:
+					user_id = users[username]
+				else:
+					lock.acquire()
+					user_id = get_user_id(db, wiki, w_api, username)
+					lock.release()
+					users[username] = user_id
+
+				output = {'user_id': user_id,
+                          'ns': namespace,
+                          'revid': revid,
+                          'page_id': page_id,
+                          'timestamp': timestamp,
+                          'new_page': first
+                          }
+				db['edits'].insert(output)
+				first = False
+
+		if namespace == 6:
+			uploads = w_api.get_file_uploads(page_name)
+			if uploads is None:
+				# it's a redirect page
+				continue
+
+			for upload in uploads:
+				username = upload['user'].encode('utf-8')
+				timestamp = get_date_from_string(upload['timestamp'])
+
+				if timestamp < cutoff_date:
+					if username in users:
+						user_id = users[username]
+					else:
+						lock.acquire()
+						user_id = get_user_id(db, wiki, w_api, username)
+						lock.release()
+						users[username] = user_id
+
+					output = {'user_id': user_id,
+	                          'page_id': page_id,
+	                          'timestamp': timestamp
+	                          }
+					db['files'].insert(output)
+
 def seed(wiki):
 	db, w_api = load(wiki)
+	seedpool = threadpool.ThreadPool(4)
+	lock = threading.Lock()
 
 	cutoff_date = datetime.datetime.now()
 	print('cutoff date for edits is: ' + str(cutoff_date))
@@ -70,8 +133,6 @@ def seed(wiki):
 	namespaces = w_api.get_all_namespaces()
 
 	db['metadata'].update({'key': 'namespaces'}, {'$set': {'value': {}}}, upsert=True)
-
-	users = {}
 
 	for namespace in namespaces:
 		# skip invalid namespace ids
@@ -87,62 +148,14 @@ def seed(wiki):
 		namespaces_dict = db['metadata'].find_one({'key': 'namespaces'})['value']
 		namespaces_dict[namespace] = namespace_name
 		db['metadata'].update({'key': 'namespaces'}, {'$set': {'value': namespaces_dict}})
-
-		pages = w_api.get_all_pages(namespace)
 		# better to store namespace id as int
 		namespace = int(namespace)
 
-		for page in pages:
-			page_name = page['title'].encode('utf-8')
-			page_id = get_page_id(db, wiki, page_name, namespace)
-			revisions = w_api.get_page_revisions(page_name)
+		arglist = (wiki, db, w_api, namespace, cutoff_date, lock)
+		workrequest = threadpool.WorkRequest(seeder, arglist)
+		seedpool.putRequest(workrequest)
 
-			print('Inserting edits for ' + page_name)
-			first = True
-			for revision in revisions:
-				username = revision['user'].encode('utf-8')
-				timestamp = get_date_from_string(revision['timestamp'])
-				revid = revision['revid']
-
-				if timestamp < cutoff_date:
-					if username in users:
-						user_id = users[username]
-					else:
-						user_id = get_user_id(db, wiki, w_api, username)
-						users[username] = user_id
-
-					output = {'user_id': user_id,
-	                          'ns': namespace,
-	                          'revid': revid,
-	                          'page_id': page_id,
-	                          'timestamp': timestamp,
-	                          'new_page': first
-	                          }
-					db['edits'].insert(output)
-					first = False
-
-			if namespace == 6:
-				uploads = w_api.get_file_uploads(page_name)
-				if uploads is None:
-					# it's a redirect page
-					continue
-
-				for upload in uploads:
-					username = upload['user'].encode('utf-8')
-					timestamp = get_date_from_string(upload['timestamp'])
-
-					if timestamp < cutoff_date:
-						if username in users:
-							user_id = users[username]
-						else:
-							user_id = get_user_id(db, wiki, w_api, username)
-							users[username] = user_id
-
-						output = {'user_id': user_id,
-		                          'page_id': page_id,
-		                          'timestamp': timestamp
-		                          }
-						db['files'].insert(output)
+	seedpool.wait()
 
 	# update last_updated time
 	db['metadata'].update({'key': 'last_updated'}, {'$set': {'value': cutoff_date}}, upsert=True)
