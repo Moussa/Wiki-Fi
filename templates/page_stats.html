@@ -139,20 +139,20 @@
         var page = "{{ page_name }}";
 
         // populate array with valid wiki pages for use in autosuggest in entry form
-        // var usernames = [];
-        // $.ajax({
-        //   url: '/get_wiki_pages',
-        //   type: 'POST',
-        //   dataType: 'json',
-        //   data: {wiki: '{{ wiki }}'},
-        //   success: function(data) {
-        //     pages = data;
-        //     $('#page-entry').typeahead({source: pages});
-        //     },
-        //   fail: function(data) {
-        //     console.log('fail');
-        //     }
-        //   });
+        var usernames = [];
+        $.ajax({
+          url: '/get_wiki_pages',
+          type: 'POST',
+          dataType: 'json',
+          data: {wiki: '{{ wiki }}'},
+          success: function(data) {
+            pages = data;
+            $('#page-entry').typeahead({source: pages});
+            },
+          fail: function(data) {
+            console.log('fail');
+            }
+          });
 
         // get data last updated date and display
         $.ajax({

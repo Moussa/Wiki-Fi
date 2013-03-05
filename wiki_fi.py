@@ -91,7 +91,7 @@ def get_wiki_pages():
 	wiki = request.form['wiki']
 	wikipagelist = cache.get('wiki-fi:pagelist_{0}'.format(wiki))
 	if wikipagelist is None:
-		wikipagelist = [page['title'] for page in wiki_dict[wiki]['pages'].find(fields=['title'])]
+		wikipagelist = [page['title'] for page in wiki_dict[wiki]['pages'].find({'ns': 0}, fields=['title'])]
 		cache.set('wiki-fi:pagelist_{0}'.format(wiki), wikipagelist, timeout=0)
 	resp = Response(json.dumps(wikipagelist), status=200, mimetype='application/json')
 
