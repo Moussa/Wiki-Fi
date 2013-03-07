@@ -185,28 +185,9 @@
 
     <script type="text/javascript">
       $(document).ready(function() {
-        var wiki = "{{ wiki }}";
-        var username = "{{ wiki_name }}";
-
-        // populate array with valid wiki usernames for use in autosuggest in entry form
-        var usernames = [];
-        $.ajax({
-          url: '/get_wiki_users',
-          type: 'POST',
-          dataType: 'json',
-          data: {wiki: '{{ wiki }}'},
-          success: function(data) {
-            usernames = data;
-            $('#username-entry').typeahead({source: usernames});
-            },
-          fail: function(data) {
-            console.log('fail');
-            }
-          });
-
         // get data last updated date and display
         $.ajax({
-          url: '/get_last_updated',
+          url: '/get_wiki_last_updated',
           type: 'POST',
           dataType: 'json',
           data: {wiki: '{{ wiki }}'},
@@ -218,63 +199,8 @@
           }
         });
 
-        // add bullet point for wiki being viewed and disable links for which user does not exist
-        $("li#{{ wiki }}").addClass('disabled')
+        // add bullet point for wiki being viewed
         $("a#{{ wiki }}").append(' <b>•</b>');
-        var wikis = ['tf', 'portal', 'dota2', 'combineoverwiki'];
-        var data = {username: username};
-        
-        $.ajax({
-          url: '/get_user_wikis',
-          type: 'POST',
-          dataType: 'json',
-          data: data,
-          success: function(userwikislist) {
-            $.each(wikis, function(index, wiki) {
-              if ("{{ wiki }}" == wiki) {
-                $('a#' + wiki).attr("href", "#");
-              }
-              else if ($.inArray(wiki, userwikislist) > -1) {
-                $('a#' + wiki).attr("href", "/user?username=" + username + "&wiki=" + wiki);
-              }
-              else {
-                $('li#' + wiki).addClass('disabled');
-              }
-            });
-          }, 
-          fail: function(data) {
-            console.log('fail');
-          }
-        });
-
-        // on form submission check if username is valid for current wiki and redirect. Else display error
-        $(".username-search").on("submit", function() {
-          var search_username = $('#username-entry').val();
-          var data = {username: search_username, wiki: wiki};
-          $.ajax({
-            url: '/is_valid_user',
-            type: 'POST',
-            dataType: 'json',
-            data: data,
-            success: function(data) {
-              if (data) {
-                $('#search-status').removeClass('invalid-username').addClass('valid-username').html('Loading stats...').show();
-
-                window.location = "/user?username=" + search_username + "&wiki=" + wiki;
-              }
-              else {
-                  $('#search-status').addClass('invalid-username').html('Invalid username').fadeIn();
-                  setTimeout(function() {
-                    $('#search-status').fadeOut();
-                  }, 2000);
-              }
-            },
-            fail: function(data) {
-              console.log('fail');
-            }
-          });
-          return false;
-        });
 
       });
     </script>
