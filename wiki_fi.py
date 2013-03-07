@@ -129,7 +129,7 @@ def get_last_updated():
 	wiki = request.form['wiki']
 	last_updated = cache.get('wiki-fi:wiki_last_updated_' + wiki)
 	if last_updated is None:
-		last_updated = (wiki_dict[wiki]['metadata'].find_one({'key': 'last_updated'}, fields=['last_updated']))['last_updated']
+		last_updated = (wiki_dict[wiki]['metadata'].find_one({'key': 'last_updated'}, fields=['value']))['value']
 		cache.set('wiki-fi:wiki_last_updated_' + wiki, last_updated, timeout=0)
 	last_updated = last_updated.strftime("%H:%M, %d %B %Y (UTC)")
 	resp = Response(json.dumps(last_updated), status=200, mimetype='application/json')
