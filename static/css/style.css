@@ -22,6 +22,18 @@ body {
   padding-bottom: 60px;
 }
 
+.form-right {
+  text-align: right;
+}
+
+.btn-center {
+  text-align: center;
+}
+
+#username, #page {
+  height: 34px;
+}
+
 .edits-toggle {
   padding-top: 20px;
 }
@@ -74,10 +86,6 @@ body {
 
 #bubblechart_div_large {
   height: 700px;
-}
-
-#username {
-  height: 34px;
 }
 
 #number-stats-row {

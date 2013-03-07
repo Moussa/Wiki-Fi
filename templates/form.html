@@ -32,7 +32,9 @@
 
     <div class="title">
       <h1>Wiki-Fi</h1>
-      <p class="lead">Pick a wiki and enter your username to view edit statistics and graphs</p>
+      <p class="lead">
+        Pick a wiki to view user, page or wiki statistics and graphs
+      </p>
     </div>
 
     <div class="btn-group-wrapper">
@@ -44,18 +46,47 @@
       </div>
     </div>
 
-    <div class="form-group-wrapper">
-      <form class="form-search">
-        <input type="text" class="input-large" id="username" placeholder="Username" autocomplete="off">
-        <button type="submit" class="btn btn-large btn-primary">Get Stats</button>
-      </form>
+    <div class="container-fluid">
+      <div class="row-fluid">
+        <div class="span12">
+          <table class="table-condensed" style="width: 100%;">
+            <tr>
+              <td>
+                <h2 class="form-right">Users</h2>
+              </td>
+              <td></td>
+              <td>
+                <h2>Pages</h2>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <form class="form-search form-right">
+                  <input type="text" class="input-large" id="username" placeholder="Username" autocomplete="off">
+                  <button type="submit" class="btn btn-large btn-primary">Go</button>
+                </form>
+              </td>
+              <td>
+                <form class="form-search btn-center">
+                  <button type="submit" class="btn btn-large btn-primary">View wiki stats</button>
+                </form>
+              </td>
+              <td>
+                <form class="form-search">
+                  <input type="text" class="input-large" id="page" placeholder="Page" autocomplete="off">
+                  <button type="submit" class="btn btn-large btn-primary">Go</button>
+                </form>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
     </div>
 
     <div class="alert alert-error error-box">
       <button type="button" class="close" data-dismiss="alert">&times;</button>
       <strong>Error</strong> <span id="error-text"></span>
     </div>
-
 
     <script type="text/javascript">
       $(document).ready(function() {
@@ -67,12 +98,31 @@
 
         // populate array with valid wiki usernames for use in autosuggest in entry form
         var usernames = [];
+        var wiki = $('.btn-group button.active').val();
         $.ajax({
-          url: '/get_all_users',
-          type: 'GET',
+          url: '/get_wiki_users',
+          type: 'POST',
+          data: {wiki: wiki},
           success: function(data) {
             usernames = data;
-            $('#username').typeahead({source: usernames}).focus();
+            $('#username').typeahead({source: usernames});
+            },
+          fail: function(data) {
+            console.log('fail');
+            }
+          });
+
+        // populate array with valid wiki pages for use in autosuggest in entry form
+        var usernames = [];
+        var wiki = $('.btn-group button.active').val();
+        $.ajax({
+          url: '/get_wiki_pages',
+          type: 'POST',
+          data: {wiki: wiki},
+          success: function(data) {
+            pages = data;
+            $('#page').typeahead({source: pages});
+            console.log('done');
             },
           fail: function(data) {
             console.log('fail');
