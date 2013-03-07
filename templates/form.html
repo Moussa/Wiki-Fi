@@ -63,7 +63,7 @@
               <td>
                 <form class="form-search form-right">
                   <input type="text" class="input-large" id="username" placeholder="Username" autocomplete="off">
-                  <button type="submit" class="btn btn-large btn-primary">Go</button>
+                  <button type="submit" class="btn btn-large btn-primary" id="user-button">Go</button>
                 </form>
               </td>
               <td>
@@ -73,8 +73,8 @@
               </td>
               <td>
                 <form class="form-search">
-                  <input type="text" class="input-large" id="page" placeholder="Page" autocomplete="off">
-                  <button type="submit" class="btn btn-large btn-primary">Go</button>
+                  <input type="text" class="input-large" id="page" placeholder="Page title" autocomplete="off">
+                  <button type="submit" class="btn btn-large btn-primary" id="page-button">Go</button>
                 </form>
               </td>
             </tr>
@@ -130,7 +130,7 @@
           });
 
         // on form submission check if username is valid for wiki selection and redirect. Else display error
-        $('button[type=submit]').click(function () {
+        $('#user-button').click(function () {
           var username = $('#username').val();
           var wiki = $('.btn-group button.active').val();
           var data = {username: username, wiki: wiki};
@@ -141,15 +141,13 @@
             data: data,
             success: function(data) {
               if (data){
-                $('button[type=submit]').removeClass('btn-primary btn-danger').addClass('btn-success').html('Loading stats...');
-                $('#loader').css('visibility','visible');
-
+                $('#user-button').removeClass('btn-primary btn-danger').addClass('btn-success').html('Loading stats...');
                 window.location = "/user?username=" + username + "&wiki=" + wiki;
               }
               else {
-                $('button[type=submit]').removeClass('btn-primary').addClass('btn-danger').html('Invalid username');
+                $('#user-button').removeClass('btn-primary').addClass('btn-danger').html('Invalid username');
                 setTimeout(function() {
-                  $('button[type=submit]').removeClass('btn-danger').addClass('btn-primary').html('Get Stats');
+                  $('#user-button').removeClass('btn-danger').addClass('btn-primary').html('Get Stats');
                 }, 2000);
               }
             },
