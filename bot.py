@@ -10,6 +10,7 @@ cache = MemcachedCache(['{0}:{1}'.format(config['memcached']['host'], config['me
 connection = pymongo.MongoClient(config['db']['host'], config['db']['port'], w=1)
 
 dateRE = re.compile(r'(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})Z')
+langArray = ['ar', 'cs', 'da', 'de', 'es', 'fi', 'fr', 'hu', 'it', 'ja', 'ko', 'nl', 'no', 'pl', 'pt', 'pt-br', 'ro', 'ru', 'sv', 'tr', 'zh-hans', 'zh-hant']
 
 def get_date_from_string(date_string):
 	res = dateRE.search(date_string)
@@ -48,10 +49,16 @@ def get_user_id(db, wiki, w_api, username):
 
 	return user_id
 
-def get_page_id(db, wiki, title, ns):
+def get_page_id(db, wiki, title, ns, redirect):
 	page = db['pages'].find_one({'title': title}, fields=[])
 	if page is None:
-		page_id = db['pages'].insert({'title': title, 'ns': ns})
+		for lang in langArray:
+			if title.endswith('/' + lang):
+				language = lang
+				break
+		else:
+			language = 'en'
+		page_id = db['pages'].insert({'title': title, 'ns': ns, 'lang': language, 'redirect': redirect})
 	else:
 		page_id = page['_id']
 
@@ -62,13 +69,12 @@ def get_last_edit_datetime(db):
 		return None
 	return (db['edits'].find(fields=['timestamp'], sort=[('timestamp', pymongo.DESCENDING)]).limit(1))[0]['timestamp']
 
-def seeder(wiki, db, w_api, namespace, cutoff_date, lock):
-	pages = w_api.get_all_pages(namespace)
+def seeder(wiki, db, w_api, namespace, namespace_name, pages, redirects, cutoff_date, lock):
 	users = {}
 
 	for page in pages:
 		page_name = page['title'].encode('utf-8')
-		page_id = get_page_id(db, wiki, page_name, namespace)
+		page_id = get_page_id(db, wiki, page_name, namespace, redirects)
 		revisions = w_api.get_page_revisions(page_name)
 
 		print('Inserting edits for ' + page_name)
@@ -122,6 +128,11 @@ def seeder(wiki, db, w_api, namespace, cutoff_date, lock):
 	                          }
 					db['files'].insert(output)
 
+	if not redirects:
+		namespaces_dict = db['metadata'].find_one({'key': 'namespaces'})['value']
+		namespaces_dict[str(namespace)] = namespace_name
+		db['metadata'].update({'key': 'namespaces'}, {'$set': {'value': namespaces_dict}})
+
 def seed(wiki):
 	db, w_api = load(wiki)
 	seedpool = threadpool.ThreadPool(4)
@@ -145,13 +156,16 @@ def seed(wiki):
 		else:
 			namespace_name = namespaces[namespace]['*']
 
-		namespaces_dict = db['metadata'].find_one({'key': 'namespaces'})['value']
-		namespaces_dict[namespace] = namespace_name
-		db['metadata'].update({'key': 'namespaces'}, {'$set': {'value': namespaces_dict}})
 		# better to store namespace id as int
 		namespace = int(namespace)
 
-		arglist = (wiki, db, w_api, namespace, cutoff_date, lock)
+		non_redirect_pages = w_api.get_all_pages(namespace, False)
+		arglist = (wiki, db, w_api, namespace, namespace_name, non_redirect_pages, False, cutoff_date, lock)
+		workrequest = threadpool.WorkRequest(seeder, arglist)
+		seedpool.putRequest(workrequest)
+
+		redirect_pages = w_api.get_all_pages(namespace, True)
+		arglist = (wiki, db, w_api, namespace, namespace_name, redirect_pages, True, cutoff_date, lock)
 		workrequest = threadpool.WorkRequest(seeder, arglist)
 		seedpool.putRequest(workrequest)
 
@@ -192,12 +206,16 @@ def update(wiki):
 			ns = edit['ns']
 		if 'rcid' in edit:
 			rcid = edit['rcid']
+		if 'redirect' in edit:
+			redirect = True
+		else:
+			redirect = False
 
 		if edit['type'] == 'new':
 			print('RCID: {0} - NEWPAGE: {1}'.format(rcid, title))
 
 			user_id = get_user_id(db, wiki, w_api, username)
-			page_id = get_page_id(db, wiki, title, ns)
+			page_id = get_page_id(db, wiki, title, ns, redirect)
 			output = {'user_id': user_id,
                       'ns': ns,
                       'revid': edit['revid'],
@@ -212,7 +230,7 @@ def update(wiki):
 			print('RCID: {0} - EDIT: {1}'.format(rcid, title))
 
 			user_id = get_user_id(db, wiki, w_api, username)
-			page_id = get_page_id(db, wiki, title, ns)
+			page_id = get_page_id(db, wiki, title, ns, redirect)
 			output = {'user_id': user_id,
                       'ns': ns,
                       'revid': edit['revid'],
@@ -221,13 +239,14 @@ def update(wiki):
                       'new_page': False
                       }
 			db['edits'].insert(output)
+			db['pages'].update({'_id': page_id}, {'$set': {'redirect': redirect}})
 			cache.delete('wiki-fi:pagedata_{0}_{1}'.format(title.replace(' ', '_'), wiki))
 
 		elif edit['type'] == 'log':
 			if edit['logtype'] == 'move':
 				print('RCID: {0} - PAGEMOVE: {1} -> {2}'.format(rcid, title, edit['move']['new_title'].encode('utf-8')))
 
-				page_id = get_page_id(db, wiki, title, ns)
+				page_id = get_page_id(db, wiki, title, ns, redirect)
 				old_page_title = edit['title'].encode('utf-8')
 				new_page_title = edit['move']['new_title'].encode('utf-8')
 				new_page_ns = edit['move']['new_ns']
@@ -237,15 +256,22 @@ def update(wiki):
 				if target_page:
 					db['pages'].remove({'_id': target_page['_id']})
 					db['edits'].remove({'page_id': target_page['_id']})
+
+				for lang in langArray:
+					if new_page_title.endswith('/' + lang):
+						language = lang
+						break
+				else:
+					language = 'en'
 				# rename oldpage to newpage
-				db['pages'].update({'_id': page_id}, {'title': new_page_title, 'ns': new_page_ns})
+				db['pages'].update({'_id': page_id}, {'$set': {'title': new_page_title, 'ns': new_page_ns, 'lang': language, 'redirect': False}})
 				cache.delete('wiki-fi:pagedata_{0}_{1}'.format(title.replace(' ', '_'), wiki))
 
 				if 'suppressedredirect' not in edit['move']:
 					# left behind a redirect
 					print('RCID: {0} - REDIRECTCREATION: {1}'.format(rcid, title))
 
-					page_id = get_page_id(db, wiki, title, ns)
+					page_id = get_page_id(db, wiki, title, ns, True)
 					user_id = get_user_id(db, wiki, w_api, username)
 					output = {'user_id': user_id,
                               'ns': ns,
@@ -255,13 +281,14 @@ def update(wiki):
                               'new_page': True
                               }
 					db['edits'].insert(output)
+					db['pages'].update({'_id': page_id}, {'$set': {'redirect': True}})
 					cache.delete('wiki-fi:pagedata_{0}_{1}'.format(title.replace(' ', '_'), wiki))
 
 			elif edit['logtype'] == 'upload':
 				print('RCID: {0} - FILEUPLOAD: {1}'.format(rcid, title))
 
 				user_id = get_user_id(db, wiki, w_api, username)
-				page_id = get_page_id(db, wiki, title, ns)
+				page_id = get_page_id(db, wiki, title, ns, redirect)
 
 				output = {'user_id': user_id,
 		                  'page_id': page_id,
@@ -293,7 +320,7 @@ def update(wiki):
 				elif edit['logaction'] == 'restore':
 					print('RCID: {0} - RESTORE: {1}'.format(rcid, title))
 
-					page_id = get_page_id(db, wiki, edit['title'], ns)
+					page_id = get_page_id(db, wiki, edit['title'], ns, redirect)
 					revisions = w_api.get_page_revisions(edit['title'])
 
 					first = True

@@ -19,12 +19,17 @@ class Wiki_API:
 
 		return res['query']['namespaces']
 
-	def get_all_pages(self, namespace):
+	def get_all_pages(self, namespace, redirects):
 		params = {'action': 'query',
                   'list': 'allpages',
                   'aplimit': '5000',
                   'apnamespace': namespace
                   }
+
+		if redirects:
+			params['apfilterredir'] = 'redirects'
+		else:
+			params['apfilterredir'] = 'nonredirects'
 
 		req = wikitools.api.APIRequest(self.wiki, params)
 		res = req.query(querycontinue=True)
@@ -78,7 +83,7 @@ class Wiki_API:
 	def get_recent_changes(self, start=None):
 		params = {'action': 'query',
                   'list': 'recentchanges',
-                  'rcprop': 'user|timestamp|title|ids|loginfo',
+                  'rcprop': 'user|timestamp|title|ids|loginfo|redirect',
                   'rctype': 'edit|new|log',
                   'rcdir': 'newer',
                   'rclimit': '5000'
