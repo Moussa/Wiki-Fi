@@ -87,7 +87,7 @@
         <div class="span6">
           <table class="table-condensed">
             <tr class="number-stats-tablerow">
-              <td>Unique pages edited:</td>
+              <td>Pages:</td>
               <td id="value">{{charts_data['distinct_pages_count']}}</td>
             </tr>
             <tr class="number-stats-tablerow">
@@ -112,8 +112,26 @@
 
     <div class="btn-group-wrapper edits-toggle">
       <div class="btn-group" data-toggle="buttons-radio">
-        <button type="button" class="btn btn-large active" value="daily">Daily edits</button>
-        <button type="button" class="btn btn-large" value="cumulative">Cumulative edits</button>
+        <button type="button" class="btn btn-large edits-btn active" value="daily">Daily edits</button>
+        <button type="button" class="btn btn-large edits-btn" value="cumulative">Cumulative edits</button>
+      </div>
+    </div>
+
+    <div class="container-fluid">
+      <div class="row-fluid">
+        <div class="span12"><h2>User registrations timeline</h2></div>
+      </div>
+    </div>
+    <div class="container-fluid">
+      <div class="row-fluid">
+        <div class="span10 offset1" id="registrations_chart_div"></div>
+      </div>
+    </div>
+
+    <div class="btn-group-wrapper edits-toggle">
+      <div class="btn-group" data-toggle="buttons-radio">
+        <button type="button" class="btn btn-large registrations-btn active" value="daily">Daily registrations</button>
+        <button type="button" class="btn btn-large registrations-btn" value="cumulative">Cumulative registrations</button>
       </div>
     </div>
 
@@ -275,13 +293,25 @@
 
     <!-- GRAPH SCRIPTS -->
     <script type="text/javascript">
-      $('button').click(function () {
+      $('.edits-btn').click(function () {
         var editsdisplay = $(this).val();
         if (editsdisplay == 'daily') {
           edit_timeline_chart.hideDataColumns(1);
         }
         else {
           edit_timeline_chart.showDataColumns(1);
+        }
+      });
+    </script>
+
+    <script type="text/javascript">
+      $('.registrations-btn').click(function () {
+        var registrationsdisplay = $(this).val();
+        if (registrationsdisplay == 'daily') {
+          user_registrations_timeline_chart.hideDataColumns(1);
+        }
+        else {
+          user_registrations_timeline_chart.showDataColumns(1);
         }
       });
     </script>
@@ -302,6 +332,26 @@
           dateFormat: 'MMMM dd, yyyy'
         });
         edit_timeline_chart.hideDataColumns(1);
+      }
+    </script>
+
+    <script type="text/javascript">
+      google.load('visualization', '1', {'packages':['annotatedtimeline']});
+      var user_registrations_timeline_chart;
+      google.setOnLoadCallback(drawChart);
+      function drawChart() {
+        var data = new google.visualization.DataTable();
+        data.addColumn('date', 'Date');
+        data.addColumn('number', 'Registered users');
+        data.addColumn('number', 'Total registered users');
+        data.addRows([ {{ charts_data['user_registrations_timeline_string']|safe }} ]);
+        user_registrations_timeline_chart = new google.visualization.AnnotatedTimeLine(document.getElementById('registrations_chart_div'));
+        user_registrations_timeline_chart.draw(data, {
+          displayAnnotations: false,
+          colors: ['#990099'],
+          dateFormat: 'MMMM dd, yyyy'
+        });
+        user_registrations_timeline_chart.hideDataColumns(1);
       }
     </script>
 

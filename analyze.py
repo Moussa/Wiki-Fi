@@ -302,15 +302,18 @@ def analyze_page(wiki, db, page):
 
 def analyze_wiki(wiki, db):
 	edits_collection = db['edits']
+	users_collection = db['users']
 
 	start_date = get_creation_datetime_from_string(config['wikis'][wiki]['creation_date'])
 	end_date = datetime.datetime.today()
 
 	edits_timeline = []
+	user_registrations_timeline = []
 	page_ids = []
 	largest_day_edit_count = 0
 	total_edit_count = 0
 	last_30_days_edits = 0
+	total_user_count = 0
 	hour_dict = dict((a, {'count': 0, 'string': '{0}:00'.format("%02d" % (a,))}) for a in range(0, 24))
 	edits_dict = dict((a, {'day': {'string': DAY_MAPPING[a], 'count': 0}, 'hours': copy.deepcopy(hour_dict)}) for a in range(0, 7))
 
@@ -331,7 +334,7 @@ def analyze_wiki(wiki, db):
 			largest_day_edit_count = day_edit_count
 
 		for edit in edits:
-			page_ids.append(edit['title'])
+			page_ids.append(edit['page_id'])
 
 			# Add hourly edits data to dict
 			edit_hour = edit['timestamp'].hour
@@ -350,7 +353,21 @@ def analyze_wiki(wiki, db):
 
 		edits_timeline.append(editentry)
 
-	distinct_pages_count = len(edits_collection.find({}, fields=[]).distinct('title'))
+		user_registrations = users_collection.find({'registration': {'$gte': start, '$lt': end}}, fields=[]).count()
+		total_user_count += user_registrations
+
+		entry = """[new Date({year}, {month}, {day}), {user_registrations}, {total_user_count}]"""
+
+		usersentry = entry.format(year=single_date.year,
+                                  month=single_date.month-1,
+                                  day=single_date.day,
+                                  user_registrations=user_registrations,
+                                  total_user_count=total_user_count
+                                  )
+
+		user_registrations_timeline.append(usersentry)
+
+	distinct_pages_count = len(edits_collection.find({}, fields=[]).distinct('page_id'))
 
 	days_since_first_edit = (datetime.datetime.today() - start_date).days
 
@@ -381,13 +398,16 @@ def analyze_wiki(wiki, db):
 	day_column_chart_string = process_day_column_chart(edits_dict)
 
 	# Generate data table string for namespace pie chart
-	namespace_piechart_string = process_namespace_pie_chart(wiki, edits_collection)
+	namespace_piechart_string = process_namespace_pie_chart(wiki, db, edits_collection)
 
 	# Generate data table string for namespace distribution pie chart
 	namespace_distribution_piechart_string = process_namespace_distribution_pie_chart(wiki, db, edits_collection)
 
 	# Generate data table string for edits timeline chart
 	edits_timeline_string = ',\n'.join(sorted(edits_timeline))
+
+	# Generate data table string for user registrations timeline chart
+	user_registrations_timeline_string = ',\n'.join(sorted(user_registrations_timeline))
 
 	charts_data = {'start_date': start_date,
                    'end_date': end_date,
@@ -399,6 +419,7 @@ def analyze_wiki(wiki, db):
                    'largest_day_edit_count': largest_day_edit_count,
                    'most_edited_pages': most_edited_pages,
                    'edits_timeline_string': edits_timeline_string,
+                   'user_registrations_timeline_string': user_registrations_timeline_string,
                    'namespace_piechart_string': namespace_piechart_string,
                    'namespace_distribution_piechart_string': namespace_distribution_piechart_string,
                    'hour_column_chart_string': hour_column_chart_string,
