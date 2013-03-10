@@ -150,7 +150,7 @@
           success: function(data) {
             if (data){
               $('#user-stats-form button').removeClass('btn-primary btn-danger').addClass('btn-success').html('Loading stats...');
-              window.location = "/user?username=" + username + "&wiki=" + wiki;
+              window.location = "/user/" + wiki + "/" + username;
             }
             else {
               $('#user-stats-form button').removeClass('btn-primary').addClass('btn-danger').html('Invalid username');
@@ -179,7 +179,7 @@
           success: function(data) {
             if (data){
               $('#page-stats-form button').removeClass('btn-primary btn-danger').addClass('btn-success').html('Loading stats...');
-              window.location = "/page?page=" + page + "&wiki=" + wiki;
+              window.location = "/page/" + wiki + "/" + page;
             }
             else {
               $('#page-stats-form button').removeClass('btn-primary').addClass('btn-danger').html('Invalid page title');
@@ -198,7 +198,7 @@
       $('#wiki-stats-form a').click(function () {
         console.log('beep');
         var wiki = $('.btn-group button.active').val();
-        window.location = "/wiki?wiki=" + wiki;
+        window.location = "/wiki/" + wiki;
       });
 
       $(document).ready(function() {

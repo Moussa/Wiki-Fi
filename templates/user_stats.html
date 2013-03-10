@@ -240,7 +240,7 @@
                 $('a#' + wiki).attr("href", "#");
               }
               else if ($.inArray(wiki, userwikislist) > -1) {
-                $('a#' + wiki).attr("href", "/user?username=" + username + "&wiki=" + wiki);
+                $('a#' + wiki).attr("href", "/user/" + wiki + "/" + username);
               }
               else {
                 $('li#' + wiki).addClass('disabled');
@@ -265,7 +265,7 @@
               if (data) {
                 $('#search-status').removeClass('invalid-username').addClass('valid-username').html('Loading stats...').show();
 
-                window.location = "/user?username=" + search_username + "&wiki=" + wiki;
+                window.location = "/user/" + wiki + "/" + search_username;
               }
               else {
                   $('#search-status').addClass('invalid-username').html('Invalid username').fadeIn();

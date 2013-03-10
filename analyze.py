@@ -97,13 +97,13 @@ def process_namespace_distribution_pie_chart(wiki, db, edits_collection):
 
 def process_most_edited_pages(wiki, db, page_ids):
 	most_edited = Counter(page_ids).most_common(100)
-	output = [{'text': get_page_name(db, entry[0]) + ' (' + str(entry[1]) + ')', 'weight': entry[1], 'link': {'href': '/page?wiki={0}&page={1}'.format(wiki, get_page_name(db, entry[0])), 'title': 'See stats for ' + get_page_name(db, entry[0])}} for entry in most_edited]
+	output = [{'text': get_page_name(db, entry[0]) + ' (' + str(entry[1]) + ')', 'weight': entry[1], 'link': {'href': '/page/{0}/{1}'.format(wiki, get_page_name(db, entry[0])), 'title': 'See stats for ' + get_page_name(db, entry[0])}} for entry in most_edited]
 
 	return json.dumps(output).replace(r"'", r"\'")
 
 def process_most_frequent_editors(wiki, db, user_ids):
 	most_edited = Counter(user_ids).most_common(50)
-	output = [{'text': get_user_name(db, entry[0]) + ' (' + str(entry[1]) + ')', 'weight': entry[1], 'link': {'href': '/user?wiki={0}&username={1}'.format(wiki, get_user_name(db, entry[0])), 'title': 'See stats for User:' + get_user_name(db, entry[0])}} for entry in most_edited]
+	output = [{'text': get_user_name(db, entry[0]) + ' (' + str(entry[1]) + ')', 'weight': entry[1], 'link': {'href': '/user/{0}/{1}'.format(wiki, get_user_name(db, entry[0])), 'title': 'See stats for User:' + get_user_name(db, entry[0])}} for entry in most_edited]
 
 	return json.dumps(output).replace(r"'", r"\'")
 
@@ -376,7 +376,6 @@ def analyze_wiki(wiki, db):
 	edits_per_day_30days = '%.2f' % (float(last_30_days_edits)/30.0)
 
 	start_date = start_date.strftime("%d %B %Y")
-	end_date = end_date.strftime("%d %B %Y")
 
 	# Format numbers with separators
 	locale.setlocale(locale.LC_ALL, 'en_US.utf8')
@@ -410,7 +409,6 @@ def analyze_wiki(wiki, db):
 	user_registrations_timeline_string = ',\n'.join(sorted(user_registrations_timeline))
 
 	charts_data = {'start_date': start_date,
-                   'end_date': end_date,
 	               'total_edit_count': total_edit_count,
                    'distinct_pages_count': distinct_pages_count,
                    'days_since_first_edit': days_since_first_edit,

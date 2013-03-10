@@ -61,19 +61,6 @@ def is_valid_page():
 
 	return resp
 
-@app.route('/get_all_users', methods=['GET'])
-def get_all_users():
-	users = cache.get('wiki-fi:allusers')
-	if users is None:
-		users = []
-		for wiki in config['wikis']:
-			users += [user['username'] for user in wiki_dict[wiki]['users'].find(fields=['username'])]
-		users = list(set(users))
-		cache.set('wiki-fi:allusers', users, timeout=0)
-	resp = Response(json.dumps(users), status=200, mimetype='application/json')
-
-	return resp
-
 @app.route('/get_wiki_users', methods=['POST'])
 def get_wiki_users():
 	wiki = request.form['wiki']
@@ -147,15 +134,9 @@ def invalid_args(error):
 def about():
 	return render_template('about.html')
 
-@app.route('/user', methods=['GET'])
-def anaylze_user():
-	if 'username' not in request.args:
-		return invalid_args(error="invalid username")
-	if 'wiki' not in request.args or request.args['wiki'] not in wiki_dict:
-		return invalid_args(error="invalid wiki")
-
-	username = request.args['username'].replace('_', ' ')
-	wiki = request.args['wiki']
+@app.route('/user/<wiki>/<username>')
+def anaylze_user(wiki, username):
+	username = username.replace('_', ' ')
 	user = wiki_dict[wiki]['users'].find_one({'username': username})
 	if user is None:
 		return invalid_args(error="invalid username")
@@ -165,16 +146,10 @@ def anaylze_user():
 
 	return render_template('user_stats.html', username=username, wiki=wiki, wiki_link=wiki_link, charts_data=charts_data)
 
-@app.route('/page', methods=['GET'])
-def anaylze_page():
-	if 'page' not in request.args:
-		return invalid_args('invalid page')
-	if 'wiki' not in request.args or request.args['wiki'] not in wiki_dict:
-		return invalid_args('invalid wiki')
-
-	page = request.args['page'].replace('_', ' ')
-	wiki = request.args['wiki']
-	page = wiki_dict[wiki]['pages'].find_one({'title': page})
+@app.route('/page/<wiki>/<pagetitle>')
+def anaylze_page(wiki, pagetitle):
+	pagetitle = pagetitle.replace('_', ' ')
+	page = wiki_dict[wiki]['pages'].find_one({'title': pagetitle})
 	if page is None:
 		return invalid_args('invalid page')
 	wiki_link = config['wikis'][wiki]['wiki_link']
@@ -183,12 +158,10 @@ def anaylze_page():
 
 	return render_template('page_stats.html', page_name=page['title'], wiki=wiki, wiki_link=wiki_link, charts_data=charts_data)
 
-@app.route('/wiki', methods=['GET'])
-def anaylze_wiki():
-	if request.args['wiki'] not in wiki_dict:
+@app.route('/wiki/<wiki>')
+def anaylze_wiki(wiki):
+	if wiki not in config['wikis']:
 		return invalid_args('invalid wiki')
-
-	wiki = request.args['wiki']
 	wiki_link = config['wikis'][wiki]['wiki_link']
 	charts_data = get_wiki_chart_data(wiki, wiki_dict[wiki])
 
