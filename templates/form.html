@@ -68,7 +68,7 @@
               </td>
               <td>
                 <form class="form-search btn-center" id="wiki-stats-form">
-                  <button type="submit" class="btn btn-large btn-primary">View wiki stats</button>
+                  <a class="btn btn-large btn-primary">View wiki stats</a>
                 </form>
               </td>
               <td>
@@ -195,7 +195,8 @@
         return false;
       });
 
-      $('#wiki-stats-form button').click(function () {
+      $('#wiki-stats-form a').click(function () {
+        console.log('beep');
         var wiki = $('.btn-group button.active').val();
         window.location = "/wiki?wiki=" + wiki;
       });

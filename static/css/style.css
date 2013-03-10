@@ -30,7 +30,7 @@ body {
   text-align: center;
 }
 
-#username, #page {
+#user-stats-form > input, #page-stats-form > input {
   height: 34px;
 }
 
