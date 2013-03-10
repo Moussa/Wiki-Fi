@@ -139,7 +139,7 @@
 
       // on username submission check if username is valid for wiki selection and redirect. Else display error
       $('#user-stats-form button').click(function () {
-        var username = $('#user-stats-form input').val();
+        var username = $('#user-stats-form input').val().replace(/ /g, '_');
         var wiki = $('.btn-group button.active').val();
         var data = {username: username, wiki: wiki};
         $.ajax({
@@ -168,7 +168,7 @@
 
       // on page title submission check if page title is valid for wiki selection and redirect. Else display error
       $('#page-stats-form button').click(function () {
-        var page = $('#page-stats-form input').val();
+        var page = $('#page-stats-form input').val().replace(/ /g, '_');
         var wiki = $('.btn-group button.active').val();
         var data = {page: page, wiki: wiki};
         $.ajax({

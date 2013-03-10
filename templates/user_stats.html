@@ -254,7 +254,7 @@
 
         // on form submission check if username is valid for current wiki and redirect. Else display error
         $(".username-search").on("submit", function() {
-          var search_username = $('#username-entry').val();
+          var search_username = $('#username-entry').val().replace(/ /g, '_');
           var data = {username: search_username, wiki: wiki};
           $.ajax({
             url: '/is_valid_user',

@@ -97,13 +97,29 @@ def process_namespace_distribution_pie_chart(wiki, db, edits_collection):
 
 def process_most_edited_pages(wiki, db, page_ids):
 	most_edited = Counter(page_ids).most_common(100)
-	output = [{'text': get_page_name(db, entry[0]) + ' (' + str(entry[1]) + ')', 'weight': entry[1], 'link': {'href': '/page/{0}/{1}'.format(wiki, get_page_name(db, entry[0])), 'title': 'See stats for ' + get_page_name(db, entry[0])}} for entry in most_edited]
+	output = []
+	for entry in most_edited:
+		page_title = get_page_name(db, entry[0])
+		count = entry[1]
+		json_entry = {}
+		json_entry['text'] = '{0} ({1})'.format(page_title, count)
+		json_entry['weight'] = count
+		json_entry['link'] = {'href': '/page/{0}/{1}'.format(wiki, page_title.replace(' ', '_')), 'title': 'See stats for ' + page_title}
+		output.append(json_entry)
 
 	return json.dumps(output).replace(r"'", r"\'")
 
 def process_most_frequent_editors(wiki, db, user_ids):
 	most_edited = Counter(user_ids).most_common(50)
-	output = [{'text': get_user_name(db, entry[0]) + ' (' + str(entry[1]) + ')', 'weight': entry[1], 'link': {'href': '/user/{0}/{1}'.format(wiki, get_user_name(db, entry[0])), 'title': 'See stats for User:' + get_user_name(db, entry[0])}} for entry in most_edited]
+	output = []
+	for entry in most_edited:
+		username = get_user_name(db, entry[0])
+		count = entry[1]
+		json_entry = {}
+		json_entry['text'] = '{0} ({1})'.format(username, count)
+		json_entry['weight'] = count
+		json_entry['link'] = {'href': '/user/{0}/{1}'.format(wiki, username.replace(' ', '_')), 'title': 'See stats for User:' + username}
+		output.append(json_entry)
 
 	return json.dumps(output).replace(r"'", r"\'")
 
