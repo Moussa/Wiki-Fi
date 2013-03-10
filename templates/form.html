@@ -137,9 +137,9 @@
         populateAutocomplete(wiki);
       });
 
-      // on form submission check if username is valid for wiki selection and redirect. Else display error
-      $('#user-button').click(function () {
-        var username = $('#username').val();
+      // on username submission check if username is valid for wiki selection and redirect. Else display error
+      $('#user-stats-form button').click(function () {
+        var username = $('#user-stats-form input').val();
         var wiki = $('.btn-group button.active').val();
         var data = {username: username, wiki: wiki};
         $.ajax({
@@ -149,13 +149,13 @@
           data: data,
           success: function(data) {
             if (data){
-              $('#user-button').removeClass('btn-primary btn-danger').addClass('btn-success').html('Loading stats...');
+              $('#user-stats-form button').removeClass('btn-primary btn-danger').addClass('btn-success').html('Loading stats...');
               window.location = "/user?username=" + username + "&wiki=" + wiki;
             }
             else {
-              $('#user-button').removeClass('btn-primary').addClass('btn-danger').html('Invalid username');
+              $('#user-stats-form button').removeClass('btn-primary').addClass('btn-danger').html('Invalid username');
               setTimeout(function() {
-                $('#user-button').removeClass('btn-danger').addClass('btn-primary').html('Get Stats');
+                $('#user-stats-form button').removeClass('btn-danger').addClass('btn-primary').html('Get Stats');
               }, 2000);
             }
           },
@@ -164,6 +164,40 @@
           }
         });
         return false;
+      });
+
+      // on page title submission check if page title is valid for wiki selection and redirect. Else display error
+      $('#page-stats-form button').click(function () {
+        var page = $('#page-stats-form input').val();
+        var wiki = $('.btn-group button.active').val();
+        var data = {page: page, wiki: wiki};
+        $.ajax({
+          url: '/is_valid_page',
+          type: 'POST',
+          dataType: 'json',
+          data: data,
+          success: function(data) {
+            if (data){
+              $('#page-stats-form button').removeClass('btn-primary btn-danger').addClass('btn-success').html('Loading stats...');
+              window.location = "/page?page=" + page + "&wiki=" + wiki;
+            }
+            else {
+              $('#page-stats-form button').removeClass('btn-primary').addClass('btn-danger').html('Invalid page title');
+              setTimeout(function() {
+                $('#page-stats-form button').removeClass('btn-danger').addClass('btn-primary').html('Get Stats');
+              }, 2000);
+            }
+          },
+          fail: function(data) {
+            console.log('fail');
+          }
+        });
+        return false;
+      });
+
+      $('#wiki-stats-form button').click(function () {
+        var wiki = $('.btn-group button.active').val();
+        window.location = "/wiki?wiki=" + wiki;
       });
 
       $(document).ready(function() {
