@@ -8,6 +8,7 @@ except:
 	from counter import Counter
 
 DAY_MAPPING = {0: 'Monday', 1: 'Tuesday', 2: 'Wednesday', 3: 'Thursday', 4: 'Friday', 5: 'Saturday', 6: 'Sunday'}
+LANG_ARRAY = ['ar', 'cs', 'da', 'de', 'en', 'es', 'fi', 'fr', 'hu', 'it', 'ja', 'ko', 'nl', 'no', 'pl', 'pt', 'pt-br', 'ro', 'ru', 'sv', 'tr', 'zh-hans', 'zh-hant']
 
 creationDateRE = re.compile(r'(\d{2})/(\d{2})/(\d{4})')
 
@@ -69,6 +70,28 @@ def process_hour_day_bubble_chart(edits_dict):
 	day_hour_output = ',\n'.join(day_hour_output)
 
 	return day_hour_output
+
+def process_language_pie_chart(wiki, db, pages_collection):
+	language_piechart_output = []
+	for lang in LANG_ARRAY:
+		count = pages_collection.find({'lang': lang, 'ns': {'$in': [0, 4, 8]}}, fields=[]).count()
+		if count > 0:
+			language_piechart_output.append('[\'{0}\', {1}]'.format(lang, count))
+	language_piechart_output = ',\n'.join(language_piechart_output)
+
+	return language_piechart_output
+
+def process_language_edits_pie_chart(wiki, db, pages_collection, edits_collection):
+	language_edits_piechart_output = []
+	for lang in LANG_ARRAY:
+		count = 0
+		for page in pages_collection.find({'lang': lang, 'ns': {'$in': [0, 4, 8]}}, fields=['_id']):
+			count += edits_collection.find({'page_id': page['_id']}, fields=[]).count()
+		if count > 0:
+			language_edits_piechart_output.append('[\'{0}\', {1}]'.format(lang, count))
+	language_edits_piechart_output = ',\n'.join(language_edits_piechart_output)
+
+	return language_edits_piechart_output
 
 def process_namespace_pie_chart(wiki, db, edits_collection, user=None):
 	namespace_mapping = db['metadata'].find_one({'key': 'namespaces'})['value']
@@ -287,6 +310,8 @@ def analyze_page(wiki, db, page):
 
 	distinct_editors_count = len(edits_collection.find({'page_id': page['_id']}, fields=[]).distinct('user_id'))
 
+	is_redirect = page['redirect']
+
 	# Format numbers with separators
 	locale.setlocale(locale.LC_ALL, 'en_US.utf8')
 	total_edit_count = locale.format("%d", total_edit_count, grouping=True)
@@ -306,6 +331,7 @@ def analyze_page(wiki, db, page):
 	charts_data = {'total_edit_count': total_edit_count,
                    'most_edited_pages': most_frequent_editors,
                    'distinct_editors_count': distinct_editors_count,
+                   'is_redirect': is_redirect,
                    'edits_per_day': edits_per_day,
                    'days_per_edit': days_per_edit,
                    'creation_date': creation_date,
@@ -319,6 +345,7 @@ def analyze_page(wiki, db, page):
 def analyze_wiki(wiki, db):
 	edits_collection = db['edits']
 	users_collection = db['users']
+	pages_collection = db['pages']
 
 	start_date = get_creation_datetime_from_string(config['wikis'][wiki]['creation_date'])
 	end_date = datetime.datetime.today()
@@ -415,6 +442,12 @@ def analyze_wiki(wiki, db):
 	# Generate data table string for namespace pie chart
 	namespace_piechart_string = process_namespace_pie_chart(wiki, db, edits_collection)
 
+	# Generate data table string for language pie chart
+	language_piechart_string = process_language_pie_chart(wiki, db, pages_collection)
+
+	# Generate data table string for language edits distribution pie chart
+	language_edits_piechart_string = process_language_edits_pie_chart(wiki, db, pages_collection, edits_collection)
+
 	# Generate data table string for namespace distribution pie chart
 	namespace_distribution_piechart_string = process_namespace_distribution_pie_chart(wiki, db, edits_collection)
 
@@ -436,6 +469,8 @@ def analyze_wiki(wiki, db):
                    'user_registrations_timeline_string': user_registrations_timeline_string,
                    'namespace_piechart_string': namespace_piechart_string,
                    'namespace_distribution_piechart_string': namespace_distribution_piechart_string,
+                   'language_piechart_string': language_piechart_string,
+                   'language_edits_piechart_string': language_edits_piechart_string,
                    'hour_column_chart_string': hour_column_chart_string,
                    'hour_day_bubble_chart_string': hour_day_bubble_chart_string,
                    'day_column_chart_string': day_column_chart_string

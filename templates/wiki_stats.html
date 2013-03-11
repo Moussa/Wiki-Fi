@@ -163,12 +163,25 @@
 
     <div class="container-fluid">
       <div class="row-fluid">
-        <div class="span4"><h2>Article namespaces</h2></div>
+        <div class="span6"><h2>Article namespaces</h2></div>
+		<div class="span6"><h2>Article count for languages</h2></div>
       </div>
     </div>
     <div class="container-fluid">
       <div class="row-fluid">
-        <div class="span4" id="distribution_piechart_div"></div>
+        <div class="span6" id="distribution_piechart_div"></div>
+		<div class="span6" id="language_piechart_div"></div>
+      </div>
+    </div>
+
+	<div class="container-fluid">
+      <div class="row-fluid">
+		<div class="span6"><h2>Edits count for languages</h2></div>
+      </div>
+    </div>
+    <div class="container-fluid">
+      <div class="row-fluid">
+		<div class="span6" id="language_edits_piechart_div"></div>
       </div>
     </div>
 
@@ -308,6 +321,38 @@
 
         var namespace_pie_chart = new google.visualization.PieChart(document.getElementById('distribution_piechart_div'));
         namespace_pie_chart.draw(data, {
+          chartArea: {top: 50}
+        });
+      }
+    </script>
+
+	<script type="text/javascript">
+      google.load("visualization", "1", {packages:["corechart"]});
+      google.setOnLoadCallback(drawPieChart);
+      function drawPieChart() {
+        var data = google.visualization.arrayToDataTable([
+          ['Language', 'Number of articles'],
+          {{ charts_data['language_piechart_string']|safe }}
+        ]);
+
+        var language_pie_chart = new google.visualization.PieChart(document.getElementById('language_piechart_div'));
+        language_pie_chart.draw(data, {
+          chartArea: {top: 50}
+        });
+      }
+    </script>
+
+	<script type="text/javascript">
+      google.load("visualization", "1", {packages:["corechart"]});
+      google.setOnLoadCallback(drawPieChart);
+      function drawPieChart() {
+        var data = google.visualization.arrayToDataTable([
+          ['Language', 'Number of edits'],
+          {{ charts_data['language_edits_piechart_string']|safe }}
+        ]);
+
+        var language_edits_pie_chart = new google.visualization.PieChart(document.getElementById('language_edits_piechart_div'));
+        language_edits_pie_chart.draw(data, {
           chartArea: {top: 50}
         });
       }

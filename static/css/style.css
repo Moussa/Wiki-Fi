@@ -80,7 +80,7 @@ body {
   height: 400px;
 }
 
-#chart_div, #registrations_chart_div, #piechart_div, #distribution_piechart_div, #bubblechart_div, #word_cloud {
+#chart_div, #registrations_chart_div, #piechart_div, #distribution_piechart_div, #language_piechart_div, #language_edits_piechart_div, #bubblechart_div, #word_cloud {
   height: 500px;
 }
 

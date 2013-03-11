@@ -65,7 +65,11 @@
 
     <div class="page-header">
       <div class="offset1">
-        <h1>{{ page_name }}  <small>created on {{charts_data['creation_date']}}</small></h1>
+        {% if charts_data['is_redirect'] %}
+          <h1>{{ page_name }} <small>(redirect) created on {{charts_data['creation_date']}}</small></h1>
+        {% else %}
+          <h1>{{ page_name }} <small>created on {{charts_data['creation_date']}}</small></h1>
+        {% endif %}
       </div>
     </div>
 
