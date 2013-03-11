@@ -119,7 +119,7 @@
 
     <div class="container-fluid">
       <div class="row-fluid">
-        <div class="span12"><h2>User registrations timeline</h2></div>
+        <div class="span12"><h2>Active user registrations timeline</h2></div>
       </div>
     </div>
     <div class="container-fluid">
@@ -281,8 +281,8 @@
       function drawChart() {
         var data = new google.visualization.DataTable();
         data.addColumn('date', 'Date');
-        data.addColumn('number', 'Registered users');
-        data.addColumn('number', 'Total registered users');
+        data.addColumn('number', 'Registered active users');
+        data.addColumn('number', 'Total registered active users');
         data.addRows([ {{ charts_data['user_registrations_timeline_string']|safe }} ]);
         user_registrations_timeline_chart = new google.visualization.AnnotatedTimeLine(document.getElementById('registrations_chart_div'));
         user_registrations_timeline_chart.draw(data, {

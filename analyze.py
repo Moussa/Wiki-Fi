@@ -24,6 +24,10 @@ def daterange(start_date, end_date):
 	for n in range(int((end_date - start_date).days) + 1):
 		yield start_date + datetime.timedelta(days=n)
 
+def weeklydaterange(start_date, end_date):
+	for n in range(0, int((end_date - start_date).days) + 1, 7):
+		yield start_date + datetime.timedelta(days=n)
+
 def get_user_registration_date(wiki, db, user):
 	registration_date = db['users'].find_one(user['_id'])['registration']
 	# some users have no registration date for whatever reason
@@ -74,7 +78,7 @@ def process_hour_day_bubble_chart(edits_dict):
 def process_language_pie_chart(wiki, db, pages_collection):
 	language_piechart_output = []
 	for lang in LANG_ARRAY:
-		count = pages_collection.find({'lang': lang, 'ns': {'$in': [0, 4, 8]}}, fields=[]).count()
+		count = pages_collection.find({'ns': {'$in': [0, 4, 8]}, 'lang': lang}, fields=[]).count()
 		if count > 0:
 			language_piechart_output.append('[\'{0}\', {1}]'.format(lang, count))
 	language_piechart_output = ',\n'.join(language_piechart_output)
@@ -85,7 +89,7 @@ def process_language_edits_pie_chart(wiki, db, pages_collection, edits_collectio
 	language_edits_piechart_output = []
 	for lang in LANG_ARRAY:
 		count = 0
-		for page in pages_collection.find({'lang': lang, 'ns': {'$in': [0, 4, 8]}}, fields=['_id']):
+		for page in pages_collection.find({'ns': {'$in': [0, 4, 8]}, 'lang': lang}, fields=['_id']):
 			count += edits_collection.find({'page_id': page['_id']}, fields=[]).count()
 		if count > 0:
 			language_edits_piechart_output.append('[\'{0}\', {1}]'.format(lang, count))
@@ -98,7 +102,7 @@ def process_namespace_pie_chart(wiki, db, edits_collection, user=None):
 	namespace_piechart_output = []
 	for namespace in namespace_mapping:
 		if user:
-			count = edits_collection.find({'user_id': user['_id'], 'ns': int(namespace)}, fields=[]).count()
+			count = edits_collection.find({'ns': int(namespace), 'user_id': user['_id']}, fields=[]).count()
 		else:
 			count = edits_collection.find({'ns': int(namespace)}, fields=[]).count()
 		if count > 0:
@@ -351,12 +355,10 @@ def analyze_wiki(wiki, db):
 	end_date = datetime.datetime.today()
 
 	edits_timeline = []
-	user_registrations_timeline = []
 	page_ids = []
 	largest_day_edit_count = 0
 	total_edit_count = 0
 	last_30_days_edits = 0
-	total_user_count = 0
 	hour_dict = dict((a, {'count': 0, 'string': '{0}:00'.format("%02d" % (a,))}) for a in range(0, 24))
 	edits_dict = dict((a, {'day': {'string': DAY_MAPPING[a], 'count': 0}, 'hours': copy.deepcopy(hour_dict)}) for a in range(0, 7))
 
@@ -396,14 +398,20 @@ def analyze_wiki(wiki, db):
 
 		edits_timeline.append(editentry)
 
+	user_registrations_timeline = []
+	total_user_count = 0
+
+	for week_start_date in weeklydaterange(start_date, end_date):
+		start = datetime.datetime(week_start_date.year, week_start_date.month, week_start_date.day)
+		end = start + datetime.timedelta(days=7)
 		user_registrations = users_collection.find({'registration': {'$gte': start, '$lt': end}}, fields=[]).count()
 		total_user_count += user_registrations
 
 		entry = """[new Date({year}, {month}, {day}), {user_registrations}, {total_user_count}]"""
 
-		usersentry = entry.format(year=single_date.year,
-                                  month=single_date.month-1,
-                                  day=single_date.day,
+		usersentry = entry.format(year=week_start_date.year,
+                                  month=week_start_date.month-1,
+                                  day=week_start_date.day,
                                   user_registrations=user_registrations,
                                   total_user_count=total_user_count
                                   )
