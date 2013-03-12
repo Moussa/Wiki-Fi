@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import datetime, sys, re, threading
 import pymongo
+import analyze
 import wiki_api
 import threadpool
 from config import config
@@ -135,7 +136,7 @@ def seeder(wiki, db, w_api, namespace, namespace_name, pages, redirects, cutoff_
 
 def seed(wiki):
 	db, w_api = load(wiki)
-	seedpool = threadpool.ThreadPool(4)
+	seedpool = threadpool.ThreadPool(2)
 	lock = threading.Lock()
 
 	cutoff_date = datetime.datetime.now()
@@ -381,9 +382,17 @@ def update(wiki):
 	db['metadata'].update({'key': 'last_updated'}, {'$set': {'last_updated': datenow}}, upsert=True)
 	cache.set('wiki-fi:wiki_last_updated_' + wiki, datenow, timeout=0)
 
+def update_wiki_data(wiki):
+	db, w_api = load(wiki)
+	print('Analyzing wiki...')
+	charts_data = analyze.analyze_wiki(wiki, db)
+	print('Caching results...')
+	cache.set('wiki-data_{0}'.format(wiki), charts_data, timeout=0)
 
 if __name__ == '__main__':
 	if sys.argv[1] == 'seed':
 		seed(sys.argv[2])
 	elif sys.argv[1] == 'update':
 		update(sys.argv[2])
+	elif sys.argv[1] == 'update_wiki':
+		update_wiki_data(sys.argv[2])
