@@ -140,7 +140,7 @@
     </div>
     <div class="container-fluid">
       <div class="row-fluid">
-        <div class="span10 offset1" id="chart_div"></div>
+        <div class="span10 offset1 timelinechart" id="edits-timeline-chart"></div>
       </div>
     </div>
 
@@ -159,8 +159,8 @@
     </div>
     <div class="container-fluid">
       <div class="row-fluid">
-        <div class="span6" id="day_columnchart_div"></div>
-        <div class="span6" id="hour_columnchart_div"></div>
+        <div class="span6 columnchart" id="edits-by-day-chart"></div>
+        <div class="span6 columnchart" id="edits-by-hour-chart"></div>
       </div>
     </div>
 
@@ -171,20 +171,20 @@
     </div>
     <div class="container-fluid">
       <div class="row-fluid">
-        <div class="span12" id="bubblechart_div"></div>
+        <div class="span12 bubblechart" id="edit-days-hours-chart"></div>
       </div>
     </div>
 
     <div class="container-fluid">
       <div class="row-fluid">
         <div class="span6"><h2>Edits by namespace</h2></div>
-        <div class="span6"><h2>Edits by language</h2></div>
+        <div class="span6"><h2>Unique namespace articles edited</h2></div>
       </div>
     </div>
     <div class="container-fluid">
       <div class="row-fluid">
-        <div class="span6" id="piechart_div"></div>
-        <div class="span6" id="language_edits_piechart_div"></div>
+        <div class="span6 piechart" id="edits-by-namespace-chart"></div>
+        <div class="span6 piechart" id="unique-namespace-edits-chart"></div>
       </div>
     </div>
 
@@ -195,7 +195,7 @@
     </div>
     <div class="container-fluid">
       <div class="row-fluid">
-        <div class="span10 offset1" id="word_cloud"></div>
+        <div class="span10 offset1 wordcloud" id="common-pages-cloud"></div>
       </div>
     </div>
 
@@ -330,7 +330,7 @@
         data.addColumn('number', 'Edits');
         data.addColumn('number', 'Total edits');
         data.addRows([ {{ charts_data['edits_timeline_string']|safe }} ]);
-        edit_timeline_chart = new google.visualization.AnnotatedTimeLine(document.getElementById('chart_div'));
+        edit_timeline_chart = new google.visualization.AnnotatedTimeLine(document.getElementById('edits-timeline-chart'));
         edit_timeline_chart.draw(data, {
           displayAnnotations: false,
           dateFormat: 'MMMM dd, yyyy'
@@ -348,7 +348,7 @@
           {{ charts_data['namespace_piechart_string']|safe }}
         ]);
 
-        var namespace_pie_chart = new google.visualization.PieChart(document.getElementById('piechart_div'));
+        var namespace_pie_chart = new google.visualization.PieChart(document.getElementById('edits-by-namespace-chart'));
         namespace_pie_chart.draw(data, {
           chartArea: {top: 50}
         });
@@ -360,12 +360,12 @@
       google.setOnLoadCallback(drawPieChart);
       function drawPieChart() {
         var data = google.visualization.arrayToDataTable([
-          ['Language', 'Edits'],
-          {{ charts_data['user_language_edits_piechart_string']|safe }}
+          ['Namespace', 'Unique articles edited'],
+          {{ charts_data['namespace_unique_piechart_string']|safe }}
         ]);
 
-        var language_pie_chart = new google.visualization.PieChart(document.getElementById('language_edits_piechart_div'));
-        language_pie_chart.draw(data, {
+        var namespace_unique_pie_chart = new google.visualization.PieChart(document.getElementById('unique-namespace-edits-chart'));
+        namespace_unique_pie_chart.draw(data, {
           chartArea: {top: 50}
         });
       }
@@ -380,7 +380,7 @@
           {{ charts_data['hour_day_bubble_chart_string']|safe }}
         ]);
 
-        var edits_bubble_chart = new google.visualization.BubbleChart(document.getElementById('bubblechart_div'));
+        var edits_bubble_chart = new google.visualization.BubbleChart(document.getElementById('edit-days-hours-chart'));
         edits_bubble_chart.draw(data, {
           hAxis: {title: 'Hour', viewWindowMode: 'explicit', viewWindow: {min: -1, max: 24}, baseline: -2},
           vAxis: {title: 'Day', direction: -1, textPosition: 'none'},
@@ -401,7 +401,7 @@
           {{ charts_data['hour_column_chart_string']|safe }}
         ]);
 
-        var edit_hour_column_chart = new google.visualization.ColumnChart(document.getElementById('hour_columnchart_div'));
+        var edit_hour_column_chart = new google.visualization.ColumnChart(document.getElementById('edits-by-hour-chart'));
         edit_hour_column_chart.draw(data, {
           hAxis: {title: 'Time'},
           vAxis: {title: 'Edits', minValue: 0},
@@ -421,7 +421,7 @@
           {{ charts_data['day_column_chart_string']|safe }}
         ]);
 
-        var edit_day_column_chart = new google.visualization.ColumnChart(document.getElementById('day_columnchart_div'));
+        var edit_day_column_chart = new google.visualization.ColumnChart(document.getElementById('edits-by-day-chart'));
         edit_day_column_chart.draw(data, {
           hAxis: {title: 'Day'},
           vAxis: {title: 'Edits', minValue: 0},
@@ -435,7 +435,7 @@
     <script type="text/javascript">
       var word_list = JSON.parse('{{ charts_data['most_edited_pages']|safe }}');
       $(function() {
-        $("#word_cloud").jQCloud(word_list);
+        $("#common-pages-cloud").jQCloud(word_list);
       });
     </script>
 

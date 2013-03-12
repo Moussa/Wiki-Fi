@@ -110,8 +110,8 @@
     </div>
     <div class="container-fluid">
       <div class="row-fluid">
-        <div class="span6" id="day_columnchart_div"></div>
-        <div class="span6" id="hour_columnchart_div"></div>
+        <div class="span6 columnchart" id="edits-by-day-chart"></div>
+        <div class="span6 columnchart" id="edits-by-hour-chart"></div>
       </div>
     </div>
 
@@ -122,7 +122,7 @@
     </div>
     <div class="container-fluid">
       <div class="row-fluid">
-        <div class="span10 offset1" id="bubblechart_div_large"></div>
+        <div class="span10 offset1 bubblechart-large" id="edit-days-hours-chart"></div>
       </div>
     </div>
 
@@ -133,7 +133,7 @@
     </div>
     <div class="container-fluid">
       <div class="row-fluid">
-        <div class="span10 offset1" id="word_cloud"></div>
+        <div class="span10 offset1 wordcloud" id="active-editors-cloud"></div>
       </div>
     </div>
 
@@ -189,7 +189,7 @@
                 $('a#' + wiki).attr("href", "#");
               }
               else if ($.inArray(wiki, pagewikislist) > -1) {
-                $('a#' + wiki).attr("href", "/page/" + wiki + "/" + page);
+                $('a#' + wiki).attr("href", "/page/" + wiki + "/" + page.replace(/ /g, '_'));
               }
               else {
                 $('li#' + wiki).addClass('disabled');
@@ -255,7 +255,7 @@
           {{ charts_data['hour_day_bubble_chart_string']|safe }}
         ]);
 
-        var edits_bubble_chart = new google.visualization.BubbleChart(document.getElementById('bubblechart_div_large'));
+        var edits_bubble_chart = new google.visualization.BubbleChart(document.getElementById('edit-days-hours-chart'));
         edits_bubble_chart.draw(data, {
           hAxis: {title: 'Hour', viewWindowMode: 'explicit', viewWindow: {min: -1, max: 24}, baseline: -2},
           vAxis: {title: 'Day', direction: -1, textPosition: 'none'},
@@ -276,7 +276,7 @@
           {{ charts_data['hour_column_chart_string']|safe }}
         ]);
 
-        var edit_hour_column_chart = new google.visualization.ColumnChart(document.getElementById('hour_columnchart_div'));
+        var edit_hour_column_chart = new google.visualization.ColumnChart(document.getElementById('edits-by-hour-chart'));
         edit_hour_column_chart.draw(data, {
           hAxis: {title: 'Time'},
           vAxis: {title: 'Edits', minValue: 0},
@@ -296,7 +296,7 @@
           {{ charts_data['day_column_chart_string']|safe }}
         ]);
 
-        var edit_day_column_chart = new google.visualization.ColumnChart(document.getElementById('day_columnchart_div'));
+        var edit_day_column_chart = new google.visualization.ColumnChart(document.getElementById('edits-by-day-chart'));
         edit_day_column_chart.draw(data, {
           hAxis: {title: 'Day'},
           vAxis: {title: 'Edits', minValue: 0},
@@ -310,7 +310,7 @@
     <script type="text/javascript">
       var word_list = JSON.parse('{{ charts_data['most_edited_pages']|safe }}');
       $(function() {
-        $("#word_cloud").jQCloud(word_list);
+        $("#active-editors-cloud").jQCloud(word_list);
       });
     </script>
 

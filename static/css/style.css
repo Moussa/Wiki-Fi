@@ -75,15 +75,15 @@ body {
   height: 120px;
 }
 
-#hour_columnchart_div, #day_columnchart_div {
+.columnchart {
   height: 400px;
 }
 
-#chart_div, #registrations_chart_div, #piechart_div, #distribution_piechart_div, #language_piechart_div, #language_edits_piechart_div, #bubblechart_div, #word_cloud {
+.timelinechart, .bubblechart, .piechart, .wordcloud {
   height: 500px;
 }
 
-#bubblechart_div_large {
+.bubblechart-large {
   height: 700px;
 }
 
