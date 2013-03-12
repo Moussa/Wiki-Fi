@@ -166,14 +166,25 @@
 
     <div class="container-fluid">
       <div class="row-fluid">
-        <div class="span4"><h2>Edits by namespace</h2></div>
-        <div class="span8"><h2>Edits by days & hours</h2></div>
+        <div class="span12"><h2>Edits by days & hours</h2></div>
       </div>
     </div>
     <div class="container-fluid">
       <div class="row-fluid">
-        <div class="span4" id="piechart_div"></div>
-        <div class="span8" id="bubblechart_div"></div>
+        <div class="span12" id="bubblechart_div"></div>
+      </div>
+    </div>
+
+    <div class="container-fluid">
+      <div class="row-fluid">
+        <div class="span6"><h2>Edits by namespace</h2></div>
+        <div class="span6"><h2>Edits by language</h2></div>
+      </div>
+    </div>
+    <div class="container-fluid">
+      <div class="row-fluid">
+        <div class="span6" id="piechart_div"></div>
+        <div class="span6" id="language_edits_piechart_div"></div>
       </div>
     </div>
 
@@ -339,6 +350,22 @@
 
         var namespace_pie_chart = new google.visualization.PieChart(document.getElementById('piechart_div'));
         namespace_pie_chart.draw(data, {
+          chartArea: {top: 50}
+        });
+      }
+    </script>
+
+    <script type="text/javascript">
+      google.load("visualization", "1", {packages:["corechart"]});
+      google.setOnLoadCallback(drawPieChart);
+      function drawPieChart() {
+        var data = google.visualization.arrayToDataTable([
+          ['Language', 'Edits'],
+          {{ charts_data['user_language_edits_piechart_string']|safe }}
+        ]);
+
+        var language_pie_chart = new google.visualization.PieChart(document.getElementById('language_edits_piechart_div'));
+        language_pie_chart.draw(data, {
           chartArea: {top: 50}
         });
       }

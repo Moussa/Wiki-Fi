@@ -97,6 +97,21 @@ def process_language_edits_pie_chart(wiki, db, pages_collection, edits_collectio
 
 	return language_edits_piechart_output
 
+def process_user_language_edits_pie_chart(wiki, db, pages_collection, page_ids):
+	user_language_edits_piechart_output = []
+	lang_count_dict = dict((lang, 0) for lang in LANG_ARRAY)
+
+	for page_id in list(set(page_ids)):
+		page = pages_collection.find_one(page_id, fields=['lang'])
+		lang_count_dict[page['lang']] += page_ids.count(page_id)
+
+	for lang in lang_count_dict:
+		if lang_count_dict[lang] > 0:
+			user_language_edits_piechart_output.append('[\'{0}\', {1}]'.format(lang, lang_count_dict[lang]))
+	user_language_edits_piechart_output = ',\n'.join(user_language_edits_piechart_output)
+
+	return user_language_edits_piechart_output
+
 def process_namespace_pie_chart(wiki, db, edits_collection, user=None):
 	namespace_mapping = db['metadata'].find_one({'key': 'namespaces'})['value']
 	namespace_piechart_output = []
@@ -152,6 +167,7 @@ def process_most_frequent_editors(wiki, db, user_ids):
 
 def analyze_user(wiki, db, user):
 	edits_collection = db['edits']
+	pages_collection = db['pages']
 
 	start_date = get_user_registration_date(wiki, db, user)
 	end_date = datetime.datetime.today()
@@ -258,6 +274,9 @@ def analyze_user(wiki, db, user):
 	# Generate data table string for namespace pie chart
 	namespace_piechart_string = process_namespace_pie_chart(wiki, db, edits_collection, user)
 
+	# Generate data table string for language edits distribution pie chart
+	user_language_edits_piechart_string = process_user_language_edits_pie_chart(wiki, db, pages_collection, page_ids)
+
 	# Generate data table string for edits timeline chart
 	edits_timeline_string = ',\n'.join(sorted(edits_timeline))
 
@@ -277,6 +296,7 @@ def analyze_user(wiki, db, user):
                    'most_edited_pages': most_edited_pages,
                    'edits_timeline_string': edits_timeline_string,
                    'namespace_piechart_string': namespace_piechart_string,
+                   'user_language_edits_piechart_string': user_language_edits_piechart_string,
                    'hour_column_chart_string': hour_column_chart_string,
                    'hour_day_bubble_chart_string': hour_day_bubble_chart_string,
                    'day_column_chart_string': day_column_chart_string
