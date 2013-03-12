@@ -146,7 +146,7 @@ def anaylze_user(wiki, username):
 
 	return render_template('user_stats.html', username=username, wiki=wiki, wiki_link=wiki_link, charts_data=charts_data)
 
-@app.route('/page/<wiki>/<pagetitle>')
+@app.route('/page/<wiki>/<path:pagetitle>')
 def anaylze_page(wiki, pagetitle):
 	pagetitle = pagetitle.replace('_', ' ')
 	page = wiki_dict[wiki]['pages'].find_one({'title': pagetitle})
