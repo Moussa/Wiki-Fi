@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import datetime, copy, json, locale, re
+import datetime, copy, json, locale, re, operator
 import pymongo
 from config import config
 try:
@@ -28,8 +28,11 @@ def weeklydaterange(start_date, end_date):
 	for n in range(0, int((end_date - start_date).days) + 1, 7):
 		yield start_date + datetime.timedelta(days=n)
 
-def get_user_registration_date(wiki, db, user):
-	registration_date = db['users'].find_one(user['_id'])['registration']
+def get_user_registration_date(wiki, db, user=None, _id=None):
+	if _id:
+		registration_date = db['users'].find_one(_id)['registration']
+	else:
+		registration_date = db['users'].find_one(user['_id'])['registration']
 	# some users have no registration date for whatever reason
 	if registration_date is None:
 		# use wiki creation date instead
@@ -160,6 +163,18 @@ def process_most_frequent_editors(wiki, db, user_ids):
 		output.append(json_entry)
 
 	return json.dumps(output).replace(r"'", r"\'")
+
+def process_top_editors(wiki, db, user_edits_count):
+	sorted_user_edits_count = sorted(user_edits_count.iteritems(), key=operator.itemgetter(1), reverse=True)[:100]
+	output = []
+	for entry in sorted_user_edits_count:
+		username = get_user_name(db, entry[0])
+		edit_count = entry[1]
+		registered_days_ago = (datetime.datetime.today() - get_user_registration_date(wiki, db, _id=entry[0])).days
+		edit_count_per_day = "%0.2f" % (float(edit_count)/float(registered_days_ago),)
+		output.append(["""<a href="/user/{0}/{1}">{1}</a>""".format(wiki, username), edit_count, edit_count_per_day])
+
+	return output
 
 def analyze_user(wiki, db, user):
 	edits_collection = db['edits']
@@ -372,6 +387,7 @@ def analyze_wiki(wiki, db):
 
 	edits_timeline = []
 	page_ids = []
+	user_edits_count = {}
 	largest_day_edit_count = 0
 	total_edit_count = 0
 	last_30_days_edits = 0
@@ -381,7 +397,7 @@ def analyze_wiki(wiki, db):
 	for single_date in daterange(start_date, end_date):
 		start = datetime.datetime(single_date.year, single_date.month, single_date.day)
 		end = start + datetime.timedelta(days=1)
-		edits = list(edits_collection.find({'timestamp': {'$gte': start, '$lt': end}}, fields=['timestamp', 'page_id']))
+		edits = list(edits_collection.find({'timestamp': {'$gte': start, '$lt': end}}, fields=['timestamp', 'page_id', 'user_id']))
 
 		day_edit_count = len(edits)
 		total_edit_count += day_edit_count
@@ -402,6 +418,12 @@ def analyze_wiki(wiki, db):
 			edit_day = edit['timestamp'].weekday()
 			edits_dict[edit_day]['hours'][edit_hour]['count'] += 1
 			edits_dict[edit_day]['day']['count'] += 1
+
+			# Increment user edit count
+			if edit['user_id'] in user_edits_count:
+				user_edits_count[edit['user_id']] += 1
+			else:
+				user_edits_count[edit['user_id']] = 1
 
 		entry = """[new Date({year}, {month}, {day}), {edits}, {total_edits}]"""
 
@@ -481,6 +503,9 @@ def analyze_wiki(wiki, db):
 	# Generate data table string for user registrations timeline chart
 	user_registrations_timeline_string = ',\n'.join(sorted(user_registrations_timeline))
 
+	# Generate data table string for top editors
+	top_editors_string = process_top_editors(wiki, db, user_edits_count)
+
 	charts_data = {'start_date': start_date,
 	               'total_edit_count': total_edit_count,
                    'distinct_pages_count': distinct_pages_count,
@@ -491,6 +516,7 @@ def analyze_wiki(wiki, db):
                    'most_edited_pages': most_edited_pages,
                    'edits_timeline_string': edits_timeline_string,
                    'user_registrations_timeline_string': user_registrations_timeline_string,
+                   'top_editors_string': top_editors_string,
                    'namespace_piechart_string': namespace_piechart_string,
                    'namespace_distribution_piechart_string': namespace_distribution_piechart_string,
                    'language_piechart_string': language_piechart_string,
