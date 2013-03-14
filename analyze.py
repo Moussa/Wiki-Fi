@@ -249,7 +249,7 @@ def analyze_user(wiki, db, user):
 
 	files_uploaded = db['files'].find({'user_id': user['_id']}, fields=[]).count()
 
-	days_since_first_edit = (datetime.datetime.today() - start_date).days
+	days_since_registration = (datetime.datetime.today() - start_date).days
 
 	time_period = (end_date - start_date).days + 1
 	edits_per_day = '%.2f' % (float(total_edit_count)/float(time_period))
@@ -264,7 +264,7 @@ def analyze_user(wiki, db, user):
 	locale.setlocale(locale.LC_ALL, 'en_US.utf8')
 	total_edit_count = locale.format("%d", total_edit_count, grouping=True)
 	distinct_pages_count = locale.format("%d", distinct_pages_count, grouping=True)
-	days_since_first_edit = locale.format("%d", days_since_first_edit, grouping=True)
+	days_since_registration = locale.format("%d", days_since_registration, grouping=True)
 	longest_edit_days_streak = locale.format("%d", longest_edit_days_streak, grouping=True)
 	current_edit_days_streak = locale.format("%d", current_edit_days_streak, grouping=True)
 	largest_day_edit_count = locale.format("%d", largest_day_edit_count, grouping=True)
@@ -297,7 +297,7 @@ def analyze_user(wiki, db, user):
                    'distinct_pages_count': distinct_pages_count,
                    'pages_created': pages_created,
                    'files_uploaded': files_uploaded,
-                   'days_since_first_edit': days_since_first_edit,
+                   'days_since_registration': days_since_registration,
                    'edits_per_day': edits_per_day,
                    'activity_percentage': activity_percentage,
                    'edits_per_day_30days': edits_per_day_30days,
