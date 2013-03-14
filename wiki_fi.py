@@ -124,7 +124,7 @@ def get_last_updated():
 	return resp
 
 @app.route('/get_wiki_last_updated', methods=['POST'])
-def get_last_updated():
+def get_wiki_last_updated():
 	wiki = request.form['wiki']
 	last_updated = cache.get('wiki-fi:wiki_last_updated_' + wiki)
 	if last_updated is None:
