@@ -170,9 +170,10 @@ def process_top_editors(wiki, db, user_edits_count):
 	for entry in sorted_user_edits_count:
 		username = get_user_name(db, entry[0])
 		edit_count = entry[1]
-		registered_days_ago = (datetime.datetime.today() - get_user_registration_date(wiki, db, _id=entry[0])).days
+		registration_date = get_user_registration_date(wiki, db, _id=entry[0])
+		registered_days_ago = (datetime.datetime.today() - registration_date).days
 		edit_count_per_day = "%0.2f" % (float(edit_count)/float(registered_days_ago),)
-		output.append(["""<a href="/user/{0}/{1}">{1}</a>""".format(wiki, username), edit_count, edit_count_per_day])
+		output.append(["""<a href="/user/{0}/{1}">{1}</a>""".format(wiki, username), registration_date.strftime("%d %B %Y"), edit_count, edit_count_per_day])
 
 	return output
 
