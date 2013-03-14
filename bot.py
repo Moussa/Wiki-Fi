@@ -173,8 +173,8 @@ def seed(wiki):
 	seedpool.wait()
 
 	# update last_updated time
-	db['metadata'].update({'key': 'last_updated'}, {'$set': {'value': cutoff_date}}, upsert=True)
-	cache.set('wiki-fi:wiki_last_updated_' + wiki, cutoff_date, timeout=0)
+	db['metadata'].update({'key': 'user_and_pages_last_updated_'}, {'$set': {'value': cutoff_date}}, upsert=True)
+	cache.set('wiki-fi:user_and_pages_last_updated_' + wiki, cutoff_date, timeout=0)
 
 def update(wiki):
 	db, w_api = load(wiki)
@@ -379,15 +379,19 @@ def update(wiki):
 
 	# update last_updated time
 	db['metadata'].update({'key': 'last_seen_rcid'}, {'$set': {'value': last_seen_rcid}}, upsert=True)
-	db['metadata'].update({'key': 'last_updated'}, {'$set': {'last_updated': datenow}}, upsert=True)
-	cache.set('wiki-fi:wiki_last_updated_' + wiki, datenow, timeout=0)
+	db['metadata'].update({'key': 'user_and_pages_last_updated_'}, {'$set': {'value': datenow}}, upsert=True)
+	cache.set('wiki-fi:user_and_pages_last_updated_' + wiki, datenow, timeout=0)
 
 def update_wiki_data(wiki):
 	db, w_api = load(wiki)
+
 	print('Analyzing wiki...')
 	charts_data = analyze.analyze_wiki(wiki, db)
+
 	print('Caching results...')
 	cache.set('wiki-data_{0}'.format(wiki), charts_data, timeout=0)
+	db['metadata'].update({'key': 'wiki_last_updated_'}, {'$set': {'value': datenow}}, upsert=True)
+	cache.set('wiki-fi:wiki_last_updated_' + wiki, datenow, timeout=0)
 
 if __name__ == '__main__':
 	if sys.argv[1] == 'seed':
