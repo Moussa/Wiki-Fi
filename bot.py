@@ -312,7 +312,7 @@ def update(wiki):
 				if edit['logaction'] == 'delete':
 					print('RCID: {0} - DELETION: {1}'.format(rcid, title))
 
-					page_id = get_page_id(db, wiki, edit['title'], ns)
+					page_id = get_page_id(db, wiki, edit['title'], ns, redirect)
 					db['edits'].remove({'page_id': page_id})
 					db['pages'].remove({'_id': page_id})
 					db['files'].remove({'page_id': page_id})
