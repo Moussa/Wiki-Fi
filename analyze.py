@@ -177,6 +177,18 @@ def process_top_editors(wiki, db, user_edits_count):
 
 	return output
 
+def process_top_editors_last_30_days(wiki, db, user_edits_count):
+	sorted_user_edits_count = sorted(user_edits_count.iteritems(), key=operator.itemgetter(1), reverse=True)[:100]
+	output = []
+	for entry in sorted_user_edits_count:
+		username = get_user_name(db, entry[0])
+		edit_count = entry[1]
+		registration_date = get_user_registration_date(wiki, db, _id=entry[0])
+		edit_count_per_day = "%0.2f" % (float(edit_count)/30.0,)
+		output.append(["""<a href="/user/{0}/{1}">{1}</a>""".format(wiki, username), registration_date.strftime("%d %B %Y"), edit_count, edit_count_per_day])
+
+	return output
+
 def analyze_user(wiki, db, user):
 	edits_collection = db['edits']
 	pages_collection = db['pages']
@@ -389,6 +401,7 @@ def analyze_wiki(wiki, db):
 	edits_timeline = []
 	page_ids = []
 	user_edits_count = {}
+	users_edits_count_last_30_days = {}
 	largest_day_edit_count = 0
 	total_edit_count = 0
 	last_30_days_edits = 0
@@ -406,6 +419,13 @@ def analyze_wiki(wiki, db):
 		# Keep track of activity in last 30 days
 		if (datetime.datetime.today() - single_date).days < 30:
 			last_30_days_edits += day_edit_count
+
+			# Increment user edit count for last 30 days
+			for edit in edits:
+				if edit['user_id'] in users_edits_count_last_30_days:
+					users_edits_count_last_30_days[edit['user_id']] += 1
+				else:
+					users_edits_count_last_30_days[edit['user_id']] = 1
 
 		# Keep track of largest edit counts in a day
 		if day_edit_count > largest_day_edit_count:
@@ -507,6 +527,9 @@ def analyze_wiki(wiki, db):
 	# Generate data table string for top editors
 	top_editors_string = process_top_editors(wiki, db, user_edits_count)
 
+	# Generate data table string for top editors in last 30 days
+	top_editors_last_30_days_string = process_top_editors_last_30_days(wiki, db, users_edits_count_last_30_days)
+
 	charts_data = {'start_date': start_date,
 	               'total_edit_count': total_edit_count,
                    'distinct_pages_count': distinct_pages_count,
@@ -518,6 +541,7 @@ def analyze_wiki(wiki, db):
                    'edits_timeline_string': edits_timeline_string,
                    'user_registrations_timeline_string': user_registrations_timeline_string,
                    'top_editors_string': top_editors_string,
+                   'top_editors_last_30_days_string': top_editors_last_30_days_string,
                    'namespace_piechart_string': namespace_piechart_string,
                    'namespace_distribution_piechart_string': namespace_distribution_piechart_string,
                    'language_piechart_string': language_piechart_string,
