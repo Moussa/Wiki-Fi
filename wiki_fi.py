@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import json
+import json, locale
 import pymongo
 from flask import Flask, url_for, render_template, request, Response
 import analyze
@@ -37,6 +37,20 @@ def get_wiki_chart_data(wiki, db):
 		charts_data = analyze.analyze_wiki(wiki, db)
 		cache.set('wiki-data_{0}'.format(wiki), charts_data, timeout=0)
 	return charts_data
+
+def get_wiki_fi_stats():
+	stats = cache.get('wiki-fi:wiki-fi_stats')
+	if stats is None:
+		stats = {'no_of_users': 0, 'no_of_edits': 0, 'no_of_pages': 0}
+		for wiki in wiki_dict:
+			stats['no_of_users'] += wiki_dict[wiki]['users'].count()
+			stats['no_of_edits'] += wiki_dict[wiki]['edits'].count()
+			stats['no_of_pages'] += wiki_dict[wiki]['pages'].count()
+		locale.setlocale(locale.LC_ALL, 'en_US.utf8')
+		for stat in stats:
+			stats[stat] = locale.format("%d", stats[stat], grouping=True)
+		cache.set('wiki-fi:wiki-fi_stats', stats, timeout=0)
+	return stats
 
 @app.route('/is_valid_user', methods=['POST'])
 def is_valid_user():
@@ -137,10 +151,12 @@ def get_wiki_last_updated():
 
 @app.route('/')
 def homepage():
-	return render_template('form.html')
+	stats = get_wiki_fi_stats()
+	return render_template('form.html', stats=stats)
 
 def invalid_args(error):
-	return render_template('form.html', error=error)
+	stats = get_wiki_fi_stats()
+	return render_template('form.html', stats=stats, error=error)
 
 @app.route('/about')
 def about():
