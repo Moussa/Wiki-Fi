@@ -150,11 +150,7 @@ def get_wiki_last_updated():
 	return resp
 
 @app.route('/')
-def homepage():
-	stats = get_wiki_fi_stats()
-	return render_template('form.html', stats=stats)
-
-def invalid_args(error):
+def homepage(error=None):
 	stats = get_wiki_fi_stats()
 	return render_template('form.html', stats=stats, error=error)
 
@@ -167,7 +163,7 @@ def anaylze_user(wiki, username):
 	username = username.replace('_', ' ')
 	user = wiki_dict[wiki]['users'].find_one({'username': username})
 	if user is None:
-		return invalid_args(error="invalid username")
+		return homepage(error="invalid username")
 	wiki_link = config['wikis'][wiki]['wiki_link']
 
 	charts_data = get_user_chart_data(wiki, wiki_dict[wiki], user)
@@ -179,7 +175,7 @@ def anaylze_page(wiki, pagetitle):
 	pagetitle = pagetitle.replace('_', ' ')
 	page = wiki_dict[wiki]['pages'].find_one({'title': pagetitle})
 	if page is None:
-		return invalid_args('invalid page')
+		return homepage('invalid page')
 	wiki_link = config['wikis'][wiki]['wiki_link']
 
 	charts_data = get_page_chart_data(wiki, wiki_dict[wiki], page)
@@ -189,7 +185,7 @@ def anaylze_page(wiki, pagetitle):
 @app.route('/wiki/<wiki>')
 def anaylze_wiki(wiki):
 	if wiki not in config['wikis']:
-		return invalid_args('invalid wiki')
+		return homepage('invalid wiki')
 	wiki_link = config['wikis'][wiki]['wiki_link']
 	charts_data = get_wiki_chart_data(wiki, wiki_dict[wiki])
 
