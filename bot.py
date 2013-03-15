@@ -391,7 +391,7 @@ def update_wiki_data(wiki):
 	print('Caching results...')
 	datenow = datetime.datetime.now()
 	cache.set('wiki-data_{0}'.format(wiki), charts_data, timeout=0)
-	db['metadata'].update({'key': 'wiki_last_updated_'}, {'$set': {'value': datenow}}, upsert=True)
+	db['metadata'].update({'key': 'wiki_last_updated'}, {'$set': {'value': datenow}}, upsert=True)
 	cache.set('wiki-fi:wiki_last_updated_' + wiki, datenow, timeout=0)
 
 if __name__ == '__main__':
