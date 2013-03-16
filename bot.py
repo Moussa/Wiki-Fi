@@ -406,10 +406,22 @@ def update_wiki_data(wiki):
 	db['metadata'].update({'key': 'wiki_last_updated'}, {'$set': {'value': datenow}}, upsert=True)
 	cache.set('wiki-fi:wiki_last_updated_' + wiki, datenow, timeout=0)
 
+def update_all():
+	for wiki in config['wikis']:
+		update(wiki)
+
+def update_wiki_data_all():
+	for wiki in config['wikis']:
+		update_wiki_data(wiki)
+
 if __name__ == '__main__':
 	if sys.argv[1] == 'seed':
 		seed(sys.argv[2])
 	elif sys.argv[1] == 'update':
 		update(sys.argv[2])
+	elif sys.argv[1] == 'update_all':
+		update_all()
 	elif sys.argv[1] == 'update_wiki':
 		update_wiki_data(sys.argv[2])
+	elif sys.argv[1] == 'update_wiki_all':
+		update_wiki_data_all()
