@@ -247,7 +247,10 @@
 
     <!-- GRAPH SCRIPTS -->
     <script type="text/javascript">
-      google.load("visualization", "1", {packages:["corechart"]});
+      google.load('visualization', '1', {'packages':['corechart']});
+    </script>
+
+    <script type="text/javascript">
       google.setOnLoadCallback(drawBubbleChart);
       function drawBubbleChart() {
         var data = google.visualization.arrayToDataTable([
@@ -268,7 +271,6 @@
     </script>
 
     <script type="text/javascript">
-      google.load("visualization", "1", {packages:["corechart"]});
       google.setOnLoadCallback(drawHourColumnChart);
       function drawHourColumnChart() {
         var data = google.visualization.arrayToDataTable([
@@ -288,7 +290,6 @@
     </script>
 
     <script type="text/javascript">
-      google.load("visualization", "1", {packages:["corechart"]});
       google.setOnLoadCallback(drawDayColumnChart);
       function drawDayColumnChart() {
         var data = google.visualization.arrayToDataTable([

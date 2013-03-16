@@ -294,8 +294,12 @@
       });
     </script>
 
+    <!-- GRAPH SCRIPTS -->
     <script type="text/javascript">
-      google.load('visualization', '1', {'packages':['annotatedtimeline']});
+      google.load('visualization', '1', {'packages':['annotatedtimeline', 'corechart']});
+    </script>
+
+    <script type="text/javascript">
       var edit_timeline_chart;
       google.setOnLoadCallback(drawChart);
       function drawChart() {
@@ -314,7 +318,6 @@
     </script>
 
     <script type="text/javascript">
-      google.load('visualization', '1', {'packages':['annotatedtimeline']});
       var user_registrations_timeline_chart;
       google.setOnLoadCallback(drawChart);
       function drawChart() {
@@ -334,7 +337,6 @@
     </script>
 
     <script type="text/javascript">
-      google.load("visualization", "1", {packages:["corechart"]});
       google.setOnLoadCallback(drawPieChart);
       function drawPieChart() {
         var data = google.visualization.arrayToDataTable([
@@ -350,7 +352,6 @@
     </script>
 
     <script type="text/javascript">
-      google.load("visualization", "1", {packages:["corechart"]});
       google.setOnLoadCallback(drawPieChart);
       function drawPieChart() {
         var data = google.visualization.arrayToDataTable([
@@ -366,7 +367,6 @@
     </script>
 
 	<script type="text/javascript">
-      google.load("visualization", "1", {packages:["corechart"]});
       google.setOnLoadCallback(drawPieChart);
       function drawPieChart() {
         var data = google.visualization.arrayToDataTable([
@@ -382,7 +382,6 @@
     </script>
 
 	<script type="text/javascript">
-      google.load("visualization", "1", {packages:["corechart"]});
       google.setOnLoadCallback(drawPieChart);
       function drawPieChart() {
         var data = google.visualization.arrayToDataTable([
@@ -398,7 +397,6 @@
     </script>
 
     <script type="text/javascript">
-      google.load("visualization", "1", {packages:["corechart"]});
       google.setOnLoadCallback(drawBubbleChart);
       function drawBubbleChart() {
         var data = google.visualization.arrayToDataTable([
@@ -419,7 +417,6 @@
     </script>
 
     <script type="text/javascript">
-      google.load("visualization", "1", {packages:["corechart"]});
       google.setOnLoadCallback(drawHourColumnChart);
       function drawHourColumnChart() {
         var data = google.visualization.arrayToDataTable([
@@ -439,7 +436,6 @@
     </script>
 
     <script type="text/javascript">
-      google.load("visualization", "1", {packages:["corechart"]});
       google.setOnLoadCallback(drawDayColumnChart);
       function drawDayColumnChart() {
         var data = google.visualization.arrayToDataTable([
