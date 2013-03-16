@@ -186,6 +186,7 @@ def update(wiki):
 	recent_edits = w_api.get_recent_changes(last_edit)
 	print('Successfully fetched edits from wiki')
 
+	expensive_users_updated = []
 	datenow = datetime.datetime.now()
 	last_seen_rcid_store = db['metadata'].find_one({'key': 'last_seen_rcid'}, fields=['value'])
 	if last_seen_rcid_store is None:
@@ -377,10 +378,14 @@ def update(wiki):
 
 		if username not in config['wikis'][wiki]['expensive_users']:
 			cache.delete('wiki-fi:userdata_{0}_{1}'.format(username.replace(' ', '_'), wiki))
+		elif username not in expensive_users_updated:
+			expensive_users_updated.append(username)
 
 	# reanalyze expensive users
-	charts_data = analyze.analyze_user(wiki, db, username)
-	cache.set('wiki-fi:userdata_{0}_{1}'.format(username.replace(' ', '_'), wiki), charts_data, timeout=0)
+	print('Recaching results for expensive users...')
+	for username in expensive_users_updated:
+		charts_data = analyze.analyze_user(wiki, db, db['users'].find_one({'username': username}))
+		cache.set('wiki-fi:userdata_{0}_{1}'.format(username.replace(' ', '_'), wiki), charts_data, timeout=0)
 
 	# update last_updated time
 	db['metadata'].update({'key': 'last_seen_rcid'}, {'$set': {'value': last_seen_rcid}}, upsert=True)

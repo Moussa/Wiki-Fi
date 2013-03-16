@@ -16,7 +16,7 @@ config = {
 			'wiki_name': 'Official Team Fortress Wiki',
 			'wiki_link': 'http://wiki.tf2.com',
 			'creation_date': '30/06/2010',
-			'expensive_users' ['WindBOT']
+			'expensive_users': ['WindBOT']
 			},
 		'portal': {
 			'api_url': r'http://theportalwiki.com/w/api.php',
