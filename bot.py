@@ -392,6 +392,8 @@ def update(wiki):
 	db['metadata'].update({'key': 'user_and_pages_last_updated'}, {'$set': {'value': datenow}}, upsert=True)
 	cache.set('wiki-fi:user_and_pages_last_updated_' + wiki, datenow, timeout=0)
 
+	cache.delete('wiki-fi:wiki-fi_stats')
+
 def update_wiki_data(wiki):
 	db, w_api = load(wiki)
 
