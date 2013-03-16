@@ -375,7 +375,12 @@ def update(wiki):
 
 		last_seen_rcid = edit['rcid']
 
-		cache.delete('wiki-fi:userdata_{0}_{1}'.format(username.replace(' ', '_'), wiki))
+		if username not in config['wikis'][wiki]['expensive_users']:
+			cache.delete('wiki-fi:userdata_{0}_{1}'.format(username.replace(' ', '_'), wiki))
+
+	# reanalyze expensive users
+	charts_data = analyze.analyze_user(wiki, db, username)
+	cache.set('wiki-fi:userdata_{0}_{1}'.format(username.replace(' ', '_'), wiki), charts_data, timeout=0)
 
 	# update last_updated time
 	db['metadata'].update({'key': 'last_seen_rcid'}, {'$set': {'value': last_seen_rcid}}, upsert=True)
