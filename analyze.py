@@ -422,10 +422,7 @@ def analyze_wiki(wiki, db):
 
 			# Increment user edit count for last 30 days
 			for edit in edits:
-				if edit['user_id'] in users_edits_count_last_30_days:
-					users_edits_count_last_30_days[edit['user_id']] += 1
-				else:
-					users_edits_count_last_30_days[edit['user_id']] = 1
+				users_edits_count_last_30_days[edit['user_id']] = users_edits_count_last_30_days.get(edit['user_id'], 0) + 1
 
 		# Keep track of largest edit counts in a day
 		if day_edit_count > largest_day_edit_count:
@@ -441,10 +438,7 @@ def analyze_wiki(wiki, db):
 			edits_dict[edit_day]['day']['count'] += 1
 
 			# Increment user edit count
-			if edit['user_id'] in user_edits_count:
-				user_edits_count[edit['user_id']] += 1
-			else:
-				user_edits_count[edit['user_id']] = 1
+			user_edits_count[edit['user_id']] = user_edits_count.get(edit['user_id'], 0) + 1
 
 		entry = """[new Date({year}, {month}, {day}), {edits}, {total_edits}]"""
 

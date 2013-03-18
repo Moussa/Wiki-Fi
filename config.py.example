@@ -25,7 +25,8 @@ config = {
 			'db_name': 'wiki-fi:portalwiki',
 			'wiki_name': 'Portal Wiki',
 			'wiki_link': 'http://theportalwiki.com',
-			'creation_date': '20/04/2011'
+			'creation_date': '20/04/2011',
+			'expensive_users': []
 			}
 		}
 }
