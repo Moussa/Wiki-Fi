@@ -421,7 +421,8 @@
 
         var editors_edit_count_pie_chart = new google.visualization.PieChart(document.getElementById('editors-edit-count-chart'));
         editors_edit_count_pie_chart.draw(data, {
-          chartArea: {top: 50}
+          chartArea: {top: 50},
+          sliceVisibilityThreshold: 1/2000
         });
       }
     </script>
