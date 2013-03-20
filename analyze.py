@@ -353,7 +353,10 @@ def analyze_page(wiki, db, page):
 	creation_date = creation_edit['timestamp'].strftime("%d %B %Y")
 	days_since_first_edit = (datetime.datetime.today() - creation_edit['timestamp']).days
 
-	edits_per_day = '%.2f' % (float(total_edit_count)/float(days_since_first_edit))
+	if days_since_first_edit > 0:
+		edits_per_day = '%.2f' % (float(total_edit_count)/float(days_since_first_edit))
+	else:
+		edits_per_day = u'∞'
 	days_per_edit = '%.2f' % (float(days_since_first_edit)/float(total_edit_count))
 
 	distinct_editors_count = len(edits_collection.find({'page_id': page['_id']}, fields=[]).distinct('user_id'))
