@@ -174,16 +174,27 @@
       </div>
     </div>
 
-	<div class="container-fluid">
+	  <div class="container-fluid">
       <div class="row-fluid">
-    <div class="span6"><h2>Article languages</h2></div>
-		<div class="span6"><h2>Edits by language</h2></div>
+        <div class="span6"><h2>Article languages</h2></div>
+        <div class="span6"><h2>Edits by language</h2></div>
       </div>
     </div>
     <div class="container-fluid">
       <div class="row-fluid">
         <div class="span6 piechart" id="languages-count-chart"></div>
 		    <div class="span6 piechart" id="languages-edits-chart"></div>
+      </div>
+    </div>
+
+    <div class="container-fluid">
+      <div class="row-fluid">
+        <div class="span6"><h2>Editors edit count distribution</h2></div>
+      </div>
+    </div>
+    <div class="container-fluid">
+      <div class="row-fluid">
+        <div class="span6 piechart" id="editors-edit-count-chart"></div>
       </div>
     </div>
 
@@ -395,6 +406,21 @@
 
         var language_edits_pie_chart = new google.visualization.PieChart(document.getElementById('languages-edits-chart'));
         language_edits_pie_chart.draw(data, {
+          chartArea: {top: 50}
+        });
+      }
+    </script>
+
+    <script type="text/javascript">
+      google.setOnLoadCallback(drawPieChart);
+      function drawPieChart() {
+        var data = google.visualization.arrayToDataTable([
+          ['Edit count range', 'Number of editors'],
+          {{ charts_data['editors_edit_count_distribution_piechart_string']|safe }}
+        ]);
+
+        var editors_edit_count_pie_chart = new google.visualization.PieChart(document.getElementById('editors-edit-count-chart'));
+        editors_edit_count_pie_chart.draw(data, {
           chartArea: {top: 50}
         });
       }

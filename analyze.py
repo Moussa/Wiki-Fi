@@ -189,6 +189,28 @@ def process_top_editors_last_30_days(wiki, db, user_edits_count):
 
 	return output
 
+def process_editors_edit_count_distribution(user_edits_count):
+	count = {'1 - 10': 0, '11 - 100': 0, '101 - 1000': 0, '1001 - 5000': 0, '5000+': 0}
+	for user in user_edits_count:
+		edit_count = user_edits_count[user]
+		if 1 < edit_count <= 10:
+			count['1 - 10'] += 1
+		elif 10 < edit_count <= 100:
+			count['11 - 100'] += 1
+		elif 100 < edit_count <= 1000:
+			count['101 - 1000'] += 1
+		elif 1000 < edit_count <= 5000:
+			count['1001 - 5000'] += 1
+		elif 5000 < edit_count:
+			count['5000+'] += 1
+
+	output = []
+	for count_range in count:
+		output.append('[\'{0}\', {1}]'.format(count_range, count[count_range]))
+	output = ',\n'.join(output)
+
+	return output
+
 def analyze_user(wiki, db, user):
 	edits_collection = db['edits']
 	pages_collection = db['pages']
@@ -515,6 +537,9 @@ def analyze_wiki(wiki, db):
 	# Generate data table string for namespace distribution pie chart
 	namespace_distribution_piechart_string = process_namespace_distribution_pie_chart(wiki, db, edits_collection)
 
+	# Generate data table string for editors edit count distribution pie chart
+	editors_edit_count_distribution_piechart_string = process_editors_edit_count_distribution(user_edits_count)
+
 	# Generate data table string for edits timeline chart
 	edits_timeline_string = ',\n'.join(sorted(edits_timeline))
 
@@ -543,6 +568,7 @@ def analyze_wiki(wiki, db):
                    'namespace_distribution_piechart_string': namespace_distribution_piechart_string,
                    'language_piechart_string': language_piechart_string,
                    'language_edits_piechart_string': language_edits_piechart_string,
+                   'editors_edit_count_distribution_piechart_string': editors_edit_count_distribution_piechart_string,
                    'hour_column_chart_string': hour_column_chart_string,
                    'hour_day_bubble_chart_string': hour_day_bubble_chart_string,
                    'day_column_chart_string': day_column_chart_string
