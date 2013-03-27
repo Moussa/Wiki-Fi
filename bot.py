@@ -27,6 +27,13 @@ def get_date_from_string(date_string):
 
 	return d
 
+def get_namespace_from_title(db, title):
+	namespaces_dict = db['metadata'].find_one({'key': 'namespaces'})['value']
+	for namespace in namespaces_dict:
+		if title.startswith(namespaces_dict[namespace] + ':'):
+			return int(namespace)
+	return 0
+
 def load(wiki):
 	db = connection[config['wikis'][wiki]['db_name']]
 	w_api = wiki_api.Wiki_API(config['wikis'][wiki]['api_url'], config['wikis'][wiki]['username'], config['wikis'][wiki]['password'])
@@ -246,12 +253,20 @@ def update(wiki):
 
 		elif edit['type'] == 'log':
 			if edit['logtype'] == 'move':
-				print('RCID: {0} - PAGEMOVE: {1} -> {2}'.format(rcid, title, edit['move']['new_title'].encode('utf-8')))
+				if edit['logaction'] == 'move_redir':
+					print('RCID: {0} - PAGEMOVE: {1} -> {2}'.format(rcid, title, edit['0'].encode('utf-8')))
+				else:
+					print('RCID: {0} - PAGEMOVE: {1} -> {2}'.format(rcid, title, edit['move']['new_title'].encode('utf-8')))
 
 				page_id = get_page_id(db, wiki, title, ns, redirect)
 				old_page_title = edit['title'].encode('utf-8')
-				new_page_title = edit['move']['new_title'].encode('utf-8')
-				new_page_ns = edit['move']['new_ns']
+				if edit['logaction'] == 'move_redir':
+					new_page_title = edit['0'].encode('utf-8')
+					# ugly hack because api doesn't return new namespace
+					new_page_ns = get_namespace_from_title(db, new_page_title)
+				else:
+					new_page_title = edit['move']['new_title'].encode('utf-8')
+					new_page_ns = edit['move']['new_ns']
 
 				# delete existing target page and any edits that referenced it
 				target_page = db['pages'].find_one({'title': new_page_title})
@@ -269,7 +284,7 @@ def update(wiki):
 				db['pages'].update({'_id': page_id}, {'$set': {'title': new_page_title, 'ns': new_page_ns, 'lang': language, 'redirect': False}})
 				cache.delete('wiki-fi:pagedata_{0}_{1}'.format(title.replace(' ', '_'), wiki))
 
-				if 'suppressedredirect' not in edit['move']:
+				if 'suppressedredirect' in edit or ('move' in edit and 'suppressedredirect' not in edit['move']):
 					# left behind a redirect
 					print('RCID: {0} - REDIRECTCREATION: {1}'.format(rcid, title))
 
