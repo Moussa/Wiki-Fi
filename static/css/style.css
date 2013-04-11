@@ -79,7 +79,7 @@ body {
   height: 400px;
 }
 
-.timelinechart, .bubblechart, .piechart, .wordcloud, .sortabletable {
+.timelinechart, .bubblechart, .piechart, .wordcloud {
   height: 500px;
 }
 
