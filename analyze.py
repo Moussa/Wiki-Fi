@@ -189,6 +189,19 @@ def process_top_editors_last_30_days(wiki, db, user_edits_count):
 
 	return output
 
+def process_top_uploaders(wiki, db, user_uploads_count):
+	sorted_user_uploads_count = sorted(user_uploads_count.iteritems(), key=operator.itemgetter(1), reverse=True)[:100]
+	output = []
+	for entry in sorted_user_uploads_count:
+		username = get_user_name(db, entry[0])
+		upload_count = entry[1]
+		registration_date = get_user_registration_date(wiki, db, _id=entry[0])
+		registered_days_ago = (datetime.datetime.today() - registration_date).days
+		upload_count_per_day = "%0.2f" % (float(upload_count)/float(registered_days_ago),)
+		output.append(["""<a href="/user/{0}/{1}">{1}</a>""".format(wiki, username), registration_date.strftime("%d %B %Y"), upload_count, upload_count_per_day])
+
+	return output
+
 def process_editors_edit_count_distribution(user_edits_count):
 	count = {'1 - 10': 0, '11 - 100': 0, '101 - 1000': 0, '1001 - 5000': 0, '5000+': 0}
 	for user in user_edits_count:
@@ -419,6 +432,7 @@ def analyze_wiki(wiki, db):
 	edits_collection = db['edits']
 	users_collection = db['users']
 	pages_collection = db['pages']
+	files_collection = db['files']
 
 	start_date = get_creation_datetime_from_string(config['wikis'][wiki]['creation_date'])
 	end_date = datetime.datetime.today()
@@ -427,6 +441,7 @@ def analyze_wiki(wiki, db):
 	page_ids = []
 	user_edits_count = {}
 	users_edits_count_last_30_days = {}
+	user_uploads_count = {}
 	largest_day_edit_count = 0
 	total_edit_count = 0
 	last_30_days_edits = 0
@@ -496,6 +511,12 @@ def analyze_wiki(wiki, db):
 
 		user_registrations_timeline.append(usersentry)
 
+	uploads = list(files_collection.find({}, fields=['user_id']))
+	total_uploads = len(uploads)
+
+	for upload in uploads:
+		user_uploads_count[upload['user_id']] = user_uploads_count.get(upload['user_id'], 0) + 1
+
 	distinct_pages_count = len(edits_collection.find({}, fields=[]).distinct('page_id'))
 
 	days_since_first_edit = (datetime.datetime.today() - start_date).days
@@ -552,6 +573,9 @@ def analyze_wiki(wiki, db):
 	# Generate data table string for top editors in last 30 days
 	top_editors_last_30_days_string = process_top_editors_last_30_days(wiki, db, users_edits_count_last_30_days)
 
+	# Generate data table string for top uploaders
+	top_uploaders_string = process_top_uploaders(wiki, db, user_uploads_count)
+
 	charts_data = {'start_date': start_date,
 	               'total_edit_count': total_edit_count,
                    'distinct_pages_count': distinct_pages_count,
@@ -564,6 +588,7 @@ def analyze_wiki(wiki, db):
                    'user_registrations_timeline_string': user_registrations_timeline_string,
                    'top_editors_string': top_editors_string,
                    'top_editors_last_30_days_string': top_editors_last_30_days_string,
+                   'top_uploaders_string': top_uploaders_string,
                    'namespace_piechart_string': namespace_piechart_string,
                    'namespace_distribution_piechart_string': namespace_distribution_piechart_string,
                    'language_piechart_string': language_piechart_string,
