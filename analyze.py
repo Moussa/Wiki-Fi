@@ -439,6 +439,7 @@ def analyze_wiki(wiki, db):
 
 	edits_timeline = []
 	page_ids = []
+	non_bot_page_ids = []
 	user_edits_count = {}
 	users_edits_count_last_30_days = {}
 	user_uploads_count = {}
@@ -447,6 +448,8 @@ def analyze_wiki(wiki, db):
 	last_30_days_edits = 0
 	hour_dict = dict((a, {'count': 0, 'string': '{0}:00'.format("%02d" % (a,))}) for a in range(0, 24))
 	edits_dict = dict((a, {'day': {'string': DAY_MAPPING[a], 'count': 0}, 'hours': copy.deepcopy(hour_dict)}) for a in range(0, 7))
+
+	bot_ids = [bot['_id'] for bot in users_collection.find({'is_bot': True}, fields=['_id'])]
 
 	for single_date in daterange(start_date, end_date):
 		start = datetime.datetime(single_date.year, single_date.month, single_date.day)
@@ -470,6 +473,9 @@ def analyze_wiki(wiki, db):
 
 		for edit in edits:
 			page_ids.append(edit['page_id'])
+
+			if edit['user_id'] not in bot_ids:
+				non_bot_page_ids.append(edit['page_id'])
 
 			# Add hourly edits data to dict
 			edit_hour = edit['timestamp'].hour
@@ -537,6 +543,9 @@ def analyze_wiki(wiki, db):
 	# Generate list of most edited pages
 	most_edited_pages = process_most_edited_pages(wiki, db, page_ids)
 
+	# Generate list of most edited pages by non-bots
+	most_non_bot_edited_pages = process_most_edited_pages(wiki, db, non_bot_page_ids)
+
 	# Generate data table string for day/hour bubble chart
 	hour_day_bubble_chart_string = process_hour_day_bubble_chart(edits_dict)
 
@@ -584,6 +593,7 @@ def analyze_wiki(wiki, db):
                    'edits_per_day_30days': edits_per_day_30days,
                    'largest_day_edit_count': largest_day_edit_count,
                    'most_edited_pages': most_edited_pages,
+                   'most_non_bot_edited_pages': most_non_bot_edited_pages,
                    'edits_timeline_string': edits_timeline_string,
                    'user_registrations_timeline_string': user_registrations_timeline_string,
                    'top_editors_string': top_editors_string,

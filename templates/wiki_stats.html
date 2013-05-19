@@ -266,6 +266,17 @@
 
     <div class="container-fluid">
       <div class="row-fluid">
+        <div class="span12"><h2>Most edited pages (excluding bots)</h2></div>
+      </div>
+    </div>
+    <div class="container-fluid">
+      <div class="row-fluid">
+        <div class="span10 offset1 wordcloud" id="non-bot-common-pages-cloud"></div>
+      </div>
+    </div>
+
+    <div class="container-fluid">
+      <div class="row-fluid">
         <div class="span12"><h2>Most edited pages</h2></div>
       </div>
     </div>
@@ -514,6 +525,13 @@
       var word_list = JSON.parse('{{ charts_data['most_edited_pages']|safe }}');
       $(function() {
         $("#common-pages-cloud").jQCloud(word_list);
+      });
+    </script>
+
+    <script type="text/javascript">
+      var non_bot_word_list = JSON.parse('{{ charts_data['most_non_bot_edited_pages']|safe }}');
+      $(function() {
+        $("#non-bot-common-pages-cloud").jQCloud(non_bot_word_list);
       });
     </script>
 
