@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Wiki-Fi - {{ wiki_name }}</title>
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+    <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.0/bootstrap.min.js"></script>
+    <script src="{{ url_for('static', filename='js/jqcloud-1.0.4.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/heading-anchors.js') }}"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.min.js"></script>
+    <script src="{{ url_for('static', filename='js/DT_bootstrap.js') }}"></script>
+    
+    <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.0/css/bootstrap-responsive.min.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/jqcloud.css') }}"/>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/DT_bootstrap.css') }}"/>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/heading-anchors.css') }}"/>
+  </head>
+
+  <body>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="brand pull-left" href="/">Wiki-Fi</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav pull-left">
+              <li class="divider-vertical"></li>
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Wiki <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  <li id="combineoverwiki"><a href="/wiki/combineoverwiki">Combine OverWiki</a></li>
+                  <li id="dota2"><a href="/wiki/dota2">Dota 2 Wiki</a></li>
+                  <li id="tf"><a href="/wiki/tf">Official TF Wiki</a></li>
+                  <li id="portal"><a href="/wiki/portal">Portal Wiki</a></li>
+                </ul>
+                  {% block nav_items %}{% endblock %}
+              </li>
+              {% if wiki == 'tf' %}
+                <li class="divider-vertical"></li>
+                <li><a href="http://www.gosquared.com/demo" target="_blank">GoSquared live analytics</a></li>
+              {% endif %}
+            </ul>
+
+            <ul class="nav pull-right">
+              <li><a href="/about">About</a></li>
+              <li class="divider-vertical"></li>
+              <p class="navbar-text pull-right" id="last-updated"></p>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% block body %}{% endblock %}
+
+    <!-- Tracking -->
+    <script src="{{ url_for('static', filename='js/analytics.js') }}"></script>
+  </body>
+</html>

@@ -1,68 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <title>Wiki-Fi - {{ page_name }}</title>
+{% extends "layout.html" %}
 
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
-    <script type="text/javascript" src="http://www.google.com/jsapi"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.0/bootstrap.min.js"></script>
-    <script src="{{ url_for('static', filename='js/jqcloud-1.0.4.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/heading-anchors.js') }}"></script>
-    
-    <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.0/css/bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.0/css/bootstrap-responsive.min.css">
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/jqcloud.css') }}"/>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/heading-anchors.css') }}"/>
-  </head>
+{% block nav_items %}
+   <li>
+    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+    <ul class="dropdown-menu">
+      <li><a data-target="#" href="{{ wiki_link }}/wiki/{{ page_name }}" target="_blank">View page</a></li>
+      <li><a data-target="#" href="{{ wiki_link }}/w/index.php?title={{ page_name }}&action=history" target="_blank">View page history</a></li>
+    </ul>
+  </li>
+  <li class="divider-vertical"></li>
+  <form class="navbar-search page-search">
+    <input type="text" class="search-query" id="page-entry" placeholder="Page title">
+  </form>
+  <p class="navbar-text pull-left" id="search-status"></p>
+{% endblock %}
 
-  <body>
-    <div class="navbar navbar-inverse navbar-fixed-top">
-      <div class="navbar-inner">
-        <div class="container-fluid">
-          <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="brand pull-left" href="/">Wiki-Fi</a>
-          <div class="nav-collapse collapse">
-            <ul class="nav pull-left">
-              <li class="divider-vertical"></li>
-              <li class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
-                <ul class="dropdown-menu">
-                  <li><a data-target="#" href="{{ wiki_link }}/wiki/{{ page_name }}" target="_blank">View page</a></li>
-                  <li><a data-target="#" href="{{ wiki_link }}/w/index.php?title={{ page_name }}&action=history" target="_blank">View page history</a></li>
-                </ul>
-              </li>
-              <li class="divider-vertical"></li>
-              <li class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Wiki <b class="caret"></b></a>
-                <ul class="dropdown-menu">
-                  <li id="combineoverwiki"><a id="combineoverwiki">Combine OverWiki</a></li>
-                  <li id="dota2"><a id="dota2">Dota2 Wiki</a></li>
-                  <li id="tf"><a id="tf">Official TF Wiki</a></li>
-                  <li id="portal"><a id="portal">Portal Wiki</a></li>
-                </ul>
-              </li>
-              <li class="divider-vertical"></li>
-              <form class="navbar-search page-search">
-                <input type="text" class="search-query" id="page-entry" placeholder="Page title">
-              </form>
-              <p class="navbar-text pull-left" id="search-status"></p>
-            </ul>
-
-            <ul class="nav pull-right">
-              <li><a href="/about">About</a></li>
-              <li class="divider-vertical"></li>
-              <p class="navbar-text pull-right" id="last-updated"></p>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
-
+{% block body %}
     <div class="page-header">
       <div class="offset1">
         {% if charts_data['is_redirect'] %}
@@ -314,8 +267,4 @@
         $("#active-editors-cloud").jQCloud(word_list);
       });
     </script>
-
-    <!-- Tracking -->
-    <script src="{{ url_for('static', filename='js/analytics.js') }}"></script>
-  </body>
-</html>
+{% endblock %}
