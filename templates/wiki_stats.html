@@ -108,7 +108,7 @@
     </div>
     <div class="container-fluid">
       <div class="row-fluid">
-        <div class="span10 offset1 timelinechart" id="edits-timeline-chart"></div>
+        <div class="span10 offset1 timelinechart" id="edits-timeline-chart" style='height: 500px;'></div>
       </div>
     </div>
 
@@ -126,7 +126,7 @@
     </div>
     <div class="container-fluid">
       <div class="row-fluid">
-        <div class="span10 offset1 timelinechart" id="registrations-timeline-chart"></div>
+        <div class="span10 offset1 timelinechart" id="registrations-timeline-chart" style='height: 500px;'></div>
       </div>
     </div>
 
@@ -347,7 +347,7 @@
 
     <!-- GRAPH SCRIPTS -->
     <script type="text/javascript">
-      google.load('visualization', '1', {'packages':['annotatedtimeline', 'corechart']});
+      google.load('visualization', '1.1', {'packages':['annotationchart']});
     </script>
 
     <script type="text/javascript">
@@ -359,7 +359,7 @@
         data.addColumn('number', 'Edits');
         data.addColumn('number', 'Total edits');
         data.addRows([ {{ charts_data['edits_timeline_string']|safe }} ]);
-        edit_timeline_chart = new google.visualization.AnnotatedTimeLine(document.getElementById('edits-timeline-chart'));
+        edit_timeline_chart = new google.visualization.AnnotationChart(document.getElementById('edits-timeline-chart'));
         edit_timeline_chart.draw(data, {
           displayAnnotations: false,
           dateFormat: 'MMMM dd, yyyy'
@@ -377,7 +377,7 @@
         data.addColumn('number', 'Registered active users');
         data.addColumn('number', 'Total registered active users');
         data.addRows([ {{ charts_data['user_registrations_timeline_string']|safe }} ]);
-        user_registrations_timeline_chart = new google.visualization.AnnotatedTimeLine(document.getElementById('registrations-timeline-chart'));
+        user_registrations_timeline_chart = new google.visualization.AnnotationChart(document.getElementById('registrations-timeline-chart'));
         user_registrations_timeline_chart.draw(data, {
           displayAnnotations: false,
           colors: ['#990099'],
