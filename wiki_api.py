@@ -23,7 +23,8 @@ class Wiki_API:
 		params = {'action': 'query',
                   'list': 'allpages',
                   'aplimit': '5000',
-                  'apnamespace': namespace
+                  'apnamespace': namespace,
+                  'rawcontinue': ''
                   }
 
 		if redirects:
@@ -54,7 +55,8 @@ class Wiki_API:
                   'rvlimit': '5000',
                   'titles': page,
                   'rvprop': 'ids|timestamp|user',
-                  'rvdir': 'newer'
+                  'rvdir': 'newer',
+                  'rawcontinue': ''
                   }
 
 		req = wikitools.api.APIRequest(self.wiki, params)
@@ -68,7 +70,8 @@ class Wiki_API:
                   'prop': 'imageinfo',
                   'iilimit': '5000',
                   'titles': _file,
-                  'iiprop': 'timestamp|user'
+                  'iiprop': 'timestamp|user',
+                  'rawcontinue': ''
                   }
 
 		req = wikitools.api.APIRequest(self.wiki, params)
@@ -86,7 +89,8 @@ class Wiki_API:
                   'rcprop': 'user|timestamp|title|ids|loginfo|redirect',
                   'rctype': 'edit|new|log',
                   'rcdir': 'newer',
-                  'rclimit': '5000'
+                  'rclimit': '5000',
+                  'rawcontinue': ''
                   }
 
 		if start:
