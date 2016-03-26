@@ -253,20 +253,13 @@ def update(wiki):
 
 		elif edit['type'] == 'log':
 			if edit['logtype'] == 'move':
-				if edit['logaction'] == 'move_redir':
-					print('RCID: {0} - PAGEMOVE: {1} -> {2}'.format(rcid, title, edit['0'].encode('utf-8')))
-				else:
-					print('RCID: {0} - PAGEMOVE: {1} -> {2}'.format(rcid, title, edit['move']['new_title'].encode('utf-8')))
+				print('RCID: {0} - PAGEMOVE: {1} -> {2}'.format(rcid, title, edit['logparams']['target_title'].encode('utf-8')))
 
 				page_id = get_page_id(db, wiki, title, ns, redirect)
 				old_page_title = edit['title'].encode('utf-8')
-				if edit['logaction'] == 'move_redir':
-					new_page_title = edit['0'].encode('utf-8')
-					# ugly hack because api doesn't return new namespace
-					new_page_ns = get_namespace_from_title(db, new_page_title)
-				else:
-					new_page_title = edit['move']['new_title'].encode('utf-8')
-					new_page_ns = edit['move']['new_ns']
+
+				new_page_title = edit['logparams']['target_title'].encode('utf-8')
+				new_page_ns = edit['logparams']['target_ns']
 
 				# delete existing target page and any edits that referenced it
 				target_page = db['pages'].find_one({'title': new_page_title})
